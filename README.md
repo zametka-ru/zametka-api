@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center" style="color: #92b4a7">your<span style="color: #81667a">script</span></h1>
-<h2 align="center" style="color: #777da7">Инновационное решение в написании <span style="color: #d5573b">
+<h2 align="center" style="color: #777da7">Инновационное решение в области написания <span style="color: #d5573b">
 сценариев</span></h2>
 
 ------------------------
