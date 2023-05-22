@@ -1,9 +1,9 @@
-<p style="text-align: center">
+<p align="center">
 <img height="200" width="200" src="https://github.com/lubaskinc0de/yourscript/assets/100635212/e9393d8b-e3b5-4990-8796-bdadf986e3c4"></img>
 </p>
 
-<h1 style="text-align: center; color: #92b4a7">your<span style="color: #81667a">script</span></h1>
-<h2 style="text-align: center; color: #777da7">Инновационное решение в написании <span style="color: #d5573b">
+<h1 align="center" style="color: #92b4a7">your<span style="color: #81667a">script</span></h1>
+<h2 align="center" style="color: #777da7">Инновационное решение в написании <span style="color: #d5573b">
 сценариев</span></h2>
 
 ------------------------
