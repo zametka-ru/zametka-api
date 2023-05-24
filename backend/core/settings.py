@@ -74,4 +74,4 @@ def load_settings() -> Settings:
 def load_alembic_settings() -> AlembicDB:
     """Get alembic settings"""
 
-    return AlembicDB() # type:ignore
+    return AlembicDB()  # type:ignore
