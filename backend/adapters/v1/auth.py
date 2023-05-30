@@ -13,7 +13,7 @@ from .exceptions.auth import JWTAlreadyUsedError, JWTExpiredError
 
 
 def send_confirm_mail(
-        mail: FastMail, user_email: str, background_tasks: BackgroundTasks, token: str
+    mail: FastMail, user_email: str, background_tasks: BackgroundTasks, token: str
 ):
     """Send confirmation email after register user"""
 
@@ -30,11 +30,11 @@ def send_confirm_mail(
 
 
 def create_verify_email_token(
-        secret_key: str,
-        algorithm: str,
-        user: User,
-        utcnow: Optional[datetime | str] = None,
-        expires: int = 15,
+    secret_key: str,
+    algorithm: str,
+    user: User,
+    utcnow: Optional[datetime | str] = None,
+    expires: int = 15,
 ) -> bytes:
     """
     Create the email-verification jwt token.
@@ -48,7 +48,7 @@ def create_verify_email_token(
     """
 
     if utcnow is None:
-        utcnow: datetime = datetime.utcnow()
+        utcnow: datetime = datetime.utcnow()  # type:ignore
 
     payload = {
         "email": user.email,
@@ -66,7 +66,10 @@ JWTPayload = dict[str, int | str | bool]
 
 
 def jwt_already_used_check(
-        secret_key: str, algorithm: str, user: User, token: str,
+    secret_key: str,
+    algorithm: str,
+    user: User,
+    token: str,
 ) -> None:
     """
     Compares JWT tokens
@@ -80,7 +83,7 @@ def jwt_already_used_check(
 
     token_payload: JWTPayload = jwt.decode(token, secret_key, algorithm)
 
-    token_user_is_active: bool = token_payload.get("user_is_active")
+    token_user_is_active: bool = token_payload.get("user_is_active")  # type:ignore
 
     if user.is_active != token_user_is_active:
         raise JWTAlreadyUsedError()
@@ -93,12 +96,12 @@ def jwt_expired_check(token_payload: dict[str, int | str]) -> None:
     May raise JWTExpiredError
     """
 
-    expires: int = token_payload.get("expires")
+    expires: int = token_payload.get("expires")  # type:ignore
     expires_delta: timedelta = timedelta(minutes=expires)
 
-    token_utcnow: str = token_payload.get("utcnow")
+    token_utcnow: str = token_payload.get("utcnow")  # type:ignore
 
-    time_format: str = '%d/%m/%y %H:%M:%S'
+    time_format: str = "%d/%m/%y %H:%M:%S"
     token_utcnow_datetime: datetime = datetime.strptime(token_utcnow, time_format)
 
     utcnow = datetime.utcnow()
@@ -109,7 +112,9 @@ def jwt_expired_check(token_payload: dict[str, int | str]) -> None:
         raise JWTExpiredError()
 
 
-def check_email_verification_token(secret_key: str, algorithm: str, user: User, token: str, expires: int = 15) -> None:
+def check_email_verification_token(
+    secret_key: str, algorithm: str, user: User, token: str
+) -> None:
     """
     Check the email verification token by 2-step check:
 

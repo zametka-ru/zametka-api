@@ -11,7 +11,11 @@ from sqlalchemy.orm import Session
 
 from starlette.background import BackgroundTasks
 
-from adapters.v1.auth import send_confirm_mail, create_verify_email_token, check_email_verification_token
+from adapters.v1.auth import (
+    send_confirm_mail,
+    create_verify_email_token,
+    check_email_verification_token,
+)
 from adapters.v1.exceptions.auth import JWTAlreadyUsedError, JWTExpiredError
 
 from core.db import User
@@ -71,8 +75,8 @@ async def user_verify_email(token: str, auth_settings: AuthSettings, session: Se
     algorithm: str = auth_settings.algorithm
 
     try:
-        payload: dict[str, str | int] = jwt.decode(token, secret_key, algorithm)
-        email: Optional[str] = payload.get("email")
+        payload: dict[str, str | int | bool] = jwt.decode(token, secret_key, algorithm)
+        email: Optional[str] = payload.get("email")  # type:ignore
 
         user: User = await get_user_by_email(session, email)
 
