@@ -100,9 +100,9 @@ def jwt_expired_check(token_payload: dict[str, int | str]) -> None:
     expires_delta: timedelta = timedelta(minutes=expires)
 
     token_utcnow: str = token_payload.get("utcnow")  # type:ignore
+    token_utcnow_normalized = token_utcnow.split(".")[0]
 
-    time_format: str = "%d/%m/%y %H:%M:%S"
-    token_utcnow_datetime: datetime = datetime.strptime(token_utcnow, time_format)
+    token_utcnow_datetime: datetime = datetime.fromisoformat(token_utcnow_normalized)
 
     utcnow = datetime.utcnow()
 

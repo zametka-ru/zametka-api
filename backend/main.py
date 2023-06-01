@@ -7,12 +7,17 @@ from presentation.v1 import include_routers, include_exception_handlers
 
 from core.settings import load_settings, load_mail_settings
 from core.db import get_session, get_async_sessionmaker
+from core.dependencies import (
+    MailDependency,
+    AuthSettingsDependency,
+    AuthRepositoryDependency,
+)
+
+from repository import AuthRepository
 
 from sqlalchemy.orm import Session
 
 from passlib.context import CryptContext
-
-from core.dependencies import MailDependency, AuthSettingsDependency
 
 app = FastAPI()
 include_exception_handlers(app)
@@ -30,10 +35,15 @@ async def on_startup():
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     mail = FastMail(mail_settings)
 
-    app.dependency_overrides[Session] = lambda: get_session(async_sessionmaker)
+    session_factory = lambda: get_session(async_sessionmaker)
+
+    app.dependency_overrides[Session] = session_factory
     app.dependency_overrides[CryptContext] = lambda: pwd_context
     app.dependency_overrides[MailDependency] = lambda: mail
     app.dependency_overrides[AuthSettingsDependency] = lambda: auth_settings
+    app.dependency_overrides[AuthRepositoryDependency] = lambda: AuthRepository(
+        session_factory()
+    )
 
     include_routers(app)
 

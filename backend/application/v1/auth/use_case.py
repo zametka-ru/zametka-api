@@ -11,10 +11,9 @@ from adapters.v1.auth import (
     create_verify_email_token,
     check_email_verification_token,
 )
-from adapters.v1.exceptions.auth import JWTAlreadyUsedError, JWTExpiredError
+from adapters.v1.exceptions.auth import JWTCheckError
 
 from core.db import User
-from core.db.services.users import create_user, make_user_active, get_user_by_email
 from core.settings import AuthSettings
 
 from presentation.v1.schemas.auth import (
@@ -36,7 +35,7 @@ async def register_user(dto: RegisterInputDTO):
     dto.user_data["joined_at"] = datetime.datetime.utcnow()
 
     try:
-        user: User = await create_user(dto.session, dto.user_data)
+        user: User = await dto.repository.create_user(dto.user_data)
 
         secret_key: str = dto.auth_settings.secret_key
         algorithm: str = dto.auth_settings.algorithm
@@ -44,7 +43,10 @@ async def register_user(dto: RegisterInputDTO):
         token: bytes = create_verify_email_token(secret_key, algorithm, user)
 
         send_confirm_mail(
-            dto.mail_context, dto.user_data.get("email"), dto.background_tasks, str(token)
+            dto.mail_context,
+            dto.user_data.get("email"),
+            dto.background_tasks,
+            str(token),
         )
 
     except IntegrityError:
@@ -65,19 +67,18 @@ async def user_verify_email(dto: VerificationInputDTO):
     algorithm: str = dto.auth_settings.algorithm
 
     try:
-        payload: dict[str, str | int | bool] = jwt.decode(dto.token, secret_key, algorithm)
+        payload: dict[str, str | int | bool] = jwt.decode(
+            dto.token, secret_key, algorithm
+        )
         email: Optional[str] = payload.get("email")  # type:ignore
 
-        user: User = await get_user_by_email(dto.session, email)
+        user: User = await dto.repository.get_user_by_email(email)
 
         check_email_verification_token(secret_key, algorithm, user, dto.token)
 
-        await make_user_active(dto.session, user)
+        await dto.repository.make_user_active(user)
 
-    except JWTAlreadyUsedError as exc:
-        return VerifyEmailFailedResponse(details=str(exc))
-
-    except JWTExpiredError as exc:
+    except JWTCheckError as exc:
         return VerifyEmailFailedResponse(details=str(exc))
 
     except jwt.DecodeError:

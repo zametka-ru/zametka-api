@@ -1,7 +1,11 @@
 import jwt
 
 
-class JWTExpiredError(jwt.exceptions.DecodeError):
+class JWTCheckError(jwt.exceptions.DecodeError):
+    """Base JWT check error"""
+
+
+class JWTExpiredError(JWTCheckError):
     """Raises when jwt exceeded expires time"""
 
     def __init__(self, message="Token is expired.", *args):
@@ -10,7 +14,7 @@ class JWTExpiredError(jwt.exceptions.DecodeError):
         super().__init__(self, message, *args)
 
 
-class JWTAlreadyUsedError(jwt.exceptions.DecodeError):
+class JWTAlreadyUsedError(JWTCheckError):
     """Raises when user uses jwt second time"""
 
     def __init__(self, message="Token already used", *args):

@@ -11,3 +11,9 @@ class AuthSettingsDependency(ABC):
     """
     It's a dependency for AuthSettings instance
     """
+
+
+class AuthRepositoryDependency(ABC):
+    """
+    It's a dependency for AuthRepository instance
+    """

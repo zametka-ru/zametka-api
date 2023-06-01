@@ -1,23 +1,24 @@
-import jwt
 from fastapi import APIRouter, Depends
 
 from fastapi_jwt_auth import AuthJWT
 from fastapi_mail import FastMail
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 from starlette.background import BackgroundTasks
 
 from core.settings import load_authjwt_settings, AuthJWTSettings, AuthSettings
-from core.dependencies import MailDependency, AuthSettingsDependency
+from core.dependencies import (
+    MailDependency,
+    AuthSettingsDependency,
+    AuthRepositoryDependency,
+)
 
-from application.v1.auth import register_user, user_verify_email
+from application.v1.auth.use_case import register_user, user_verify_email
+from application.v1.auth.dto import RegisterInputDTO, VerificationInputDTO
+
+from repository import AuthRepository
 
 from ..schemas.auth import (
     UserRegisterSchema,
-    RegisterSuccessResponse,
-    RegisterFailedResponse,
-    VerifyEmailSuccessResponse,
-    VerifyEmailFailedResponse,
 )
 
 router = APIRouter(
@@ -40,22 +41,25 @@ async def register(
     background_tasks: BackgroundTasks,
     pwd_context: CryptContext = Depends(),
     auth_settings: AuthSettingsDependency = Depends(),
-    session: Session = Depends(),
+    repository: AuthRepositoryDependency = Depends(),
     mail_context: MailDependency = Depends(),
 ):
     mail_context: FastMail  # type:ignore
     auth_settings: AuthSettings  # type:ignore
+    repository: AuthRepository  # type:ignore
 
     register_data_dict: dict = register_data.dict()
 
-    response = await register_user(
-        register_data_dict,
-        background_tasks,
-        pwd_context,
-        session,
-        mail_context,
-        auth_settings,
+    dto = RegisterInputDTO(
+        user_data=register_data_dict,
+        background_tasks=background_tasks,
+        pwd_context=pwd_context,
+        mail_context=mail_context,
+        auth_settings=auth_settings,
+        repository=repository,
     )
+
+    response = await register_user(dto)
 
     return response
 
@@ -64,11 +68,18 @@ async def register(
 async def verify_email(
     token: str,
     auth_settings: AuthSettingsDependency = Depends(),
-    session: Session = Depends(),
+    repository: AuthRepositoryDependency = Depends(),
 ):
     auth_settings: AuthSettings  # type:ignore
+    repository: AuthRepository  # type:ignore
 
-    return await user_verify_email(token, auth_settings, session)
+    dto = VerificationInputDTO(
+        token=token,
+        auth_settings=auth_settings,
+        repository=repository,
+    )
+
+    return await user_verify_email(dto)
 
 
 @router.post("/refresh")
@@ -79,4 +90,5 @@ async def refresh(Authorize: AuthJWT = Depends()):
 
     current_user = Authorize.get_jwt_subject()
     new_access_token = Authorize.create_access_token(subject=current_user)
+
     return {"access_token": new_access_token}
