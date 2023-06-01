@@ -17,3 +17,9 @@ class AuthRepositoryDependency(ABC):
     """
     It's a dependency for AuthRepository instance
     """
+
+
+class UnitOfWorkDependency(ABC):
+    """
+    It's a dependency for UnitOfWork instance
+    """

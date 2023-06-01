@@ -3,17 +3,17 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi_mail import FastMail
 
+from core.db.provider import DbProvider, get_uow, get_auth_repository
 from presentation.v1 import include_routers, include_exception_handlers
 
 from core.settings import load_settings, load_mail_settings
-from core.db import get_session, get_async_sessionmaker
+from core.db import get_async_sessionmaker
 from core.dependencies import (
     MailDependency,
     AuthSettingsDependency,
     AuthRepositoryDependency,
+    UnitOfWorkDependency,
 )
-
-from repository import AuthRepository
 
 from sqlalchemy.orm import Session
 
@@ -32,18 +32,22 @@ async def on_startup():
 
     async_sessionmaker = await get_async_sessionmaker(settings.db)
 
+    db_provider = DbProvider(pool=async_sessionmaker)
+
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     mail = FastMail(mail_settings)
 
-    session_factory = lambda: get_session(async_sessionmaker)
+    app.dependency_overrides[Session] = db_provider.get_session
 
-    app.dependency_overrides[Session] = session_factory
     app.dependency_overrides[CryptContext] = lambda: pwd_context
+
     app.dependency_overrides[MailDependency] = lambda: mail
+
     app.dependency_overrides[AuthSettingsDependency] = lambda: auth_settings
-    app.dependency_overrides[AuthRepositoryDependency] = lambda: AuthRepository(
-        session_factory()
-    )
+
+    app.dependency_overrides[AuthRepositoryDependency] = get_auth_repository
+
+    app.dependency_overrides[UnitOfWorkDependency] = get_uow
 
     include_routers(app)
 

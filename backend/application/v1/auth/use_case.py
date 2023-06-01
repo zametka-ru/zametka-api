@@ -21,12 +21,16 @@ from presentation.v1.schemas.auth import (
     RegisterFailedResponse,
     VerifyEmailSuccessResponse,
     VerifyEmailFailedResponse,
+    LoginSuccessResponse,
+    LoginFailedResponse
 )
 
-from .dto import RegisterInputDTO, VerificationInputDTO
+from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO
+
+from repository import AuthRepository
 
 
-async def register_user(dto: RegisterInputDTO):
+async def register_user(dto: RegisterInputDTO, repository: AuthRepository):
     """User register process"""
 
     user_password: str = dto.user_data.get("password")  # type:ignore
@@ -35,7 +39,8 @@ async def register_user(dto: RegisterInputDTO):
     dto.user_data["joined_at"] = datetime.datetime.utcnow()
 
     try:
-        user: User = await dto.repository.create_user(dto.user_data)
+        user: User = await repository.create_user(dto.user_data)
+        await dto.uow.commit()
 
         secret_key: str = dto.auth_settings.secret_key
         algorithm: str = dto.auth_settings.algorithm
@@ -56,11 +61,10 @@ async def register_user(dto: RegisterInputDTO):
 
     except DBAPIError as exc:
         return RegisterFailedResponse(details=str(exc))
-
     return RegisterSuccessResponse()
 
 
-async def user_verify_email(dto: VerificationInputDTO):
+async def user_verify_email(dto: VerificationInputDTO, repository: AuthRepository):
     auth_settings: AuthSettings  # type:ignore
 
     secret_key: str = dto.auth_settings.secret_key
@@ -72,11 +76,13 @@ async def user_verify_email(dto: VerificationInputDTO):
         )
         email: Optional[str] = payload.get("email")  # type:ignore
 
-        user: User = await dto.repository.get_user_by_email(email)
+        user: User = await repository.get_user_by_email(email)
 
         check_email_verification_token(secret_key, algorithm, user, dto.token)
 
-        await dto.repository.make_user_active(user)
+        await repository.make_user_active(user)
+
+        await dto.uow.commit()
 
     except JWTCheckError as exc:
         return VerifyEmailFailedResponse(details=str(exc))
@@ -88,3 +94,23 @@ async def user_verify_email(dto: VerificationInputDTO):
         return VerifyEmailFailedResponse(details=str(exc))
 
     return VerifyEmailSuccessResponse(email=payload.get("email"))
+
+
+async def user_login(dto: LoginInputDTO, repository: AuthRepository):
+    """Login user"""
+
+    user: User = await repository.get_user_by_email(dto.user_login.email)
+
+    if not user:
+        return LoginFailedResponse(details=f"There is no users with email\n{dto.user_login.email}")
+
+    if not user.is_active:
+        return LoginFailedResponse(details="Confirm your email first, or you was banned :)")
+
+    if not user.compare_passwords(dto.user_login.password, dto.pwd_context):
+        return LoginFailedResponse(details="Invalid credentials (check your password)")
+
+    access_token = dto.Authorize.create_access_token(subject=dto.user_login.email)
+    refresh_token = dto.Authorize.create_refresh_token(subject=dto.user_login.email)
+
+    return LoginSuccessResponse(access_token=access_token, refresh_token=refresh_token)

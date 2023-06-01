@@ -26,8 +26,6 @@ async def create_user(
 
     session.add(user_obj)
 
-    await session.commit()
-
     return user_obj
 
 
@@ -42,11 +40,9 @@ async def get_user_by_email(session: Session, user_email: str) -> User:
     return user
 
 
-async def make_user_active(session: Session, user: User):
+async def make_user_active(user: User):
     """
     Set user.is_active to True
     """
 
     user.is_active = True
-
-    await session.commit()

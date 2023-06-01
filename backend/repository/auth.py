@@ -22,4 +22,4 @@ class AuthRepository(AbstractRepository):
         Set user.is_active to True
         """
 
-        return await make_user_active(self.session, user)
+        return await make_user_active(user)

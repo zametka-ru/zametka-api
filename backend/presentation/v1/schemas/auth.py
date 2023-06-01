@@ -5,7 +5,7 @@ from email_validator import validate_email
 
 # noinspection PyMethodParameters
 class UserRegisterSchema(BaseModel):
-    """User schema"""
+    """User register schema"""
 
     email: str = Field(max_length=60)
     password: str = Field(max_length=30, min_length=6)
@@ -58,6 +58,24 @@ class UserRegisterSchema(BaseModel):
         return values
 
 
+class UserLoginSchema(BaseModel):
+    """User login schema"""
+
+    email: str = Field(max_length=60)
+    password: str = Field(max_length=30, min_length=6)
+
+    # noinspection PyMethodParameters
+    @validator("email")
+    def validate_email(cls, email: str) -> str:
+        """Validate email"""
+
+        email_info = validate_email(email, check_deliverability=False)
+
+        email = email_info.original_email
+
+        return email
+
+
 class RegisterResponse(BaseModel):
     status: str
 
@@ -81,5 +99,20 @@ class VerifyEmailSuccessResponse(VerifyEmailResponse):
 
 
 class VerifyEmailFailedResponse(VerifyEmailResponse):
+    status: str = "failed"
+    details: str
+
+
+class LoginResponse(BaseModel):
+    status: str
+
+
+class LoginSuccessResponse(LoginResponse):
+    status: str = "ok"
+    access_token: str
+    refresh_token: str
+
+
+class LoginFailedResponse(LoginResponse):
     status: str = "failed"
     details: str
