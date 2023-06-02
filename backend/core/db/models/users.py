@@ -28,7 +28,5 @@ class User(Base):
     def hash_password(cls, password: str, pwd_context: CryptContext) -> str:
         return pwd_context.hash(password)
 
-    def compare_passwords(
-        self, plain_password: str, pwd_context: CryptContext
-    ) -> bool:
+    def compare_passwords(self, plain_password: str, pwd_context: CryptContext) -> bool:
         return pwd_context.verify(plain_password, self.password)

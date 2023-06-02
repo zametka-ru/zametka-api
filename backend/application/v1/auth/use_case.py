@@ -22,12 +22,13 @@ from presentation.v1.schemas.auth import (
     VerifyEmailSuccessResponse,
     VerifyEmailFailedResponse,
     LoginSuccessResponse,
-    LoginFailedResponse
+    LoginFailedResponse,
+    RefreshSuccessResponse,
 )
 
-from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO
+from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO, RefreshInputDTO
 
-from repository import AuthRepository
+from adapters.repository import AuthRepository
 
 
 async def register_user(dto: RegisterInputDTO, repository: AuthRepository):
@@ -56,7 +57,7 @@ async def register_user(dto: RegisterInputDTO, repository: AuthRepository):
 
     except IntegrityError:
         return RegisterFailedResponse(
-            details="Такой пользователь уже существует. (Либо что-то пошло не так)"
+            details="This user already exists (or something wrong)"
         )
 
     except DBAPIError as exc:
@@ -102,10 +103,14 @@ async def user_login(dto: LoginInputDTO, repository: AuthRepository):
     user: User = await repository.get_user_by_email(dto.user_login.email)
 
     if not user:
-        return LoginFailedResponse(details=f"There is no users with email\n{dto.user_login.email}")
+        return LoginFailedResponse(
+            details=f"There is no users with email\n{dto.user_login.email}"
+        )
 
     if not user.is_active:
-        return LoginFailedResponse(details="Confirm your email first, or you was banned :)")
+        return LoginFailedResponse(
+            details="Confirm your email first, or you was banned :)"
+        )
 
     if not user.compare_passwords(dto.user_login.password, dto.pwd_context):
         return LoginFailedResponse(details="Invalid credentials (check your password)")
@@ -114,3 +119,12 @@ async def user_login(dto: LoginInputDTO, repository: AuthRepository):
     refresh_token = dto.Authorize.create_refresh_token(subject=dto.user_login.email)
 
     return LoginSuccessResponse(access_token=access_token, refresh_token=refresh_token)
+
+
+async def token_refresh(dto: RefreshInputDTO):
+    """Refresh user access token"""
+
+    current_user = dto.Authorize.get_jwt_subject()
+    new_access_token = dto.Authorize.create_access_token(subject=current_user)
+
+    return RefreshSuccessResponse(access_token=new_access_token)

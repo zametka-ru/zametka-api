@@ -13,13 +13,24 @@ from core.dependencies import (
     UnitOfWorkDependency,
 )
 
-from application.v1.auth.use_case import register_user, user_verify_email, user_login as user_login_case
-from application.v1.auth.dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO
+from application.v1.auth.use_case import (
+    register_user,
+    user_verify_email,
+    user_login as user_login_case,
+    token_refresh,
+)
+from application.v1.auth.dto import (
+    RegisterInputDTO,
+    VerificationInputDTO,
+    LoginInputDTO,
+    RefreshInputDTO,
+)
 
-from repository import AuthRepository, UnitOfWork
+from adapters.repository import AuthRepository, UnitOfWork
 
 from ..schemas.auth import (
-    UserRegisterSchema, UserLoginSchema,
+    UserRegisterSchema,
+    UserLoginSchema,
 )
 
 router = APIRouter(
@@ -46,6 +57,8 @@ async def register(
     mail_context: MailDependency = Depends(),
     uow: UnitOfWorkDependency = Depends(),
 ):
+    """Register endpoint"""
+
     mail_context: FastMail  # type:ignore
     auth_settings: AuthSettings  # type:ignore
     repository: AuthRepository  # type:ignore
@@ -74,30 +87,43 @@ async def verify_email(
     repository: AuthRepositoryDependency = Depends(),
     uow: UnitOfWorkDependency = Depends(),
 ):
+    """Email verification endpoint"""
+
     auth_settings: AuthSettings  # type:ignore
     repository: AuthRepository  # type:ignore
     uow: UnitOfWork  # type:ignore
 
-    dto = VerificationInputDTO(
-        token=token,
-        auth_settings=auth_settings,
-        uow=uow
-    )
+    dto = VerificationInputDTO(token=token, auth_settings=auth_settings, uow=uow)
 
     return await user_verify_email(dto, repository)
 
 
 @router.post("/login")
 async def login(
-        user_login: UserLoginSchema, Authorize: AuthJWT = Depends(),
-        repository: AuthRepositoryDependency = Depends(), pwd_context: CryptContext = Depends()
+    user_login: UserLoginSchema,
+    Authorize: AuthJWT = Depends(),
+    repository: AuthRepositoryDependency = Depends(),
+    pwd_context: CryptContext = Depends(),
 ):
+    """Login endpoint"""
+
     repository: AuthRepository  # type:ignore
 
     dto = LoginInputDTO(
-        user_login=user_login,
-        Authorize=Authorize,
-        pwd_context=pwd_context
+        user_login=user_login, Authorize=Authorize, pwd_context=pwd_context
     )
 
     return await user_login_case(dto, repository)
+
+
+@router.post("/refresh")
+async def refresh(Authorize: AuthJWT = Depends()):
+    """Refresh access token endpoint"""
+
+    Authorize.jwt_refresh_token_required()
+
+    dto = RefreshInputDTO(
+        Authorize=Authorize,
+    )
+
+    return await token_refresh(dto)

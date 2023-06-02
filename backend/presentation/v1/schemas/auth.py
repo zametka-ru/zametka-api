@@ -116,3 +116,8 @@ class LoginSuccessResponse(LoginResponse):
 class LoginFailedResponse(LoginResponse):
     status: str = "failed"
     details: str
+
+
+class RefreshSuccessResponse(BaseModel):
+    status: str = "ok"
+    access_token: str

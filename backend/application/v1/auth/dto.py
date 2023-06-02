@@ -8,7 +8,7 @@ from starlette.background import BackgroundTasks
 from core.settings import AuthSettings
 from presentation.v1.schemas.auth import UserLoginSchema
 
-from repository import UnitOfWork
+from adapters.repository import UnitOfWork
 
 
 @dataclasses.dataclass
@@ -33,3 +33,8 @@ class LoginInputDTO:
     user_login: UserLoginSchema
     Authorize: AuthJWT
     pwd_context: CryptContext
+
+
+@dataclasses.dataclass
+class RefreshInputDTO:
+    Authorize: AuthJWT
