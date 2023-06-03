@@ -6,7 +6,8 @@ from presentation.v1.schemas.script import CreateScriptSchema, CreateScriptFaile
 
 from core.dependencies import ScriptRepositoryDependency, AuthRepositoryDependency
 
-from adapters.repository import UnitOfWork, AuthRepository, ScriptRepository
+from adapters.repository import AuthRepository, ScriptRepository
+from adapters.repository.uow import UnitOfWork
 
 from application.v1.script.use_case import create_script_case
 from application.v1.script.dto import CreateScriptInputDTO

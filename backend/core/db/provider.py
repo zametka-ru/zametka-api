@@ -2,7 +2,8 @@ from fastapi import Depends
 
 from sqlalchemy.orm import sessionmaker, Session
 
-from adapters.repository import UnitOfWork, AuthRepository, ScriptRepository
+from adapters.repository import AuthRepository, ScriptRepository
+from adapters.repository.uow import UnitOfWork
 
 
 def get_uow(session: Session = Depends()):
