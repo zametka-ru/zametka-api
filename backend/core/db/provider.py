@@ -2,7 +2,9 @@ from fastapi import Depends
 
 from sqlalchemy.orm import sessionmaker, Session
 
-from adapters.repository import AuthRepository, ScriptRepository
+from adapters.repository.auth import AuthRepository
+from adapters.repository.script import ScriptRepository
+
 from adapters.repository.uow import UnitOfWork
 
 

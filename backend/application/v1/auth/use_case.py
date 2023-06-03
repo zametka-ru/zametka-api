@@ -28,7 +28,7 @@ from presentation.v1.schemas.auth import (
 
 from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO, RefreshInputDTO
 
-from adapters.repository import AuthRepository
+from adapters.repository.auth import AuthRepository
 
 
 async def register_user(dto: RegisterInputDTO, repository: AuthRepository):

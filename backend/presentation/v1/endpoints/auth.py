@@ -26,7 +26,7 @@ from application.v1.auth.dto import (
     RefreshInputDTO,
 )
 
-from adapters.repository import AuthRepository
+from adapters.repository.auth import AuthRepository
 from adapters.repository.uow import UnitOfWork
 
 from ..schemas.auth import (

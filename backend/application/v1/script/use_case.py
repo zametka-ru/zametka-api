@@ -2,7 +2,8 @@ from sqlalchemy.exc import DBAPIError
 
 from .dto import CreateScriptInputDTO
 
-from adapters.repository import ScriptRepository, AuthRepository
+from adapters.repository.script import ScriptRepository
+from adapters.repository.auth import AuthRepository
 from adapters.v1.script import get_current_user
 
 from presentation.v1.schemas.script import CreateScriptFailedResponse, CreateScriptSuccessResponse
