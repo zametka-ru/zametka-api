@@ -49,7 +49,7 @@ async def register_user(
 ):
     """User register process"""
 
-    user_password: str = dto.user_data.get("password")  # type:ignore
+    user_password: str = dto.user_password
 
     dto.user_password = User.hash_password(user_password, pwd_context)
     dto.user_joined_at = datetime.datetime.utcnow()

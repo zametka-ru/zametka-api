@@ -21,7 +21,18 @@ class CreateScriptSchema(BaseModel):
         return values
 
 
+class ScriptSchema(BaseModel):
+    title: str = Field(max_length=50)
+    text: str
+    created_at: datetime
+    author_id: int
+
+
 class CreateScriptResponse(BaseModel):
+    status: str
+
+
+class ReadScriptResponse(BaseModel):
     status: str
 
 
@@ -33,4 +44,15 @@ class CreateScriptFailedResponse(CreateScriptResponse):
 
 class CreateScriptSuccessResponse(CreateScriptResponse):
     status: str = "ok"
-    script: CreateScriptSchema
+    script: ScriptSchema
+
+
+class ReadScriptSuccessResponse(ReadScriptResponse):
+    status: str = "ok"
+    script: ScriptSchema
+
+
+class ReadScriptFailedResponse(ReadScriptResponse):
+    status: str = "failed"
+    details: str
+    code: int

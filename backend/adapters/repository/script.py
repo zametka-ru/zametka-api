@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy import select
+
 from core.db import Script, User
 
 from .abstract import AbstractRepository
@@ -28,3 +30,13 @@ class ScriptRepository(AbstractRepository):
         self.session.add(script_obj)
 
         return script_obj
+
+    async def get_script_by_id(self, _id: int) -> Script:
+        """Get script by id"""
+
+        q = select(Script).where(User.id == _id)
+
+        res = await self.session.execute(q)
+        script: Script = res.scalar()
+
+        return script

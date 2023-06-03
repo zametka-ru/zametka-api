@@ -1,5 +1,5 @@
 from .endpoints import auth
-from .endpoints import scripts
+from .endpoints import script
 
 from .exception_handlers import auth as auth_exception_handlers
 

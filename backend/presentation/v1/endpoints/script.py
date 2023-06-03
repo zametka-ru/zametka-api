@@ -7,11 +7,14 @@ from presentation.v1.schemas.script import (
     CreateScriptFailedResponse,
 )
 
-from core.dependencies import ScriptRepositoryDependency, AuthRepositoryDependency
+from core.dependencies import (
+    ScriptRepositoryDependency,
+    AuthRepositoryDependency,
+    UnitOfWorkDependency,
+)
 
 from adapters.repository.auth import AuthRepository
 from adapters.repository.script import ScriptRepository
-from adapters.repository.uow import UnitOfWork
 
 from application.v1.script.use_case import create_script_case
 from application.v1.script.dto import CreateScriptInputDTO
@@ -29,7 +32,7 @@ async def create_script(
     repository: ScriptRepositoryDependency = Depends(),
     auth_repository: AuthRepositoryDependency = Depends(),
     Authorize: AuthJWT = Depends(),
-    uow: UnitOfWork = Depends(),
+    uow: UnitOfWorkDependency = Depends(),
 ):
     """Create script object"""
 
@@ -56,3 +59,20 @@ async def create_script(
         raise HTTPException(response.code, response.details)
 
     return response
+
+
+@router.get("/{script_id}")
+async def read_script(script_id: int, Authorize: AuthJWT = Depends()):
+    """Read a script by id"""
+
+    Authorize.jwt_required()
+
+
+@router.patch("/{script_id}")
+def update_script():
+    pass
+
+
+@router.delete("/{script_id}")
+def delete_script():
+    pass
