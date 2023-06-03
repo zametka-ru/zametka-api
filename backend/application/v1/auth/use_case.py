@@ -1,8 +1,8 @@
 import datetime
+import jwt
+
 
 from typing import Optional
-
-import jwt
 
 from sqlalchemy.exc import DBAPIError, IntegrityError
 

@@ -2,7 +2,7 @@ from fastapi import Depends
 
 from sqlalchemy.orm import sessionmaker, Session
 
-from adapters.repository import UnitOfWork, AuthRepository
+from adapters.repository import UnitOfWork, AuthRepository, ScriptRepository
 
 
 def get_uow(session: Session = Depends()):
@@ -11,6 +11,10 @@ def get_uow(session: Session = Depends()):
 
 def get_auth_repository(session: Session = Depends()):
     yield AuthRepository(session=session)
+
+
+def get_script_repository(session: Session = Depends()):
+    yield ScriptRepository(session=session)
 
 
 class DbProvider:

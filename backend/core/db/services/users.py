@@ -40,6 +40,17 @@ async def get_user_by_email(session: Session, user_email: str) -> User:
     return user
 
 
+async def get_user_by_id(session: Session, user_id: int) -> User:
+    """Get user by id"""
+
+    q = select(User).where(User.id == user_id)
+
+    res = await session.execute(q)
+    user: User = res.scalar()
+
+    return user
+
+
 async def make_user_active(user: User):
     """
     Set user.is_active to True
