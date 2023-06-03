@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from fastapi_jwt_auth import AuthJWT
 
-from presentation.v1.schemas.script import CreateScriptSchema, CreateScriptFailedResponse
+from presentation.v1.schemas.script import (
+    CreateScriptSchema,
+    CreateScriptFailedResponse,
+)
 
 from core.dependencies import ScriptRepositoryDependency, AuthRepositoryDependency
 
@@ -36,15 +39,20 @@ async def create_script(
     Authorize.jwt_required()
 
     dto = CreateScriptInputDTO(
-        script_data=script,
-        uow=uow,
-        Authorize=Authorize
+        script_text=script.text,
+        script_title=script.title,
+        script_created_at=script.created_at,
     )
 
-    response = await create_script_case(dto, repository, auth_repository)
+    response = await create_script_case(
+        dto=dto,
+        repository=repository,
+        auth_repository=auth_repository,
+        uow=uow,
+        Authorize=Authorize,
+    )
 
     if isinstance(response, CreateScriptFailedResponse):
         raise HTTPException(response.code, response.details)
 
     return response
-

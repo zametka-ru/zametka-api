@@ -1,14 +1,11 @@
 import dataclasses
 
-from fastapi_jwt_auth import AuthJWT
-
-from presentation.v1.schemas.script import CreateScriptSchema
-
-from adapters.repository.uow import UnitOfWork
+from datetime import datetime
+from typing import Optional
 
 
 @dataclasses.dataclass
 class CreateScriptInputDTO:
-    script_data: CreateScriptSchema
-    uow: UnitOfWork
-    Authorize: AuthJWT
+    script_title: str
+    script_text: str
+    script_created_at: Optional[datetime]

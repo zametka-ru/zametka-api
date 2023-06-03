@@ -23,7 +23,6 @@ from application.v1.auth.dto import (
     RegisterInputDTO,
     VerificationInputDTO,
     LoginInputDTO,
-    RefreshInputDTO,
 )
 
 from adapters.repository.auth import AuthRepository
@@ -65,18 +64,22 @@ async def register(
     repository: AuthRepository  # type:ignore
     uow: UnitOfWork  # type:ignore
 
-    register_data_dict: dict = register_data.dict()
-
     dto = RegisterInputDTO(
-        user_data=register_data_dict,
+        user_email=register_data.email,
+        user_password=register_data.password,
+        user_first_name=register_data.first_name,
+        user_last_name=register_data.last_name,
+    )
+
+    response = await register_user(
+        dto=dto,
+        repository=repository,
         background_tasks=background_tasks,
         pwd_context=pwd_context,
         mail_context=mail_context,
         auth_settings=auth_settings,
         uow=uow,
     )
-
-    response = await register_user(dto, repository)
 
     return response
 
@@ -94,9 +97,11 @@ async def verify_email(
     repository: AuthRepository  # type:ignore
     uow: UnitOfWork  # type:ignore
 
-    dto = VerificationInputDTO(token=token, auth_settings=auth_settings, uow=uow)
+    dto = VerificationInputDTO(token=token)
 
-    return await user_verify_email(dto, repository)
+    return await user_verify_email(
+        dto=dto, repository=repository, auth_settings=auth_settings, uow=uow
+    )
 
 
 @router.post("/login")
@@ -111,10 +116,13 @@ async def login(
     repository: AuthRepository  # type:ignore
 
     dto = LoginInputDTO(
-        user_login=user_login, Authorize=Authorize, pwd_context=pwd_context
+        user_email=user_login.email,
+        user_password=user_login.password,
     )
 
-    return await user_login_case(dto, repository)
+    return await user_login_case(
+        dto=dto, repository=repository, Authorize=Authorize, pwd_context=pwd_context
+    )
 
 
 @router.post("/refresh")
@@ -123,8 +131,4 @@ async def refresh(Authorize: AuthJWT = Depends()):
 
     Authorize.jwt_refresh_token_required()
 
-    dto = RefreshInputDTO(
-        Authorize=Authorize,
-    )
-
-    return await token_refresh(dto)
+    return await token_refresh(Authorize=Authorize)

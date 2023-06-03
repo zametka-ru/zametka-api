@@ -1,7 +1,6 @@
 import datetime
 import jwt
 
-
 from typing import Optional
 
 from sqlalchemy.exc import DBAPIError, IntegrityError
@@ -14,7 +13,6 @@ from adapters.v1.auth import (
 from adapters.v1.exceptions.auth import JWTCheckError
 
 from core.db import User
-from core.settings import AuthSettings
 
 from presentation.v1.schemas.auth import (
     RegisterSuccessResponse,
@@ -26,32 +24,56 @@ from presentation.v1.schemas.auth import (
     RefreshSuccessResponse,
 )
 
-from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO, RefreshInputDTO
+from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO
 
 from adapters.repository.auth import AuthRepository
 
+from adapters.repository.uow import UnitOfWork
 
-async def register_user(dto: RegisterInputDTO, repository: AuthRepository):
+from fastapi_jwt_auth import AuthJWT
+from fastapi_mail import FastMail
+from passlib.context import CryptContext
+from starlette.background import BackgroundTasks
+
+from core.settings import AuthSettings
+
+
+async def register_user(
+    dto: RegisterInputDTO,
+    repository: AuthRepository,
+    background_tasks: BackgroundTasks,
+    pwd_context: CryptContext,
+    mail_context: FastMail,
+    auth_settings: AuthSettings,
+    uow: UnitOfWork,
+):
     """User register process"""
 
     user_password: str = dto.user_data.get("password")  # type:ignore
 
-    dto.user_data["password"] = User.hash_password(user_password, dto.pwd_context)
-    dto.user_data["joined_at"] = datetime.datetime.utcnow()
+    dto.user_password = User.hash_password(user_password, pwd_context)
+    dto.user_joined_at = datetime.datetime.utcnow()
 
     try:
-        user: User = await repository.create_user(dto.user_data)
-        await dto.uow.commit()
+        user: User = await repository.create_user(
+            email=dto.user_email,
+            password=dto.user_password,
+            first_name=dto.user_first_name,
+            last_name=dto.user_last_name,
+            joined_at=dto.user_joined_at,
+        )
 
-        secret_key: str = dto.auth_settings.secret_key
-        algorithm: str = dto.auth_settings.algorithm
+        await uow.commit()
+
+        secret_key: str = auth_settings.secret_key
+        algorithm: str = auth_settings.algorithm
 
         token: bytes = create_verify_email_token(secret_key, algorithm, user)
 
         send_confirm_mail(
-            dto.mail_context,
-            dto.user_data.get("email"),
-            dto.background_tasks,
+            mail_context,
+            dto.user_email,
+            background_tasks,
             str(token),
         )
 
@@ -65,11 +87,16 @@ async def register_user(dto: RegisterInputDTO, repository: AuthRepository):
     return RegisterSuccessResponse()
 
 
-async def user_verify_email(dto: VerificationInputDTO, repository: AuthRepository):
+async def user_verify_email(
+    dto: VerificationInputDTO,
+    repository: AuthRepository,
+    auth_settings: AuthSettings,
+    uow: UnitOfWork,
+):
     auth_settings: AuthSettings  # type:ignore
 
-    secret_key: str = dto.auth_settings.secret_key
-    algorithm: str = dto.auth_settings.algorithm
+    secret_key: str = auth_settings.secret_key
+    algorithm: str = auth_settings.algorithm
 
     try:
         payload: dict[str, str | int | bool] = jwt.decode(
@@ -83,7 +110,7 @@ async def user_verify_email(dto: VerificationInputDTO, repository: AuthRepositor
 
         await repository.make_user_active(user)
 
-        await dto.uow.commit()
+        await uow.commit()
 
     except JWTCheckError as exc:
         return VerifyEmailFailedResponse(details=str(exc))
@@ -97,14 +124,19 @@ async def user_verify_email(dto: VerificationInputDTO, repository: AuthRepositor
     return VerifyEmailSuccessResponse(email=payload.get("email"))
 
 
-async def user_login(dto: LoginInputDTO, repository: AuthRepository):
+async def user_login(
+    dto: LoginInputDTO,
+    repository: AuthRepository,
+    Authorize: AuthJWT,
+    pwd_context: CryptContext,
+):
     """Login user"""
 
-    user: User = await repository.get_user_by_email(dto.user_login.email)
+    user: User = await repository.get_user_by_email(dto.user_email)
 
     if not user:
         return LoginFailedResponse(
-            details=f"There is no users with email\n{dto.user_login.email}"
+            details=f"There is no users with email\n{dto.user_email}"
         )
 
     if not user.is_active:
@@ -112,19 +144,19 @@ async def user_login(dto: LoginInputDTO, repository: AuthRepository):
             details="Confirm your email first, or you was banned :)"
         )
 
-    if not user.compare_passwords(dto.user_login.password, dto.pwd_context):
+    if not user.compare_passwords(dto.user_password, pwd_context):
         return LoginFailedResponse(details="Invalid credentials (check your password)")
 
-    access_token = dto.Authorize.create_access_token(subject=dto.user_login.email)
-    refresh_token = dto.Authorize.create_refresh_token(subject=dto.user_login.email)
+    access_token = Authorize.create_access_token(subject=dto.user_email)
+    refresh_token = Authorize.create_refresh_token(subject=dto.user_email)
 
     return LoginSuccessResponse(access_token=access_token, refresh_token=refresh_token)
 
 
-async def token_refresh(dto: RefreshInputDTO):
+async def token_refresh(Authorize: AuthJWT):
     """Refresh user access token"""
 
-    current_user = dto.Authorize.get_jwt_subject()
-    new_access_token = dto.Authorize.create_access_token(subject=current_user)
+    current_user = Authorize.get_jwt_subject()
+    new_access_token = Authorize.create_access_token(subject=current_user)
 
     return RefreshSuccessResponse(access_token=new_access_token)
