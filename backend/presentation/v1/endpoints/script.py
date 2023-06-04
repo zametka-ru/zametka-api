@@ -7,12 +7,6 @@ from presentation.v1.schemas.script import (
     UpdateScriptSchema,
 )
 
-from application.v1.script.responses import (CreateScriptFailedResponse,
-                                             ReadScriptFailedResponse,
-                                             UpdateScriptFailedResponse,
-                                             DeleteScriptFailedResponse,
-                                             )
-
 from core.dependencies import (
     ScriptRepositoryDependency,
     AuthRepositoryDependency,
@@ -46,11 +40,11 @@ router = APIRouter(
 
 @router.post("/create")
 async def create_script(
-        script: CreateScriptSchema,
-        repository: ScriptRepositoryDependency = Depends(),
-        auth_repository: AuthRepositoryDependency = Depends(),
-        Authorize: AuthJWT = Depends(),
-        uow: UnitOfWorkDependency = Depends(),
+    script: CreateScriptSchema,
+    repository: ScriptRepositoryDependency = Depends(),
+    auth_repository: AuthRepositoryDependency = Depends(),
+    Authorize: AuthJWT = Depends(),
+    uow: UnitOfWorkDependency = Depends(),
 ):
     """Create script object"""
 
@@ -73,18 +67,15 @@ async def create_script(
         Authorize=Authorize,
     )
 
-    if isinstance(response, CreateScriptFailedResponse):
-        raise HTTPException(response.code, response.details)
-
     return response
 
 
 @router.get("/{script_id}")
 async def read_script(
-        script_id: int,
-        Authorize: AuthJWT = Depends(),
-        repository: ScriptRepositoryDependency = Depends(),
-        auth_repository: AuthRepositoryDependency = Depends(),
+    script_id: int,
+    Authorize: AuthJWT = Depends(),
+    repository: ScriptRepositoryDependency = Depends(),
+    auth_repository: AuthRepositoryDependency = Depends(),
 ):
     """Read a script by id"""
 
@@ -97,20 +88,17 @@ async def read_script(
 
     response = await read_script_case(dto, Authorize, auth_repository, repository)
 
-    if isinstance(response, ReadScriptFailedResponse):
-        raise HTTPException(response.code, response.details)
-
     return response
 
 
 @router.put("/{script_id}")
 async def update_script(
-        script_update: UpdateScriptSchema,
-        script_id: int,
-        Authorize: AuthJWT = Depends(),
-        repository: ScriptRepositoryDependency = Depends(),
-        auth_repository: AuthRepositoryDependency = Depends(),
-        uow: UnitOfWorkDependency = Depends(),
+    script_update: UpdateScriptSchema,
+    script_id: int,
+    Authorize: AuthJWT = Depends(),
+    repository: ScriptRepositoryDependency = Depends(),
+    auth_repository: AuthRepositoryDependency = Depends(),
+    uow: UnitOfWorkDependency = Depends(),
 ):
     """Update script by id"""
 
@@ -130,19 +118,16 @@ async def update_script(
         dto, Authorize, auth_repository, repository, uow
     )
 
-    if isinstance(response, UpdateScriptFailedResponse):
-        raise HTTPException(response.code, response.details)
-
     return response
 
 
 @router.delete("/{script_id}")
 async def delete_script(
-        script_id: int,
-        Authorize: AuthJWT = Depends(),
-        repository: ScriptRepositoryDependency = Depends(),
-        auth_repository: AuthRepositoryDependency = Depends(),
-        uow: UnitOfWorkDependency = Depends(),
+    script_id: int,
+    Authorize: AuthJWT = Depends(),
+    repository: ScriptRepositoryDependency = Depends(),
+    auth_repository: AuthRepositoryDependency = Depends(),
+    uow: UnitOfWorkDependency = Depends(),
 ):
     """Delete script by id"""
 
@@ -157,8 +142,5 @@ async def delete_script(
     response = await delete_script_case(
         dto, Authorize, auth_repository, repository, uow
     )
-
-    if isinstance(response, DeleteScriptFailedResponse):
-        raise HTTPException(response.code, response.details)
 
     return response

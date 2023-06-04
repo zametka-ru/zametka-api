@@ -19,8 +19,7 @@ class IsNotExists(Exception):
 class RestrictScriptAccess(Exception):
     """Raises when access to script was restricted"""
 
-    def __init__(self, message: str, http_error_code: int, *args):
-        self.http_error_code = http_error_code
+    def __init__(self, message: str, *args):
         self.message = message
 
         super().__init__(self, message, *args)

@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from sqlalchemy.exc import DBAPIError
-
 from .dto import (
     CreateScriptInputDTO,
     ReadScriptInputDTO,
@@ -14,16 +12,10 @@ from adapters.repository.auth import AuthRepository
 
 from .logic import get_current_user, check_script_access
 
-from application.v1.exceptions.script import RestrictScriptAccess
-
 from .responses import (
-    CreateScriptFailedResponse,
     CreateScriptSuccessResponse,
     ReadScriptSuccessResponse,
-    ReadScriptFailedResponse,
     UpdateScriptSuccessResponse,
-    UpdateScriptFailedResponse,
-    DeleteScriptFailedResponse,
     DeleteScriptSuccessResponse,
     ScriptSchema,
 )
@@ -42,21 +34,17 @@ async def create_script_case(
 ):
     """Create script use case"""
 
-    try:
-        user = await get_current_user(Authorize, auth_repository)
-        created_at: datetime = datetime.now()
+    user = await get_current_user(Authorize, auth_repository)
+    created_at: datetime = datetime.now()
 
-        script = await repository.create_script(
-            user=user,
-            title=dto.script_title,
-            text=dto.script_text,
-            created_at=created_at,
-        )
+    script = await repository.create_script(
+        user=user,
+        title=dto.script_title,
+        text=dto.script_text,
+        created_at=created_at,
+    )
 
-        await uow.commit()
-
-    except DBAPIError as exc:
-        return CreateScriptFailedResponse(details=str(exc), code=400)
+    await uow.commit()
 
     script_schema = ScriptSchema(
         id=script.id,
@@ -66,9 +54,7 @@ async def create_script_case(
         author_id=script.user_id,
     )
 
-    return CreateScriptSuccessResponse(
-        script=script_schema
-    )
+    return CreateScriptSuccessResponse(script=script_schema)
 
 
 async def read_script_case(
@@ -79,15 +65,12 @@ async def read_script_case(
 ):
     """Read script by id use case"""
 
-    try:
-        script = await check_script_access(
-            Authorize=Authorize,
-            auth_repository=auth_repository,
-            script_repository=script_repository,
-            script_id=dto.script_id,
-        )
-    except RestrictScriptAccess as exc:
-        return ReadScriptFailedResponse(details=str(exc), code=exc.http_error_code)
+    script = await check_script_access(
+        Authorize=Authorize,
+        auth_repository=auth_repository,
+        script_repository=script_repository,
+        script_id=dto.script_id,
+    )
 
     script_schema = ScriptSchema(
         id=script.id,
@@ -97,9 +80,7 @@ async def read_script_case(
         author_id=script.user_id,
     )
 
-    return ReadScriptSuccessResponse(
-        script=script_schema
-    )
+    return ReadScriptSuccessResponse(script=script_schema)
 
 
 async def update_script_case(
@@ -111,24 +92,17 @@ async def update_script_case(
 ):
     """Update script by id use case"""
 
-    try:
-        script = await check_script_access(
-            Authorize=Authorize,
-            auth_repository=auth_repository,
-            script_repository=script_repository,
-            script_id=dto.script_id,
-        )
+    script = await check_script_access(
+        Authorize=Authorize,
+        auth_repository=auth_repository,
+        script_repository=script_repository,
+        script_id=dto.script_id,
+    )
 
-        await script_repository.update_script(
-            dto.script_id, dto.script_title, dto.script_text
-        )
-        await uow.commit()
-
-    except RestrictScriptAccess as exc:
-        return UpdateScriptFailedResponse(details=str(exc), code=exc.http_error_code)
-
-    except DBAPIError as exc:
-        return UpdateScriptFailedResponse(details=str(exc), code=400)
+    await script_repository.update_script(
+        dto.script_id, dto.script_title, dto.script_text
+    )
+    await uow.commit()
 
     script_schema = ScriptSchema(
         id=script.id,
@@ -138,9 +112,7 @@ async def update_script_case(
         author_id=script.user_id,
     )
 
-    return UpdateScriptSuccessResponse(
-        script=script_schema
-    )
+    return UpdateScriptSuccessResponse(script=script_schema)
 
 
 async def delete_script_case(
@@ -152,21 +124,14 @@ async def delete_script_case(
 ):
     """Delete script by id use case"""
 
-    try:
-        await check_script_access(
-            Authorize=Authorize,
-            auth_repository=auth_repository,
-            script_repository=script_repository,
-            script_id=dto.script_id,
-        )
+    await check_script_access(
+        Authorize=Authorize,
+        auth_repository=auth_repository,
+        script_repository=script_repository,
+        script_id=dto.script_id,
+    )
 
-        await script_repository.delete_script(dto.script_id)
-        await uow.commit()
-
-    except RestrictScriptAccess as exc:
-        return DeleteScriptFailedResponse(details=str(exc), code=exc.http_error_code)
-
-    except DBAPIError as exc:
-        return DeleteScriptFailedResponse(details=str(exc), code=400)
+    await script_repository.delete_script(dto.script_id)
+    await uow.commit()
 
     return DeleteScriptSuccessResponse()
