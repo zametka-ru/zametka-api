@@ -5,16 +5,18 @@ from typing import Optional
 
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
-from adapters.v1.auth import (
+from .logic import (
     send_confirm_mail,
     create_verify_email_token,
     check_email_verification_token,
+    validate_password,
 )
-from adapters.v1.exceptions.auth import JWTCheckError
+
+from application.v1.exceptions.auth import JWTCheckError
 
 from core.db import User
 
-from presentation.v1.schemas.auth import (
+from .responses import (
     RegisterSuccessResponse,
     RegisterFailedResponse,
     VerifyEmailSuccessResponse,
@@ -51,6 +53,8 @@ async def register_user(
 
     user_password: str = dto.user_password
 
+    validate_password(user_password)
+
     dto.user_password = User.hash_password(user_password, pwd_context)
     user_joined_at = datetime.datetime.utcnow()
 
@@ -79,11 +83,11 @@ async def register_user(
 
     except IntegrityError:
         return RegisterFailedResponse(
-            details="This user already exists (or something wrong)"
+            details="This user already exists (or something wrong)", code=400,
         )
 
     except DBAPIError as exc:
-        return RegisterFailedResponse(details=str(exc))
+        return RegisterFailedResponse(details=str(exc), code=400)
     return RegisterSuccessResponse()
 
 
@@ -113,13 +117,13 @@ async def user_verify_email(
         await uow.commit()
 
     except JWTCheckError as exc:
-        return VerifyEmailFailedResponse(details=str(exc))
+        return VerifyEmailFailedResponse(details=str(exc), code=403)
 
     except jwt.DecodeError:
-        return VerifyEmailFailedResponse(details="Error while decoding your token.")
+        return VerifyEmailFailedResponse(details="Error while decoding your token.", code=403)
 
     except DBAPIError as exc:
-        return VerifyEmailFailedResponse(details=str(exc))
+        return VerifyEmailFailedResponse(details=str(exc), code=400)
 
     return VerifyEmailSuccessResponse(email=payload.get("email"))
 
@@ -136,16 +140,16 @@ async def user_login(
 
     if not user:
         return LoginFailedResponse(
-            details=f"There is no users with email\n{dto.user_email}"
+            details=f"There is no users with email\n{dto.user_email}", code=400
         )
 
     if not user.is_active:
         return LoginFailedResponse(
-            details="Confirm your email first, or you was banned :)"
+            details="Confirm your email first, or you was banned :)", code=403
         )
 
     if not user.compare_passwords(dto.user_password, pwd_context):
-        return LoginFailedResponse(details="Invalid credentials (check your password)")
+        return LoginFailedResponse(details="Invalid credentials (check your password)", code=403)
 
     access_token = Authorize.create_access_token(subject=dto.user_email)
     refresh_token = Authorize.create_refresh_token(subject=dto.user_email)

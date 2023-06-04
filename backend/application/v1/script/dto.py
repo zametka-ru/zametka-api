@@ -7,7 +7,6 @@ from datetime import datetime
 class CreateScriptInputDTO:
     script_title: str
     script_text: str
-    script_created_at: datetime
 
 
 @dataclasses.dataclass
