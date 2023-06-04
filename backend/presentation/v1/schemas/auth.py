@@ -76,48 +76,38 @@ class UserLoginSchema(BaseModel):
         return email
 
 
-class RegisterResponse(BaseModel):
-    status: str
-
-
-class VerifyEmailResponse(BaseModel):
-    status: str
-
-
-class RegisterSuccessResponse(RegisterResponse):
+class AuthResponse(BaseModel):
     status: str = "ok"
 
 
-class RegisterFailedResponse(RegisterResponse):
+class AuthFailedResponse(AuthResponse):
     status: str = "failed"
     details: str
 
 
-class VerifyEmailSuccessResponse(VerifyEmailResponse):
-    status: str = "ok"
+class RegisterSuccessResponse(AuthResponse):
+    pass
+
+
+class RegisterFailedResponse(AuthFailedResponse):
+    pass
+
+
+class VerifyEmailSuccessResponse(AuthResponse):
     email: str
 
 
-class VerifyEmailFailedResponse(VerifyEmailResponse):
-    status: str = "failed"
-    details: str
+class VerifyEmailFailedResponse(AuthFailedResponse):
+    pass
 
 
-class LoginResponse(BaseModel):
-    status: str
+class LoginSuccessResponse(AuthResponse):
+    pass
 
 
-class LoginSuccessResponse(LoginResponse):
-    status: str = "ok"
-    access_token: str
-    refresh_token: str
+class LoginFailedResponse(AuthFailedResponse):
+    pass
 
 
-class LoginFailedResponse(LoginResponse):
-    status: str = "failed"
-    details: str
-
-
-class RefreshSuccessResponse(BaseModel):
-    status: str = "ok"
-    access_token: str
+class RefreshSuccessResponse(AuthResponse):
+    pass

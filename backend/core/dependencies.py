@@ -19,6 +19,12 @@ class AuthRepositoryDependency(ABC):
     """
 
 
+class ScriptRepositoryDependency(ABC):
+    """
+    It's a dependency for ScriptRepository instance
+    """
+
+
 class UnitOfWorkDependency(ABC):
     """
     It's a dependency for UnitOfWork instance
