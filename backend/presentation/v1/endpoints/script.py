@@ -5,11 +5,13 @@ from fastapi_jwt_auth import AuthJWT
 from presentation.v1.schemas.script import (
     CreateScriptSchema,
     UpdateScriptSchema,
-    CreateScriptFailedResponse,
-    ReadScriptFailedResponse,
-    UpdateScriptFailedResponse,
-    DeleteScriptFailedResponse,
 )
+
+from application.v1.script.responses import (CreateScriptFailedResponse,
+                                             ReadScriptFailedResponse,
+                                             UpdateScriptFailedResponse,
+                                             DeleteScriptFailedResponse,
+                                             )
 
 from core.dependencies import (
     ScriptRepositoryDependency,
@@ -44,11 +46,11 @@ router = APIRouter(
 
 @router.post("/create")
 async def create_script(
-    script: CreateScriptSchema,
-    repository: ScriptRepositoryDependency = Depends(),
-    auth_repository: AuthRepositoryDependency = Depends(),
-    Authorize: AuthJWT = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+        script: CreateScriptSchema,
+        repository: ScriptRepositoryDependency = Depends(),
+        auth_repository: AuthRepositoryDependency = Depends(),
+        Authorize: AuthJWT = Depends(),
+        uow: UnitOfWorkDependency = Depends(),
 ):
     """Create script object"""
 
@@ -61,7 +63,6 @@ async def create_script(
     dto = CreateScriptInputDTO(
         script_text=script.text,
         script_title=script.title,
-        script_created_at=script.created_at,
     )
 
     response = await create_script_case(
@@ -80,10 +81,10 @@ async def create_script(
 
 @router.get("/{script_id}")
 async def read_script(
-    script_id: int,
-    Authorize: AuthJWT = Depends(),
-    repository: ScriptRepositoryDependency = Depends(),
-    auth_repository: AuthRepositoryDependency = Depends(),
+        script_id: int,
+        Authorize: AuthJWT = Depends(),
+        repository: ScriptRepositoryDependency = Depends(),
+        auth_repository: AuthRepositoryDependency = Depends(),
 ):
     """Read a script by id"""
 
@@ -104,12 +105,12 @@ async def read_script(
 
 @router.put("/{script_id}")
 async def update_script(
-    script_update: UpdateScriptSchema,
-    script_id: int,
-    Authorize: AuthJWT = Depends(),
-    repository: ScriptRepositoryDependency = Depends(),
-    auth_repository: AuthRepositoryDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+        script_update: UpdateScriptSchema,
+        script_id: int,
+        Authorize: AuthJWT = Depends(),
+        repository: ScriptRepositoryDependency = Depends(),
+        auth_repository: AuthRepositoryDependency = Depends(),
+        uow: UnitOfWorkDependency = Depends(),
 ):
     """Update script by id"""
 
@@ -137,11 +138,11 @@ async def update_script(
 
 @router.delete("/{script_id}")
 async def delete_script(
-    script_id: int,
-    Authorize: AuthJWT = Depends(),
-    repository: ScriptRepositoryDependency = Depends(),
-    auth_repository: AuthRepositoryDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+        script_id: int,
+        Authorize: AuthJWT = Depends(),
+        repository: ScriptRepositoryDependency = Depends(),
+        auth_repository: AuthRepositoryDependency = Depends(),
+        uow: UnitOfWorkDependency = Depends(),
 ):
     """Delete script by id"""
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from fastapi_jwt_auth import AuthJWT
 from fastapi_mail import FastMail
@@ -25,6 +25,8 @@ from application.v1.auth.dto import (
     LoginInputDTO,
 )
 
+from application.v1.auth.responses import RegisterFailedResponse, LoginFailedResponse, VerifyEmailFailedResponse
+
 from adapters.repository.auth import AuthRepository
 from adapters.repository.uow import UnitOfWork
 
@@ -49,13 +51,13 @@ def load_settings() -> AuthJWTSettings:
 
 @router.post("/register")
 async def register(
-    register_data: UserRegisterSchema,
-    background_tasks: BackgroundTasks,
-    pwd_context: CryptContext = Depends(),
-    auth_settings: AuthSettingsDependency = Depends(),
-    repository: AuthRepositoryDependency = Depends(),
-    mail_context: MailDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+        register_data: UserRegisterSchema,
+        background_tasks: BackgroundTasks,
+        pwd_context: CryptContext = Depends(),
+        auth_settings: AuthSettingsDependency = Depends(),
+        repository: AuthRepositoryDependency = Depends(),
+        mail_context: MailDependency = Depends(),
+        uow: UnitOfWorkDependency = Depends(),
 ):
     """Register endpoint"""
 
@@ -81,15 +83,16 @@ async def register(
         uow=uow,
     )
 
-    return response
+    if isinstance(response, RegisterFailedResponse):
+        raise HTTPException(response.code, response.details)
 
 
 @router.get("/verify/{token}")
 async def verify_email(
-    token: str,
-    auth_settings: AuthSettingsDependency = Depends(),
-    repository: AuthRepositoryDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+        token: str,
+        auth_settings: AuthSettingsDependency = Depends(),
+        repository: AuthRepositoryDependency = Depends(),
+        uow: UnitOfWorkDependency = Depends(),
 ):
     """Email verification endpoint"""
 
@@ -99,17 +102,22 @@ async def verify_email(
 
     dto = VerificationInputDTO(token=token)
 
-    return await user_verify_email(
+    response = await user_verify_email(
         dto=dto, repository=repository, auth_settings=auth_settings, uow=uow
     )
+
+    if isinstance(response, VerifyEmailFailedResponse):
+        raise HTTPException(response.code, response.details)
+
+    return response
 
 
 @router.post("/login")
 async def login(
-    user_login: UserLoginSchema,
-    Authorize: AuthJWT = Depends(),
-    repository: AuthRepositoryDependency = Depends(),
-    pwd_context: CryptContext = Depends(),
+        user_login: UserLoginSchema,
+        Authorize: AuthJWT = Depends(),
+        repository: AuthRepositoryDependency = Depends(),
+        pwd_context: CryptContext = Depends(),
 ):
     """Login endpoint"""
 
@@ -120,9 +128,12 @@ async def login(
         user_password=user_login.password,
     )
 
-    return await user_login_case(
+    response = await user_login_case(
         dto=dto, repository=repository, Authorize=Authorize, pwd_context=pwd_context
     )
+
+    if isinstance(response, LoginFailedResponse):
+        raise HTTPException(response.code, response.details)
 
 
 @router.post("/refresh")

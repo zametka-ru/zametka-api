@@ -5,7 +5,7 @@ from adapters.repository.script import ScriptRepository
 
 from core.db import User, Script
 
-from .exceptions.script import IsNotExists, RestrictScriptAccess
+from application.v1.exceptions.script import IsNotExists, RestrictScriptAccess
 
 
 async def get_current_user(Authorize: AuthJWT, auth_repository: AuthRepository) -> User:

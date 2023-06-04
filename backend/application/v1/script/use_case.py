@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy.exc import DBAPIError
 
 from .dto import (
@@ -10,10 +12,11 @@ from .dto import (
 from adapters.repository.script import ScriptRepository
 from adapters.repository.auth import AuthRepository
 
-from adapters.v1.script import get_current_user, check_script_access
-from adapters.v1.exceptions.script import RestrictScriptAccess
+from .logic import get_current_user, check_script_access
 
-from presentation.v1.schemas.script import (
+from application.v1.exceptions.script import RestrictScriptAccess
+
+from .responses import (
     CreateScriptFailedResponse,
     CreateScriptSuccessResponse,
     ReadScriptSuccessResponse,
@@ -22,6 +25,7 @@ from presentation.v1.schemas.script import (
     UpdateScriptFailedResponse,
     DeleteScriptFailedResponse,
     DeleteScriptSuccessResponse,
+    ScriptSchema,
 )
 
 from adapters.repository.uow import UnitOfWork
@@ -40,12 +44,13 @@ async def create_script_case(
 
     try:
         user = await get_current_user(Authorize, auth_repository)
+        created_at: datetime = datetime.now()
 
         script = await repository.create_script(
             user=user,
             title=dto.script_title,
             text=dto.script_text,
-            created_at=dto.script_created_at,
+            created_at=created_at,
         )
 
         await uow.commit()
@@ -53,14 +58,16 @@ async def create_script_case(
     except DBAPIError as exc:
         return CreateScriptFailedResponse(details=str(exc), code=400)
 
+    script_schema = ScriptSchema(
+        id=script.id,
+        title=script.title,
+        text=script.text,
+        created_at=script.created_at,
+        author_id=script.user_id,
+    )
+
     return CreateScriptSuccessResponse(
-        script={
-            "id": script.id,
-            "title": script.title,
-            "text": script.text,
-            "created_at": script.created_at,
-            "author_id": script.user_id,
-        }
+        script=script_schema
     )
 
 
@@ -82,14 +89,16 @@ async def read_script_case(
     except RestrictScriptAccess as exc:
         return ReadScriptFailedResponse(details=str(exc), code=exc.http_error_code)
 
+    script_schema = ScriptSchema(
+        id=script.id,
+        title=script.title,
+        text=script.text,
+        created_at=script.created_at,
+        author_id=script.user_id,
+    )
+
     return ReadScriptSuccessResponse(
-        script={
-            "id": script.id,
-            "title": script.title,
-            "text": script.text,
-            "created_at": script.created_at,
-            "author_id": script.user_id,
-        }
+        script=script_schema
     )
 
 
@@ -121,14 +130,16 @@ async def update_script_case(
     except DBAPIError as exc:
         return UpdateScriptFailedResponse(details=str(exc), code=400)
 
+    script_schema = ScriptSchema(
+        id=script.id,
+        title=script.title,
+        text=script.text,
+        created_at=script.created_at,
+        author_id=script.user_id,
+    )
+
     return UpdateScriptSuccessResponse(
-        script={
-            "id": script.id,
-            "title": dto.script_title,
-            "text": dto.script_text,
-            "created_at": script.created_at,
-            "author_id": script.user_id,
-        }
+        script=script_schema
     )
 
 
