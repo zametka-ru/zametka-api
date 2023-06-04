@@ -22,37 +22,60 @@ class CreateScriptSchema(BaseModel):
 
 
 class ScriptSchema(BaseModel):
+    id: int
     title: str = Field(max_length=50)
     text: str
     created_at: datetime
     author_id: int
 
 
-class CreateScriptResponse(BaseModel):
+class UpdateScriptSchema(BaseModel):
+    title: str = Field(max_length=50)
+    text: str
+
+
+class ScriptResponse(BaseModel):
     status: str
 
 
-class ReadScriptResponse(BaseModel):
-    status: str
-
-
-class CreateScriptFailedResponse(CreateScriptResponse):
+class ScriptFailedResponse(ScriptResponse):
     status: str = "failed"
     details: str
     code: int
 
 
-class CreateScriptSuccessResponse(CreateScriptResponse):
+class ScriptReaderSuccessResponse(ScriptResponse):
     status: str = "ok"
     script: ScriptSchema
 
 
-class ReadScriptSuccessResponse(ReadScriptResponse):
+class CreateScriptFailedResponse(ScriptFailedResponse):
+    pass
+
+
+class CreateScriptSuccessResponse(ScriptReaderSuccessResponse):
+    pass
+
+
+class ReadScriptSuccessResponse(ScriptReaderSuccessResponse):
+    pass
+
+
+class ReadScriptFailedResponse(ScriptFailedResponse):
+    pass
+
+
+class UpdateScriptSuccessResponse(ScriptReaderSuccessResponse):
+    pass
+
+
+class UpdateScriptFailedResponse(ScriptFailedResponse):
+    pass
+
+
+class DeleteScriptSuccessResponse(ScriptResponse):
     status: str = "ok"
-    script: ScriptSchema
 
 
-class ReadScriptFailedResponse(ReadScriptResponse):
-    status: str = "failed"
-    details: str
-    code: int
+class DeleteScriptFailedResponse(ScriptFailedResponse):
+    pass

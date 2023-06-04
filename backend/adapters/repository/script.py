@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, update, delete
 
 from core.db import Script, User
 
@@ -34,9 +34,30 @@ class ScriptRepository(AbstractRepository):
     async def get_script_by_id(self, _id: int) -> Script:
         """Get script by id"""
 
-        q = select(Script).where(User.id == _id)
+        q = select(Script).where(Script.id == _id)
 
         res = await self.session.execute(q)
         script: Script = res.scalar()
 
         return script
+
+    async def update_script(self, _id: int, title: str, text: str) -> None:
+        """Update script fields"""
+
+        q = (
+            update(Script)
+            .where(Script.id == _id)
+            .values(
+                title=title,
+                text=text,
+            )
+        )
+
+        await self.session.execute(q)
+
+    async def delete_script(self, _id: int) -> None:
+        """Delete the script by id"""
+
+        q = delete(Script).where(Script.id == _id)
+
+        await self.session.execute(q)

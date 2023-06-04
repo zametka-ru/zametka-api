@@ -93,6 +93,14 @@ class AuthJWTSettings(BaseSettings):
 
     authjwt_secret_key: str
 
+    authjwt_token_location: set = {"cookies"}
+
+    authjwt_cookie_secure: bool = False
+
+    authjwt_cookie_csrf_protect: bool = True
+
+    # authjwt_cookie_samesite: str = 'lax' ## production
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

@@ -52,7 +52,7 @@ async def register_user(
     user_password: str = dto.user_password
 
     dto.user_password = User.hash_password(user_password, pwd_context)
-    dto.user_joined_at = datetime.datetime.utcnow()
+    user_joined_at = datetime.datetime.utcnow()
 
     try:
         user: User = await repository.create_user(
@@ -60,7 +60,7 @@ async def register_user(
             password=dto.user_password,
             first_name=dto.user_first_name,
             last_name=dto.user_last_name,
-            joined_at=dto.user_joined_at,
+            joined_at=user_joined_at,
         )
 
         await uow.commit()
@@ -150,7 +150,10 @@ async def user_login(
     access_token = Authorize.create_access_token(subject=dto.user_email)
     refresh_token = Authorize.create_refresh_token(subject=dto.user_email)
 
-    return LoginSuccessResponse(access_token=access_token, refresh_token=refresh_token)
+    Authorize.set_access_cookies(access_token)
+    Authorize.set_refresh_cookies(refresh_token)
+
+    return LoginSuccessResponse()
 
 
 async def token_refresh(Authorize: AuthJWT):
@@ -159,4 +162,6 @@ async def token_refresh(Authorize: AuthJWT):
     current_user = Authorize.get_jwt_subject()
     new_access_token = Authorize.create_access_token(subject=current_user)
 
-    return RefreshSuccessResponse(access_token=new_access_token)
+    Authorize.set_access_cookies(new_access_token)
+
+    return RefreshSuccessResponse()

@@ -4,7 +4,11 @@ from fastapi_jwt_auth import AuthJWT
 
 from presentation.v1.schemas.script import (
     CreateScriptSchema,
+    UpdateScriptSchema,
     CreateScriptFailedResponse,
+    ReadScriptFailedResponse,
+    UpdateScriptFailedResponse,
+    DeleteScriptFailedResponse,
 )
 
 from core.dependencies import (
@@ -13,11 +17,23 @@ from core.dependencies import (
     UnitOfWorkDependency,
 )
 
+from adapters.repository.uow import UnitOfWork
+
 from adapters.repository.auth import AuthRepository
 from adapters.repository.script import ScriptRepository
 
-from application.v1.script.use_case import create_script_case
-from application.v1.script.dto import CreateScriptInputDTO
+from application.v1.script.use_case import (
+    create_script_case,
+    read_script_case,
+    update_script_case,
+    delete_script_case,
+)
+from application.v1.script.dto import (
+    CreateScriptInputDTO,
+    ReadScriptInputDTO,
+    UpdateScriptInputDTO,
+    DeleteScriptInputDTO,
+)
 
 router = APIRouter(
     prefix="/v1/script",
@@ -38,6 +54,7 @@ async def create_script(
 
     repository: ScriptRepository  # type:ignore
     auth_repository: AuthRepository  # type:ignore
+    uow: UnitOfWork  # type:ignore
 
     Authorize.jwt_required()
 
@@ -62,17 +79,85 @@ async def create_script(
 
 
 @router.get("/{script_id}")
-async def read_script(script_id: int, Authorize: AuthJWT = Depends()):
+async def read_script(
+    script_id: int,
+    Authorize: AuthJWT = Depends(),
+    repository: ScriptRepositoryDependency = Depends(),
+    auth_repository: AuthRepositoryDependency = Depends(),
+):
     """Read a script by id"""
+
+    repository: ScriptRepository  # type:ignore
+    auth_repository: AuthRepository  # type:ignore
 
     Authorize.jwt_required()
 
+    dto = ReadScriptInputDTO(script_id=script_id)
 
-@router.patch("/{script_id}")
-def update_script():
-    pass
+    response = await read_script_case(dto, Authorize, auth_repository, repository)
+
+    if isinstance(response, ReadScriptFailedResponse):
+        raise HTTPException(response.code, response.details)
+
+    return response
+
+
+@router.put("/{script_id}")
+async def update_script(
+    script_update: UpdateScriptSchema,
+    script_id: int,
+    Authorize: AuthJWT = Depends(),
+    repository: ScriptRepositoryDependency = Depends(),
+    auth_repository: AuthRepositoryDependency = Depends(),
+    uow: UnitOfWorkDependency = Depends(),
+):
+    """Update script by id"""
+
+    repository: ScriptRepository  # type:ignore
+    auth_repository: AuthRepository  # type:ignore
+    uow: UnitOfWork  # type:ignore
+
+    Authorize.jwt_required()
+
+    dto = UpdateScriptInputDTO(
+        script_id=script_id,
+        script_title=script_update.title,
+        script_text=script_update.text,
+    )
+
+    response = await update_script_case(
+        dto, Authorize, auth_repository, repository, uow
+    )
+
+    if isinstance(response, UpdateScriptFailedResponse):
+        raise HTTPException(response.code, response.details)
+
+    return response
 
 
 @router.delete("/{script_id}")
-def delete_script():
-    pass
+async def delete_script(
+    script_id: int,
+    Authorize: AuthJWT = Depends(),
+    repository: ScriptRepositoryDependency = Depends(),
+    auth_repository: AuthRepositoryDependency = Depends(),
+    uow: UnitOfWorkDependency = Depends(),
+):
+    """Delete script by id"""
+
+    repository: ScriptRepository  # type:ignore
+    auth_repository: AuthRepository  # type:ignore
+    uow: UnitOfWork  # type:ignore
+
+    Authorize.jwt_required()
+
+    dto = DeleteScriptInputDTO(script_id=script_id)
+
+    response = await delete_script_case(
+        dto, Authorize, auth_repository, repository, uow
+    )
+
+    if isinstance(response, DeleteScriptFailedResponse):
+        raise HTTPException(response.code, response.details)
+
+    return response
