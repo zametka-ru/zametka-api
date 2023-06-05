@@ -8,10 +8,11 @@ from .logic import (
     send_confirm_mail,
     create_verify_email_token,
     check_email_verification_token,
-    validate_password,
 )
 
-from core.db import User
+from domain.v1.auth import validate_password
+
+from domain.db import User
 
 from .responses import (
     RegisterSuccessResponse,

@@ -3,7 +3,7 @@ from fastapi_jwt_auth import AuthJWT
 from adapters.repository.auth import AuthRepository
 from adapters.repository.script import ScriptRepository
 
-from core.db import User, Script
+from domain.db import User, Script
 
 from application.v1.exceptions.script import IsNotExists, RestrictScriptAccess
 

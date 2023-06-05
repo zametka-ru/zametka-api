@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import select, update, delete
 
-from core.db import Script, User
+from domain.db import Script, User
 
 from .abstract import AbstractRepository
 

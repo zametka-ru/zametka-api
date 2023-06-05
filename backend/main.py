@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi_mail import FastMail
 
-from core.db.provider import (
+from domain.db.provider import (
     DbProvider,
     get_uow,
     get_auth_repository,
@@ -12,7 +12,7 @@ from core.db.provider import (
 from presentation.v1 import include_routers, include_exception_handlers
 
 from core.settings import load_settings, load_mail_settings
-from core.db import get_async_sessionmaker
+from domain.db import get_async_sessionmaker
 from core.dependencies import (
     MailDependency,
     AuthSettingsDependency,
