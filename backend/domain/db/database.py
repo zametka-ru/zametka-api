@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 
 from core.settings import DB
 
@@ -18,11 +18,3 @@ async def get_async_sessionmaker(settings: DB) -> sessionmaker:
     )  # type:ignore
 
     return async_sessionmaker
-
-
-def get_session(async_sessionmaker) -> Session:
-    """Get async session"""
-
-    session = async_sessionmaker()
-
-    return session

@@ -9,7 +9,7 @@ services:
         env_file:
             - ./backend/core/.env
         volumes:
-            - ./backend/migrations/versions:/home/app/backend/migrations/versions
+            - ./backend/domain/db/migrations/versions:/home/app/backend/domain/db/migrations/versions
         depends_on:
             - backend_database
 

@@ -7,7 +7,7 @@ from datetime import timedelta, datetime
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from starlette.background import BackgroundTasks
 
-from core.db import User
+from domain.db import User
 
 from application.v1.exceptions.auth import JWTAlreadyUsedError, JWTExpiredError
 
@@ -134,24 +134,3 @@ def check_email_verification_token(
     token_payload = jwt.decode(token, secret_key, algorithm)
 
     jwt_expired_check(token_payload)
-
-
-def validate_password(password: str) -> None:
-    """Validate password (business logic), may raise ValueError"""
-
-    error_messages = {
-        "Password must contain an uppercase letter.": lambda s: any(
-            x.isupper() for x in s
-        ),
-        "Password must contain a lowercase letter.": lambda s: any(
-            x.islower() for x in s
-        ),
-        "Password must contain a digit.": lambda s: any(x.isdigit() for x in s),
-        "Password cannot contain white spaces.": lambda s: not any(
-            x.isspace() for x in s
-        ),
-    }
-
-    for message, password_validator in error_messages.items():
-        if not password_validator(password):
-            raise ValueError(message)

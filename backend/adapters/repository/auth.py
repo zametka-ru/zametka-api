@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import select
 
-from core.db import User
+from domain.db import User
 
 from .abstract import AbstractRepository
 
