@@ -91,9 +91,9 @@ async def user_verify_email(
 
     payload: dict[str, str | int | bool] = jwt.decode(dto.token, secret_key, algorithm)
 
-    email: Optional[str] = payload.get("email")  # type:ignore
+    user_id: Optional[int] = payload.get("id")  # type:ignore
 
-    user: User = await repository.get_user_by_email(email)
+    user: User = await repository.get_user_by_id(user_id)
 
     check_email_verification_token(secret_key, algorithm, user, dto.token)
 
@@ -101,7 +101,7 @@ async def user_verify_email(
 
     await uow.commit()
 
-    return VerifyEmailSuccessResponse(email=payload.get("email"))  # type:ignore
+    return VerifyEmailSuccessResponse(user_id=payload.get("id"))  # type:ignore
 
 
 async def user_login(
@@ -115,7 +115,7 @@ async def user_login(
     user: User = await repository.get_user_by_email(dto.user_email)
 
     if not user:
-        raise ValueError(f"There is no users with email\n{dto.user_email}")
+        raise ValueError(f"There is no users with id\n{dto.user_email}")
 
     if not user.is_active:
         raise ValueError("Confirm your email first, or you was banned :)")
@@ -123,8 +123,8 @@ async def user_login(
     if not user.compare_passwords(dto.user_password, pwd_context):
         raise ValueError("Invalid credentials (check your password)")
 
-    access_token = Authorize.create_access_token(subject=dto.user_email)
-    refresh_token = Authorize.create_refresh_token(subject=dto.user_email)
+    access_token = Authorize.create_access_token(subject=user.id)  # type:ignore
+    refresh_token = Authorize.create_refresh_token(subject=user.id)  # type:ignore
 
     Authorize.set_access_cookies(access_token)
     Authorize.set_refresh_cookies(refresh_token)

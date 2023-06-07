@@ -51,7 +51,7 @@ def create_verify_email_token(
         utcnow: datetime = datetime.utcnow()  # type:ignore
 
     payload = {
-        "email": user.email,
+        "id": user.id,
         "expires": expires,
         "user_is_active": user.is_active,
         "utcnow": str(utcnow),

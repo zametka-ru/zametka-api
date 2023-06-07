@@ -36,6 +36,16 @@ class AuthRepository(AbstractRepository):
 
         return user_obj
 
+    async def get_user_by_id(self, user_id: int) -> User:
+        """Get user by id"""
+
+        q = select(User).where(User.id == user_id)
+
+        res = await self.session.execute(q)
+        user: User = res.scalar()
+
+        return user
+
     async def get_user_by_email(self, user_email: str) -> User:
         """Get user by email"""
 

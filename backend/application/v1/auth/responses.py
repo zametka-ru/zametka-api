@@ -8,7 +8,7 @@ class RegisterSuccessResponse:
 
 @dataclass
 class VerifyEmailSuccessResponse:
-    email: str
+    user_id: int
 
 
 @dataclass

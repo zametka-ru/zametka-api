@@ -11,9 +11,9 @@ from application.v1.exceptions.script import IsNotExists, RestrictScriptAccess
 async def get_current_user(Authorize: AuthJWT, auth_repository: AuthRepository) -> User:
     """Get current user from JWT"""
 
-    user_email = Authorize.get_jwt_subject()
+    user_id: int = Authorize.get_jwt_subject()
 
-    user = await auth_repository.get_user_by_email(user_email)
+    user = await auth_repository.get_user_by_id(user_id)
 
     return user
 
