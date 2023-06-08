@@ -29,3 +29,21 @@ class UnitOfWorkDependency(ABC):
     """
     It's a dependency for UnitOfWork instance
     """
+
+
+class CryptContextDependency(ABC):
+    """
+    It's a dependency for CryptContext instance
+    """
+
+
+class AuthJWTDependency(ABC):
+    """
+    It's a dependency for AuthJWT instance
+    """
+
+
+class SessionDependency(ABC):
+    """
+    It's a dependency for Session instance
+    """

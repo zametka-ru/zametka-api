@@ -18,10 +18,8 @@ from core.dependencies import (
     AuthSettingsDependency,
     AuthRepositoryDependency,
     ScriptRepositoryDependency,
-    UnitOfWorkDependency,
+    UnitOfWorkDependency, SessionDependency, CryptContextDependency,
 )
-
-from sqlalchemy.orm import Session
 
 from passlib.context import CryptContext
 
@@ -43,9 +41,9 @@ async def on_startup():
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     mail = FastMail(mail_settings)
 
-    app.dependency_overrides[Session] = db_provider.get_session
+    app.dependency_overrides[SessionDependency] = db_provider.get_session
 
-    app.dependency_overrides[CryptContext] = lambda: pwd_context
+    app.dependency_overrides[CryptContextDependency] = lambda: pwd_context
 
     app.dependency_overrides[MailDependency] = lambda: mail
 

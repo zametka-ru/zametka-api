@@ -3,11 +3,13 @@ import jwt
 
 from typing import Optional
 
+from adapters.repository.uow import UnitOfWork
+from core.dependencies import AuthSettingsDependency, CryptContextDependency, AuthJWTDependency
 
 from .logic import (
-    send_confirm_mail,
     create_verify_email_token,
     check_email_verification_token,
+    send_confirm_mail,
 )
 
 from domain.v1.auth import validate_password
@@ -25,12 +27,7 @@ from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO
 
 from adapters.repository.auth import AuthRepository
 
-from adapters.repository.uow import UnitOfWork
-
-from fastapi_jwt_auth import AuthJWT
-from fastapi_mail import FastMail
-from passlib.context import CryptContext
-from starlette.background import BackgroundTasks
+from adapters.v1.auth.mailer import Mailer
 
 from core.settings import AuthSettings
 
@@ -38,10 +35,9 @@ from core.settings import AuthSettings
 async def register_user(
     dto: RegisterInputDTO,
     repository: AuthRepository,
-    background_tasks: BackgroundTasks,
-    pwd_context: CryptContext,
-    mail_context: FastMail,
-    auth_settings: AuthSettings,
+    pwd_context: CryptContextDependency,
+    mailer: Mailer,
+    auth_settings: AuthSettingsDependency,
     uow: UnitOfWork,
 ):
     """User register process"""
@@ -68,12 +64,7 @@ async def register_user(
 
     token: bytes = create_verify_email_token(secret_key, algorithm, user)
 
-    send_confirm_mail(
-        mail_context,
-        dto.user_email,
-        background_tasks,
-        str(token),
-    )
+    send_confirm_mail(str(token), dto.user_email, mailer)
 
     return RegisterSuccessResponse()
 
@@ -81,7 +72,7 @@ async def register_user(
 async def user_verify_email(
     dto: VerificationInputDTO,
     repository: AuthRepository,
-    auth_settings: AuthSettings,
+    auth_settings: AuthSettingsDependency,
     uow: UnitOfWork,
 ):
     auth_settings: AuthSettings  # type:ignore
@@ -107,8 +98,8 @@ async def user_verify_email(
 async def user_login(
     dto: LoginInputDTO,
     repository: AuthRepository,
-    Authorize: AuthJWT,
-    pwd_context: CryptContext,
+    Authorize: AuthJWTDependency,
+    pwd_context: CryptContextDependency,
     uow: UnitOfWork,
 ):
     """Login user"""
@@ -138,7 +129,9 @@ async def user_login(
     return LoginSuccessResponse()
 
 
-async def token_refresh(Authorize: AuthJWT, repository: AuthRepository, uow: UnitOfWork):
+async def token_refresh(
+    Authorize: AuthJWTDependency, repository: AuthRepository, uow: UnitOfWork
+):
     """Refresh user access token"""
 
     refresh_exists = await repository.is_token_exists(Authorize._token)

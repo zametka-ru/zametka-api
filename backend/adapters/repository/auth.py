@@ -83,5 +83,3 @@ class AuthRepository(AbstractRepository):
         result = await self.session.execute(q)
 
         return result.scalar()
-
-
