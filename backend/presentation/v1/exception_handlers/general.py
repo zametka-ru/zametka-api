@@ -18,6 +18,7 @@ def integrity_error(request: Request, exc: IntegrityError):
 
 
 def db_api_error(request: Request, exc: DBAPIError):
+    print(exc)
     return JSONResponse(
         status_code=400,
         content={"details": "Ошибка базы данных! Проверьте правильность данных!"},

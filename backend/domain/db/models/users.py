@@ -1,6 +1,7 @@
 from passlib.context import CryptContext
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text
+
 from sqlalchemy.orm import relationship
 
 from datetime import datetime
@@ -30,3 +31,16 @@ class User(Base):
 
     def compare_passwords(self, plain_password: str, pwd_context: CryptContext) -> bool:
         return pwd_context.verify(plain_password, self.password)
+
+
+class RefreshToken(Base):
+    """JWT Refresh token"""
+
+    __tablename__ = "refresh_tokens"
+
+    id: Column[int] = Column(Integer, primary_key=True, autoincrement=True)
+    token: Column[str] = Column(Text, nullable=False)
+
+    user_id: int = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )

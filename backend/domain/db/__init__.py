@@ -3,5 +3,6 @@ from .models import Base
 
 from .models.scripts import Script
 from .models.users import User
+from .models.users import RefreshToken
 
-__all__ = ["get_async_sessionmaker", "Base", "Script", "User"]
+__all__ = ["get_async_sessionmaker", "Base", "Script", "User", "RefreshToken"]

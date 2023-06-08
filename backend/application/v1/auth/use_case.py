@@ -109,13 +109,14 @@ async def user_login(
     repository: AuthRepository,
     Authorize: AuthJWT,
     pwd_context: CryptContext,
+    uow: UnitOfWork,
 ):
     """Login user"""
 
     user: User = await repository.get_user_by_email(dto.user_email)
 
     if not user:
-        raise ValueError(f"There is no users with id\n{dto.user_email}")
+        raise ValueError(f"There is no users with email \n{dto.user_email}")
 
     if not user.is_active:
         raise ValueError("Confirm your email first, or you was banned :)")
@@ -129,15 +130,35 @@ async def user_login(
     Authorize.set_access_cookies(access_token)
     Authorize.set_refresh_cookies(refresh_token)
 
+    await repository.delete_user_tokens(user.id)  # type:ignore
+    await repository.create_refresh_token(user.id, refresh_token)  # type:ignore
+
+    await uow.commit()
+
     return LoginSuccessResponse()
 
 
-async def token_refresh(Authorize: AuthJWT):
+async def token_refresh(Authorize: AuthJWT, repository: AuthRepository, uow: UnitOfWork):
     """Refresh user access token"""
 
-    current_user = Authorize.get_jwt_subject()
+    refresh_exists = await repository.is_token_exists(Authorize._token)
+
+    if not refresh_exists:
+        raise ValueError("Invalid refresh token")
+
+    current_user: int = Authorize.get_jwt_subject()
+
+    user: User = await repository.get_user_by_id(current_user)
+
     new_access_token = Authorize.create_access_token(subject=current_user)
+    new_refresh_token = Authorize.create_refresh_token(subject=current_user)
 
     Authorize.set_access_cookies(new_access_token)
+    Authorize.set_refresh_cookies(new_refresh_token)
+
+    await repository.delete_user_tokens(user.id)  # type:ignore
+    await repository.create_refresh_token(user.id, new_refresh_token)  # type:ignore
+
+    await uow.commit()
 
     return RefreshSuccessResponse()

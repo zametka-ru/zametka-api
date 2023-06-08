@@ -112,10 +112,12 @@ async def login(
     Authorize: AuthJWT = Depends(),
     repository: AuthRepositoryDependency = Depends(),
     pwd_context: CryptContext = Depends(),
+    uow: UnitOfWorkDependency = Depends(),
 ):
     """Login endpoint"""
 
     repository: AuthRepository  # type:ignore
+    uow: UnitOfWork  # type:ignore
 
     dto = LoginInputDTO(
         user_email=user_login.email,
@@ -123,16 +125,16 @@ async def login(
     )
 
     response = await user_login_case(
-        dto=dto, repository=repository, Authorize=Authorize, pwd_context=pwd_context
+        dto=dto, repository=repository, Authorize=Authorize, pwd_context=pwd_context, uow=uow
     )
 
     return response
 
 
 @router.post("/refresh")
-async def refresh(Authorize: AuthJWT = Depends()):
+async def refresh(Authorize: AuthJWT = Depends(), repository: AuthRepositoryDependency = Depends(), uow: UnitOfWorkDependency = Depends()):
     """Refresh access token endpoint"""
 
     Authorize.jwt_refresh_token_required()
 
-    return await token_refresh(Authorize=Authorize)
+    return await token_refresh(Authorize=Authorize, repository=repository, uow=uow)
