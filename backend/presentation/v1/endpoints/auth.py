@@ -1,16 +1,19 @@
 from fastapi import APIRouter, Depends
 from fastapi_jwt_auth import AuthJWT
-from fastapi_mail import FastMail
 
 from starlette.background import BackgroundTasks
 
-from adapters.v1.auth.mailer import Mailer
+from adapters.v1.auth.mailer import ConfirmationTokenMailer
 from core.settings import load_authjwt_settings, AuthJWTSettings
+
 from core.dependencies import (
     MailDependency,
     AuthSettingsDependency,
     AuthRepositoryDependency,
-    UnitOfWorkDependency, CryptContextDependency, AuthJWTDependency,
+    UnitOfWorkDependency,
+    CryptContextDependency,
+    AuthJWTDependency,
+    JinjaDependency,
 )
 
 from application.v1.auth.use_case import (
@@ -19,11 +22,14 @@ from application.v1.auth.use_case import (
     user_login as user_login_case,
     token_refresh,
 )
+
 from application.v1.auth.dto import (
     RegisterInputDTO,
     VerificationInputDTO,
     LoginInputDTO,
 )
+
+from application.v1.auth.interfaces import JWTOpsInterface
 
 from adapters.repository.auth import AuthRepository
 from adapters.repository.uow import UnitOfWork
@@ -56,10 +62,10 @@ async def register(
     repository: AuthRepositoryDependency = Depends(),
     mail_context: MailDependency = Depends(),
     uow: UnitOfWorkDependency = Depends(),
+    jinja: JinjaDependency = Depends(),
+    jwtops: JWTOpsInterface = Depends(),
 ):
     """Register endpoint"""
-
-    mail_context: FastMail
 
     dto = RegisterInputDTO(
         user_email=register_data.email,
@@ -68,15 +74,18 @@ async def register(
         user_last_name=register_data.last_name,
     )
 
-    mailer = Mailer(background_tasks=background_tasks, mail=mail_context)
+    mailer = ConfirmationTokenMailer(
+        background_tasks=background_tasks, mail=mail_context, jinja=jinja
+    )
 
     response = await register_user(
         dto=dto,
         repository=repository,
         pwd_context=pwd_context,
-        mailer=mailer,
+        token_sender=mailer,
         auth_settings=auth_settings,
         uow=uow,
+        jwtops=jwtops,
     )
 
     return response
@@ -88,6 +97,7 @@ async def verify_email(
     auth_settings: AuthSettingsDependency = Depends(),
     repository: AuthRepositoryDependency = Depends(),
     uow: UnitOfWorkDependency = Depends(),
+    jwtops: JWTOpsInterface = Depends(),
 ):
     """Email verification endpoint"""
 
@@ -97,7 +107,11 @@ async def verify_email(
     dto = VerificationInputDTO(token=token)
 
     response = await user_verify_email(
-        dto=dto, repository=repository, auth_settings=auth_settings, uow=uow
+        dto=dto,
+        repository=repository,
+        auth_settings=auth_settings,
+        uow=uow,
+        jwtops=jwtops,
     )
 
     return response
@@ -106,7 +120,7 @@ async def verify_email(
 @router.post("/login")
 async def login(
     user_login: UserLoginSchema,
-    Authorize: AuthJWTDependency = Depends(),
+    Authorize: AuthJWT = Depends(),
     repository: AuthRepositoryDependency = Depends(),
     pwd_context: CryptContextDependency = Depends(),
     uow: UnitOfWorkDependency = Depends(),
@@ -134,7 +148,7 @@ async def login(
 
 @router.post("/refresh")
 async def refresh(
-    Authorize: AuthJWTDependency = Depends(),
+    Authorize: AuthJWT = Depends(),
     repository: AuthRepositoryDependency = Depends(),
     uow: UnitOfWorkDependency = Depends(),
 ):

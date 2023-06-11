@@ -4,12 +4,17 @@ import jwt
 from typing import Optional
 
 from adapters.repository.uow import UnitOfWork
-from core.dependencies import AuthSettingsDependency, CryptContextDependency, AuthJWTDependency
+from core.dependencies import (
+    AuthSettingsDependency,
+    CryptContextDependency,
+    AuthJWTDependency,
+)
+
+from .interfaces import MailTokenSenderInterface, JWTOpsInterface
 
 from .logic import (
     create_verify_email_token,
     check_email_verification_token,
-    send_confirm_mail,
 )
 
 from domain.v1.auth import validate_password
@@ -27,8 +32,6 @@ from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO
 
 from adapters.repository.auth import AuthRepository
 
-from adapters.v1.auth.mailer import Mailer
-
 from core.settings import AuthSettings
 
 
@@ -36,9 +39,10 @@ async def register_user(
     dto: RegisterInputDTO,
     repository: AuthRepository,
     pwd_context: CryptContextDependency,
-    mailer: Mailer,
+    token_sender: MailTokenSenderInterface,
     auth_settings: AuthSettingsDependency,
     uow: UnitOfWork,
+    jwtops: JWTOpsInterface,
 ):
     """User register process"""
 
@@ -62,9 +66,11 @@ async def register_user(
     secret_key: str = auth_settings.secret_key
     algorithm: str = auth_settings.algorithm
 
-    token: bytes = create_verify_email_token(secret_key, algorithm, user)
+    token: str = create_verify_email_token(secret_key, algorithm, user, jwtops)
 
-    send_confirm_mail(str(token), dto.user_email, mailer)
+    token_sender.send(
+        token, subject="Завершите регистрацию в yourscript.", to_email=dto.user_email
+    )
 
     return RegisterSuccessResponse()
 
@@ -74,6 +80,7 @@ async def user_verify_email(
     repository: AuthRepository,
     auth_settings: AuthSettingsDependency,
     uow: UnitOfWork,
+    jwtops: JWTOpsInterface,
 ):
     auth_settings: AuthSettings  # type:ignore
 
@@ -86,7 +93,7 @@ async def user_verify_email(
 
     user: User = await repository.get_user_by_id(user_id)
 
-    check_email_verification_token(secret_key, algorithm, user, dto.token)
+    check_email_verification_token(secret_key, algorithm, user, dto.token, jwtops)
 
     await repository.make_user_active(user)
 

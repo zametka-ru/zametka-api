@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi_jwt_auth import AuthJWT
 
 from presentation.v1.schemas.script import (
     CreateScriptSchema,
@@ -8,7 +9,7 @@ from presentation.v1.schemas.script import (
 from core.dependencies import (
     ScriptRepositoryDependency,
     AuthRepositoryDependency,
-    UnitOfWorkDependency, AuthJWTDependency,
+    UnitOfWorkDependency,
 )
 
 from adapters.repository.uow import UnitOfWork
@@ -41,7 +42,7 @@ async def create_script(
     script: CreateScriptSchema,
     repository: ScriptRepositoryDependency = Depends(),
     auth_repository: AuthRepositoryDependency = Depends(),
-    Authorize: AuthJWTDependency = Depends(),
+    Authorize: AuthJWT = Depends(),
     uow: UnitOfWorkDependency = Depends(),
 ):
     """Create script object"""
@@ -71,7 +72,7 @@ async def create_script(
 @router.get("/{script_id}")
 async def read_script(
     script_id: int,
-    Authorize: AuthJWTDependency = Depends(),
+    Authorize: AuthJWT = Depends(),
     repository: ScriptRepositoryDependency = Depends(),
     auth_repository: AuthRepositoryDependency = Depends(),
 ):
@@ -93,7 +94,7 @@ async def read_script(
 async def update_script(
     script_update: UpdateScriptSchema,
     script_id: int,
-    Authorize: AuthJWTDependency = Depends(),
+    Authorize: AuthJWT = Depends(),
     repository: ScriptRepositoryDependency = Depends(),
     auth_repository: AuthRepositoryDependency = Depends(),
     uow: UnitOfWorkDependency = Depends(),
@@ -122,7 +123,7 @@ async def update_script(
 @router.delete("/{script_id}")
 async def delete_script(
     script_id: int,
-    Authorize: AuthJWTDependency = Depends(),
+    Authorize: AuthJWT = Depends(),
     repository: ScriptRepositoryDependency = Depends(),
     auth_repository: AuthRepositoryDependency = Depends(),
     uow: UnitOfWorkDependency = Depends(),

@@ -47,3 +47,7 @@ class SessionDependency(ABC):
     """
     It's a dependency for Session instance
     """
+
+
+class JinjaDependency(ABC):
+    """It's a dependency for jinja2 environment"""

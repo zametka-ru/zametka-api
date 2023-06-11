@@ -1,5 +1,3 @@
-from fastapi_jwt_auth import AuthJWT
-
 from adapters.repository.auth import AuthRepository
 from adapters.repository.script import ScriptRepository
 
@@ -7,8 +5,12 @@ from domain.db import User, Script
 
 from application.v1.exceptions.script import IsNotExists, RestrictScriptAccess
 
+from core.dependencies import AuthJWTDependency
 
-async def get_current_user(Authorize: AuthJWT, auth_repository: AuthRepository) -> User:
+
+async def get_current_user(
+    Authorize: AuthJWTDependency, auth_repository: AuthRepository
+) -> User:
     """Get current user from JWT"""
 
     user_id: int = Authorize.get_jwt_subject()
@@ -38,7 +40,7 @@ async def check_script_exists(
 
 
 async def check_script_access(
-    Authorize: AuthJWT,
+    Authorize: AuthJWTDependency,
     auth_repository: AuthRepository,
     script_repository: ScriptRepository,
     script_id: int,
