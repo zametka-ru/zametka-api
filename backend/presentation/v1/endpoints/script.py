@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-
+from fastapi import APIRouter, Depends
 from fastapi_jwt_auth import AuthJWT
 
 from presentation.v1.schemas.script import (

@@ -7,16 +7,18 @@ from adapters.repository.script import ScriptRepository
 
 from adapters.repository.uow import UnitOfWork
 
+from core.dependencies import SessionDependency
 
-def get_uow(session: Session = Depends()):
+
+def get_uow(session: SessionDependency = Depends()):
     yield UnitOfWork(session=session)
 
 
-def get_auth_repository(session: Session = Depends()):
+def get_auth_repository(session: SessionDependency = Depends()):
     yield AuthRepository(session=session)
 
 
-def get_script_repository(session: Session = Depends()):
+def get_script_repository(session: SessionDependency = Depends()):
     yield ScriptRepository(session=session)
 
 

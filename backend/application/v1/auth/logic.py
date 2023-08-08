@@ -1,50 +1,32 @@
-import jwt
-
 from typing import Optional
 
 from datetime import timedelta, datetime
-
-from fastapi_mail import FastMail, MessageSchema, MessageType
-from starlette.background import BackgroundTasks
 
 from domain.db import User
 
 from application.v1.exceptions.auth import JWTAlreadyUsedError, JWTExpiredError
 
-
-def send_confirm_mail(
-    mail: FastMail, user_email: str, background_tasks: BackgroundTasks, token: str
-):
-    """Send confirmation email after register user"""
-
-    html = """<p>Hi this test mail, thanks for using Fastapi-mail</p> """
-
-    message = MessageSchema(
-        subject=f"Ваш токен для подтверждения почты {token}",
-        recipients=[user_email],
-        body=html,
-        subtype=MessageType.html,
-    )
-
-    background_tasks.add_task(mail.send_message, message)
+from .interfaces import JWTOpsInterface
 
 
 def create_verify_email_token(
     secret_key: str,
     algorithm: str,
     user: User,
+    jwtops: JWTOpsInterface,
     utcnow: Optional[datetime | str] = None,
     expires: int = 15,
-) -> bytes:
+) -> str:
     """
     Create the email-verification jwt token.
 
+    :param jwtops: JWT operations object
     :param utcnow: time-signing for token, maybe None
     :param user: User which need email verification
     :param secret_key: random hex for signing JWT
     :param algorithm: algorithm for signing JWT
     :param expires: token expires in minutes
-    :return: bytes: JWT token
+    :return: str: JWT token
     """
 
     if utcnow is None:
@@ -57,7 +39,7 @@ def create_verify_email_token(
         "utcnow": str(utcnow),
     }
 
-    token: bytes = jwt.encode(payload, secret_key, algorithm)
+    token: str = jwtops.encode(payload, secret_key, algorithm)
 
     return token
 
@@ -66,14 +48,12 @@ JWTPayload = dict[str, int | str | bool]
 
 
 def jwt_already_used_check(
-    secret_key: str,
-    algorithm: str,
-    user: User,
-    token: str,
+    secret_key: str, algorithm: str, user: User, token: str, jwtops: JWTOpsInterface
 ) -> None:
     """
     Compares JWT tokens
 
+    :param jwtops: JWT operations object
     :param token: token
     :param user: User which need email verification
     :param secret_key: random hex for signing JWT
@@ -81,7 +61,7 @@ def jwt_already_used_check(
     :return: None: may raise JWTAlreadyUsedError
     """
 
-    token_payload: JWTPayload = jwt.decode(token, secret_key, algorithm)
+    token_payload: JWTPayload = jwtops.decode(token, secret_key, algorithm)
 
     token_user_is_active: bool = token_payload.get("user_is_active")  # type:ignore
 
@@ -113,7 +93,7 @@ def jwt_expired_check(token_payload: dict[str, int | str]) -> None:
 
 
 def check_email_verification_token(
-    secret_key: str, algorithm: str, user: User, token: str
+    secret_key: str, algorithm: str, user: User, token: str, jwtops: JWTOpsInterface
 ) -> None:
     """
     Check the email verification token by 2-step check:
@@ -121,6 +101,7 @@ def check_email_verification_token(
     1. Check token not used second-time
     2. Check token not exceeded expires-time
 
+    :param jwtops: JWT Operations object
     :param secret_key: secret key for signing JWT
     :param algorithm: algorithm for signing JWT
     :param user: user which need email verification
@@ -129,8 +110,8 @@ def check_email_verification_token(
     :return None: may raise JWTAlreadyUsedError or JWTExpiredError
     """
 
-    jwt_already_used_check(secret_key, algorithm, user, token)
+    jwt_already_used_check(secret_key, algorithm, user, token, jwtops=jwtops)
 
-    token_payload = jwt.decode(token, secret_key, algorithm)
+    token_payload = jwtops.decode(token, secret_key, algorithm)
 
     jwt_expired_check(token_payload)

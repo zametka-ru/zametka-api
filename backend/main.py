@@ -2,6 +2,7 @@ import uvicorn
 
 from fastapi import FastAPI
 from fastapi_mail import FastMail
+from jinja2 import Environment, PackageLoader, select_autoescape
 
 from domain.db.provider import (
     DbProvider,
@@ -12,16 +13,22 @@ from domain.db.provider import (
 from presentation.v1 import include_routers, include_exception_handlers
 
 from core.settings import load_settings, load_mail_settings
+
 from domain.db import get_async_sessionmaker
+
 from core.dependencies import (
     MailDependency,
     AuthSettingsDependency,
     AuthRepositoryDependency,
     ScriptRepositoryDependency,
     UnitOfWorkDependency,
+    SessionDependency,
+    CryptContextDependency,
+    JinjaDependency,
 )
 
-from sqlalchemy.orm import Session
+from application.v1.auth.interfaces import JWTOpsInterface
+from adapters.v1.auth.jwtops import JWTOps
 
 from passlib.context import CryptContext
 
@@ -43,9 +50,13 @@ async def on_startup():
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     mail = FastMail(mail_settings)
 
-    app.dependency_overrides[Session] = db_provider.get_session
+    jinja_env: Environment = Environment(
+        loader=PackageLoader("adapters.v1.auth"), autoescape=select_autoescape()
+    )
 
-    app.dependency_overrides[CryptContext] = lambda: pwd_context
+    app.dependency_overrides[SessionDependency] = db_provider.get_session
+
+    app.dependency_overrides[CryptContextDependency] = lambda: pwd_context
 
     app.dependency_overrides[MailDependency] = lambda: mail
 
@@ -56,6 +67,10 @@ async def on_startup():
     app.dependency_overrides[UnitOfWorkDependency] = get_uow
 
     app.dependency_overrides[ScriptRepositoryDependency] = get_script_repository
+
+    app.dependency_overrides[JinjaDependency] = lambda: jinja_env
+
+    app.dependency_overrides[JWTOpsInterface] = lambda: JWTOps()
 
     include_routers(app)
 

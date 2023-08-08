@@ -3,9 +3,16 @@ import jwt
 
 from typing import Optional
 
+from adapters.repository.uow import UnitOfWork
+from core.dependencies import (
+    AuthSettingsDependency,
+    CryptContextDependency,
+    AuthJWTDependency,
+)
+
+from .interfaces import MailTokenSenderInterface, JWTOpsInterface
 
 from .logic import (
-    send_confirm_mail,
     create_verify_email_token,
     check_email_verification_token,
 )
@@ -25,24 +32,17 @@ from .dto import RegisterInputDTO, VerificationInputDTO, LoginInputDTO
 
 from adapters.repository.auth import AuthRepository
 
-from adapters.repository.uow import UnitOfWork
-
-from fastapi_jwt_auth import AuthJWT
-from fastapi_mail import FastMail
-from passlib.context import CryptContext
-from starlette.background import BackgroundTasks
-
 from core.settings import AuthSettings
 
 
 async def register_user(
     dto: RegisterInputDTO,
     repository: AuthRepository,
-    background_tasks: BackgroundTasks,
-    pwd_context: CryptContext,
-    mail_context: FastMail,
-    auth_settings: AuthSettings,
+    pwd_context: CryptContextDependency,
+    token_sender: MailTokenSenderInterface,
+    auth_settings: AuthSettingsDependency,
     uow: UnitOfWork,
+    jwtops: JWTOpsInterface,
 ):
     """User register process"""
 
@@ -66,13 +66,10 @@ async def register_user(
     secret_key: str = auth_settings.secret_key
     algorithm: str = auth_settings.algorithm
 
-    token: bytes = create_verify_email_token(secret_key, algorithm, user)
+    token: str = create_verify_email_token(secret_key, algorithm, user, jwtops)
 
-    send_confirm_mail(
-        mail_context,
-        dto.user_email,
-        background_tasks,
-        str(token),
+    token_sender.send(
+        token, subject="Завершите регистрацию в yourscript.", to_email=dto.user_email
     )
 
     return RegisterSuccessResponse()
@@ -81,8 +78,9 @@ async def register_user(
 async def user_verify_email(
     dto: VerificationInputDTO,
     repository: AuthRepository,
-    auth_settings: AuthSettings,
+    auth_settings: AuthSettingsDependency,
     uow: UnitOfWork,
+    jwtops: JWTOpsInterface,
 ):
     auth_settings: AuthSettings  # type:ignore
 
@@ -95,7 +93,7 @@ async def user_verify_email(
 
     user: User = await repository.get_user_by_id(user_id)
 
-    check_email_verification_token(secret_key, algorithm, user, dto.token)
+    check_email_verification_token(secret_key, algorithm, user, dto.token, jwtops)
 
     await repository.make_user_active(user)
 
@@ -107,15 +105,16 @@ async def user_verify_email(
 async def user_login(
     dto: LoginInputDTO,
     repository: AuthRepository,
-    Authorize: AuthJWT,
-    pwd_context: CryptContext,
+    Authorize: AuthJWTDependency,
+    pwd_context: CryptContextDependency,
+    uow: UnitOfWork,
 ):
     """Login user"""
 
     user: User = await repository.get_user_by_email(dto.user_email)
 
     if not user:
-        raise ValueError(f"There is no users with id\n{dto.user_email}")
+        raise ValueError(f"There is no users with email \n{dto.user_email}")
 
     if not user.is_active:
         raise ValueError("Confirm your email first, or you was banned :)")
@@ -129,15 +128,37 @@ async def user_login(
     Authorize.set_access_cookies(access_token)
     Authorize.set_refresh_cookies(refresh_token)
 
+    await repository.delete_user_tokens(user.id)  # type:ignore
+    await repository.create_refresh_token(user.id, refresh_token)  # type:ignore
+
+    await uow.commit()
+
     return LoginSuccessResponse()
 
 
-async def token_refresh(Authorize: AuthJWT):
+async def token_refresh(
+    Authorize: AuthJWTDependency, repository: AuthRepository, uow: UnitOfWork
+):
     """Refresh user access token"""
 
-    current_user = Authorize.get_jwt_subject()
+    refresh_exists = await repository.is_token_exists(Authorize._token)
+
+    if not refresh_exists:
+        raise ValueError("Invalid refresh token")
+
+    current_user: int = Authorize.get_jwt_subject()
+
+    user: User = await repository.get_user_by_id(current_user)
+
     new_access_token = Authorize.create_access_token(subject=current_user)
+    new_refresh_token = Authorize.create_refresh_token(subject=current_user)
 
     Authorize.set_access_cookies(new_access_token)
+    Authorize.set_refresh_cookies(new_refresh_token)
+
+    await repository.delete_user_tokens(user.id)  # type:ignore
+    await repository.create_refresh_token(user.id, new_refresh_token)  # type:ignore
+
+    await uow.commit()
 
     return RefreshSuccessResponse()

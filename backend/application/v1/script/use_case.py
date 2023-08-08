@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from core.dependencies import AuthJWTDependency
+
 from .dto import (
     CreateScriptInputDTO,
     ReadScriptInputDTO,
@@ -22,15 +24,13 @@ from .responses import (
 
 from adapters.repository.uow import UnitOfWork
 
-from fastapi_jwt_auth import AuthJWT
-
 
 async def create_script_case(
     dto: CreateScriptInputDTO,
     repository: ScriptRepository,
     auth_repository: AuthRepository,
     uow: UnitOfWork,
-    Authorize: AuthJWT,
+    Authorize: AuthJWTDependency,
 ):
     """Create script use case"""
 
@@ -59,7 +59,7 @@ async def create_script_case(
 
 async def read_script_case(
     dto: ReadScriptInputDTO,
-    Authorize: AuthJWT,
+    Authorize: AuthJWTDependency,
     auth_repository: AuthRepository,
     script_repository: ScriptRepository,
 ):
@@ -85,7 +85,7 @@ async def read_script_case(
 
 async def update_script_case(
     dto: UpdateScriptInputDTO,
-    Authorize: AuthJWT,
+    Authorize: AuthJWTDependency,
     auth_repository: AuthRepository,
     script_repository: ScriptRepository,
     uow: UnitOfWork,
@@ -117,7 +117,7 @@ async def update_script_case(
 
 async def delete_script_case(
     dto: DeleteScriptInputDTO,
-    Authorize: AuthJWT,
+    Authorize: AuthJWTDependency,
     auth_repository: AuthRepository,
     script_repository: ScriptRepository,
     uow: UnitOfWork,
