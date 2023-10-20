@@ -1,30 +1,27 @@
-import datetime
-
 from dataclasses import dataclass
 
-from application.common.adapters import JWT, AuthSettings, MailTokenSender, PasswordHasher, HashedPassword
+from application.common.adapters import JWTOperations, AuthSettings, MailTokenSender, PasswordHasher, HashedPassword
 from application.common.interactor import Interactor
 from application.common.repository import AuthRepository
 from application.common.uow import UoW
 
-from domain.v1.entities.user import User
 from domain.v1.services.user_service import UserService
 
 
 @dataclass
-class CreateUserOutputDTO:
+class SignUpOutputDTO:
     pass
 
 
 @dataclass
-class CreateUserInputDTO:
+class SignUpInputDTO:
     user_email: str
     user_password: str
     user_first_name: str
     user_last_name: str
 
 
-class CreateUser(Interactor[CreateUserInputDTO, CreateUserOutputDTO]):
+class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
     def __init__(
         self,
         repository: AuthRepository,
@@ -32,7 +29,7 @@ class CreateUser(Interactor[CreateUserInputDTO, CreateUserOutputDTO]):
         token_sender: MailTokenSender,
         auth_settings: AuthSettings,
         uow: UoW,
-        jwt: JWT,
+        jwt: JWTOperations,
         service: UserService,
     ):
         self.uow = uow
@@ -43,21 +40,18 @@ class CreateUser(Interactor[CreateUserInputDTO, CreateUserOutputDTO]):
         self.token_sender = token_sender
         self.repository = repository
 
-    async def __call__(self, data: CreateUserInputDTO) -> CreateUserOutputDTO:
+    async def __call__(self, data: SignUpInputDTO) -> SignUpOutputDTO:
         user_password: str = data.user_password
 
         self.service.check_password(user_password)
 
         user_password: HashedPassword = self.pwd_context.hash(user_password)
 
-        user_joined_at = datetime.datetime.utcnow()
-
-        user = User(
+        user = self.service.create(
             email=data.user_email,
             password=user_password,
             first_name=data.user_first_name,
             last_name=data.user_last_name,
-            joined_at=user_joined_at,
         )
 
         await self.repository.create(user)
@@ -73,4 +67,4 @@ class CreateUser(Interactor[CreateUserInputDTO, CreateUserOutputDTO]):
             token, subject="Завершите регистрацию в yourscript.", to_email=user.email
         )
 
-        return CreateUserOutputDTO()
+        return SignUpOutputDTO()

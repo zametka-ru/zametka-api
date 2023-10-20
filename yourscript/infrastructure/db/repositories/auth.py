@@ -41,6 +41,7 @@ class AuthRepositoryImpl(AuthRepository):
         user: User = res.scalar()
 
         return UserEntity(
+            user_id=user.id,
             email=user.email,
             password=user.password,
             first_name=user.first_name,
@@ -59,6 +60,7 @@ class AuthRepositoryImpl(AuthRepository):
         user: User = res.scalar()
 
         return UserEntity(
+            user_id=user.id,
             email=user.email,
             password=user.password,
             first_name=user.first_name,

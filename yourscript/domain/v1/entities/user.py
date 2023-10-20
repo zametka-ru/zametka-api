@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from domain.v1.value_objects.user_id import UserId
+
 
 @dataclass
 class User:
@@ -11,3 +13,4 @@ class User:
     joined_at: datetime
     is_superuser: bool = False
     is_active: bool = False
+    user_id: UserId = None

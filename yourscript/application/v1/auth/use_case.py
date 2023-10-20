@@ -61,40 +61,6 @@ async def user_verify_email(
     return VerifyEmailSuccessResponse(user_id=payload.get("id"))  # type:ignore
 
 
-async def user_login(
-    dto: LoginInputDTO,
-    repository: AuthRepository,
-    Authorize: AuthJWTDependency,
-    pwd_context: CryptContextDependency,
-    uow: UnitOfWork,
-):
-    """Login user"""
-
-    user: User = await repository.get_user_by_email(dto.user_email)
-
-    if not user:
-        raise ValueError(f"There is no users with email \n{dto.user_email}")
-
-    if not user.is_active:
-        raise ValueError("Confirm your email first, or you was banned :)")
-
-    if not user.compare_passwords(dto.user_password, pwd_context):
-        raise ValueError("Invalid credentials (check your password)")
-
-    access_token = Authorize.create_access_token(subject=user.id)  # type:ignore
-    refresh_token = Authorize.create_refresh_token(subject=user.id)  # type:ignore
-
-    Authorize.set_access_cookies(access_token)
-    Authorize.set_refresh_cookies(refresh_token)
-
-    await repository.delete_user_tokens(user.id)  # type:ignore
-    await repository.create_refresh_token(user.id, refresh_token)  # type:ignore
-
-    await uow.commit()
-
-    return LoginSuccessResponse()
-
-
 async def token_refresh(
     Authorize: AuthJWTDependency, repository: AuthRepository, uow: UnitOfWork
 ):
