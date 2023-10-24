@@ -59,31 +59,3 @@ async def user_verify_email(
     await uow.commit()
 
     return VerifyEmailSuccessResponse(user_id=payload.get("id"))  # type:ignore
-
-
-async def token_refresh(
-    Authorize: AuthJWTDependency, repository: AuthRepository, uow: UnitOfWork
-):
-    """Refresh user access token"""
-
-    refresh_exists = await repository.is_token_exists(Authorize._token)
-
-    if not refresh_exists:
-        raise ValueError("Invalid refresh token")
-
-    current_user: int = Authorize.get_jwt_subject()
-
-    user: User = await repository.get_user_by_id(current_user)
-
-    new_access_token = Authorize.create_access_token(subject=current_user)
-    new_refresh_token = Authorize.create_refresh_token(subject=current_user)
-
-    Authorize.set_access_cookies(new_access_token)
-    Authorize.set_refresh_cookies(new_refresh_token)
-
-    await repository.delete_user_tokens(user.id)  # type:ignore
-    await repository.create_refresh_token(user.id, new_refresh_token)  # type:ignore
-
-    await uow.commit()
-
-    return RefreshSuccessResponse()

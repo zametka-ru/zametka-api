@@ -67,5 +67,5 @@ class RefreshTokenRepository(AbstractRepository):
         """Delete user tokens"""
 
     @abstractmethod
-    async def exists(self, token: str) -> bool:
+    async def exists(self, token: RefreshToken) -> bool:
         """Is token exists"""
