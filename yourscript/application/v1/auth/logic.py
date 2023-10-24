@@ -13,7 +13,7 @@ def create_verify_email_token(
     secret_key: str,
     algorithm: str,
     user: User,
-    jwtops: JWTOpsInterface,
+    jwtops: JWTOps,
     utcnow: Optional[datetime | str] = None,
     expires: int = 15,
 ) -> str:
