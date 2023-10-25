@@ -18,20 +18,16 @@ from infrastructure.config_loader import load_settings, load_mail_settings
 from infrastructure.db import get_async_sessionmaker
 
 from infrastructure.stubs import (
-    MailStub,
-    AuthSettingsStub,
-    AuthRepositoryStub,
-    ScriptRepositoryStub,
-    UnitOfWorkStub,
     SessionStub,
-    CryptContextStub,
     JinjaStub,
 )
 
-from application.v1.auth.interfaces import JWTOpsInterface
-from adapters.v1.auth.jwtops import JWTOps
+from application.common.adapters import JWTOperations, PasswordHasher, MailTokenSender
+from application.common.repository import AuthRepository, ScriptRepository
+from application.common.uow import UoW
 
-from passlib.context import CryptContext
+from infrastructure.adapters.v1.auth.jwtops import JWTOperationsImpl
+from infrastructure.adapters.v1.auth.password_hasher import PasswordHasherImpl
 
 settings = load_settings()
 
@@ -55,37 +51,28 @@ include_exception_handlers(app)
 @app.on_event("startup")
 async def on_startup():
     auth_settings = settings.auth
-
     mail_settings = load_mail_settings()
 
     async_sessionmaker = await get_async_sessionmaker(settings.db)
-
     db_provider = DbProvider(pool=async_sessionmaker)
 
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     mail = FastMail(mail_settings)
-
     jinja_env: Environment = Environment(
-        loader=PackageLoader("adapters.v1.auth"), autoescape=select_autoescape()
+        loader=PackageLoader("infrastructure.adapters.v1.auth"),
+        autoescape=select_autoescape(),
     )
 
+    password_hasher = PasswordHasherImpl()
+    jwt_operations = JWTOperationsImpl()
+
     app.dependency_overrides[SessionStub] = db_provider.get_session
-
-    app.dependency_overrides[CryptContextStub] = lambda: pwd_context
-
-    app.dependency_overrides[MailStub] = lambda: mail
-
-    app.dependency_overrides[AuthSettingsStub] = lambda: auth_settings
-
-    app.dependency_overrides[AuthRepositoryStub] = get_auth_repository
-
-    app.dependency_overrides[UnitOfWorkStub] = get_uow
-
-    app.dependency_overrides[ScriptRepositoryStub] = get_script_repository
-
+    app.dependency_overrides[PasswordHasher] = lambda: password_hasher
+    app.dependency_overrides[MailTokenSender] = lambda: mail
+    app.dependency_overrides[AuthRepository] = get_auth_repository
+    app.dependency_overrides[UoW] = get_uow
+    app.dependency_overrides[ScriptRepository] = get_script_repository
     app.dependency_overrides[JinjaStub] = lambda: jinja_env
-
-    app.dependency_overrides[JWTOpsInterface] = lambda: JWTOps()
+    app.dependency_overrides[JWTOperations] = lambda: jwt_operations
 
     include_routers(app)
 

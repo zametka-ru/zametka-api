@@ -1,9 +1,10 @@
-from pydantic import BaseSettings, BaseModel
-
 from fastapi_mail import ConnectionConfig
 
+from dataclasses import dataclass
 
-class BaseDB(BaseModel):
+
+@dataclass
+class BaseDB:
     """Base database config"""
 
     host: str
@@ -15,121 +16,57 @@ class BaseDB(BaseModel):
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}/{self.db_name}"
 
 
-class DB(BaseDB, BaseSettings):
+@dataclass
+class DB(BaseDB):
     """App database config"""
 
-    class Config:
-        env_file = "../../.env"
-        env_file_encoding = "utf-8"
 
-        fields = {
-            "host": {
-                "env": "DB_HOST",
-            },
-            "db_name": {
-                "env": "DB_NAME",
-            },
-            "user": {
-                "env": "DB_USER",
-            },
-            "password": {
-                "env": "DB_PASS",
-            },
-        }
-
-
-class AlembicDB(BaseDB, BaseSettings):
+@dataclass
+class AlembicDB(BaseDB):
     """Alembic database config"""
 
-    class Config:
-        env_file = "../../.env"
-        env_file_encoding = "utf-8"
 
-        fields = {
-            "host": {
-                "env": "DB_HOST",
-            },
-            "db_name": {
-                "env": "DB_NAME",
-            },
-            "user": {
-                "env": "DB_USER",  # dev code, another user of alembic in the production NOT FOR PRODUCTION
-            },
-            "password": {
-                "env": "DB_PASS",  # dev code, another user of alembic in the production NOT FOR PRODUCTION
-            },
-        }
-
-
-class AuthSettings(BaseSettings):
+@dataclass
+class AuthSettings:
     """Auth Settings"""
 
     secret_key: str
     algorithm: str
 
-    class Config:
-        env_file = "../../.env"
-        env_file_encoding = "utf-8"
 
-        fields = {
-            "secret_key": {
-                "env": "SECRET_KEY",
-            },
-            "algorithm": {
-                "env": "ALGORITHM",
-            },
-        }
-
-
-class CorsSettings(BaseSettings):
+@dataclass
+class CORSSettings:
     """CORS Allowed Domains Settings"""
 
     frontend_url: str
 
-    class Config:
-        env_file = "../../.env"
-        env_file_encoding = "utf-8"
 
-        fields = {
-            "frontend_url": {
-                "env": "FRONTEND",
-            },
-        }
-
-
-class Settings(BaseModel):
+@dataclass
+class Settings:
     """App settings"""
 
-    db = DB()  # type:ignore
-    auth = AuthSettings()  # type:ignore
-    cors = CorsSettings()  # type:ignore
+    db: DB
+    auth: AuthSettings
+    cors: CORSSettings
 
 
-class AuthJWTSettings(BaseSettings):
+@dataclass
+class AuthJWTSettings:
     """AuthJWT Settings"""
 
     authjwt_secret_key: str
 
-    authjwt_token_location: set = {"cookies"}
+    authjwt_token_location: set
 
     authjwt_cookie_secure: bool = False
 
     authjwt_cookie_csrf_protect: bool = True
 
-    # authjwt_cookie_samesite: str = 'lax' ## production
-
-    class Config:
-        env_file = "../../.env"
-        env_file_encoding = "utf-8"
-
-        fields = {
-            "authjwt_secret_key": {
-                "env": "AUTHJWT_SECRET_KEY",
-            },
-        }
+    # authjwt_cookie_samesite: str = 'lax' production mode
 
 
-class MailSettings(BaseSettings):
+@dataclass
+class MailSettings:
     """Mail Settings"""
 
     mail_username: str
@@ -139,46 +76,17 @@ class MailSettings(BaseSettings):
     mail_server: str
     mail_from_name: str
 
-    class Config:
-        env_file = "../../.env"
-        env_file_encoding = "utf-8"
-
-        fields = {
-            "mail_username": {
-                "env": "MAIL_USERNAME",
-            },
-            "mail_password": {
-                "env": "MAIL_PASSWORD",
-            },
-            "mail_from": {
-                "env": "MAIL_FROM",
-            },
-            "mail_port": {
-                "env": "MAIL_PORT",
-            },
-            "mail_server": {
-                "env": "MAIL_SERVER",
-            },
-            "mail_from_name": {
-                "env": "MAIL_FROM_NAME",
-            },
-        }
-
 
 def load_settings() -> Settings:
     """Get app settings"""
-
-    return Settings()
 
 
 def load_alembic_settings() -> AlembicDB:
     """Get alembic settings"""
 
-    return AlembicDB()  # type:ignore
-
 
 def load_authjwt_settings() -> AuthJWTSettings:
-    return AuthJWTSettings()  # type:ignore
+    pass
 
 
 def load_mail_settings() -> ConnectionConfig:

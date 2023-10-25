@@ -23,22 +23,28 @@ class EmailVerificationOutputDTO:
     pass
 
 
-class EmailVerification(Interactor[EmailVerificationInputDTO, EmailVerificationOutputDTO]):
+class EmailVerification(
+    Interactor[EmailVerificationInputDTO, EmailVerificationOutputDTO]
+):
     def __init__(
-            self,
-            repository: AuthRepository,
-            uow: UoW,
-            jwt: JWTOperations,
+        self,
+        repository: AuthRepository,
+        uow: UoW,
+        jwt: JWTOperations,
     ):
         self.uow = uow
         self.jwt = jwt
         self.repository = repository
 
-    async def __call__(self, data: EmailVerificationInputDTO) -> EmailVerificationOutputDTO:
+    async def __call__(
+        self, data: EmailVerificationInputDTO
+    ) -> EmailVerificationOutputDTO:
         secret_key: str = data.secret_key
         algorithm: str = data.algorithm
 
-        payload: dict[str, str | int | bool] = self.jwt.decode(data.token, secret_key, algorithm)
+        payload: dict[str, str | int | bool] = self.jwt.decode(
+            data.token, secret_key, algorithm
+        )
 
         user_id: Optional[int] = payload.get("id")
 

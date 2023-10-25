@@ -1,18 +1,20 @@
 from abc import abstractmethod
 
-from typing import Protocol, NewType
+from typing import Protocol
 
 from domain.v1.entities.user import User
 
-HashedPassword = NewType("HashedPassword", str)
-Token = NewType("Token", str)
+from domain.v1.value_objects.hashed_password import HashedPassword
+from domain.v1.value_objects.token import Token
 
 
 class TokenSender(Protocol):
     """Token sender interface"""
 
     @abstractmethod
-    def create(self, secret_key: str, algorithm: str, user: User, jwt: 'JWTOperations') -> Token:
+    def create(
+        self, secret_key: str, algorithm: str, user: User, jwt: "JWTOperations"
+    ) -> Token:
         """Create verification token"""
 
 
@@ -64,7 +66,7 @@ class PasswordHasher(Protocol):
         """Hash the plain password"""
 
     @abstractmethod
-    def verify(self, plain: str, hashed: HashedPassword):
+    def verify(self, plain: str, hashed: HashedPassword) -> bool:
         """Compare that plain hash is equal hashed"""
 
 

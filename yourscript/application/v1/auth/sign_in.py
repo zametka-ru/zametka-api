@@ -24,13 +24,13 @@ class SignInOutputDTO:
 
 class SignUp(Interactor[SignInInputDTO, SignInOutputDTO]):
     def __init__(
-            self,
-            repository: AuthRepository,
-            token_repository: RefreshTokenRepository,
-            jwt: JWT,
-            pwd_context: PasswordHasher,
-            uow: UoW,
-            token_service: RefreshTokenService,
+        self,
+        repository: AuthRepository,
+        token_repository: RefreshTokenRepository,
+        jwt: JWT,
+        pwd_context: PasswordHasher,
+        uow: UoW,
+        token_service: RefreshTokenService,
     ):
         self.uow = uow
         self.jwt = jwt
@@ -57,7 +57,9 @@ class SignUp(Interactor[SignInInputDTO, SignInOutputDTO]):
         self.jwt.set_access_cookies(access_token)
         self.jwt.set_refresh_cookies(refresh_token)
 
-        refresh_token_object: RefreshToken = self.token_service.create(refresh_token, user.user_id)
+        refresh_token_object: RefreshToken = self.token_service.create(
+            refresh_token, user.user_id
+        )
 
         await self.token_repository.delete(user.user_id)
         await self.token_repository.create(refresh_token_object)

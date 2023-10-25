@@ -23,11 +23,11 @@ class RefreshTokenOutputDTO:
 
 class RefreshTokenInteractor(Interactor[RefreshTokenInputDTO, RefreshTokenOutputDTO]):
     def __init__(
-            self,
-            token_repository: RefreshTokenRepository,
-            auth_repository: AuthRepository,
-            jwt: JWT,
-            uow: UoW,
+        self,
+        token_repository: RefreshTokenRepository,
+        auth_repository: AuthRepository,
+        jwt: JWT,
+        uow: UoW,
     ):
         self.uow = uow
         self.jwt = jwt

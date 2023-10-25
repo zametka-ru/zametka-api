@@ -3,7 +3,7 @@ from fastapi_jwt_auth import AuthJWT
 
 from starlette.background import BackgroundTasks
 
-from adapters.v1.auth.mailer import ConfirmationTokenMailer
+from infrastructure.adapters.v1.auth.mailer import ConfirmationTokenMailer
 from infrastructure.settings import load_authjwt_settings, AuthJWTSettings
 
 from infrastructure.dependencies import (

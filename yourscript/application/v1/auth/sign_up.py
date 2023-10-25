@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 
-from application.common.adapters import JWTOperations, AuthSettings, MailTokenSender, PasswordHasher, HashedPassword
+from application.common.adapters import (
+    JWTOperations,
+    AuthSettings,
+    MailTokenSender,
+    PasswordHasher,
+    HashedPassword,
+)
 from application.common.interactor import Interactor
 from application.common.repository import AuthRepository
 from application.common.uow import UoW
