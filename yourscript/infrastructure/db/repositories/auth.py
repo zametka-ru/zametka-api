@@ -1,10 +1,10 @@
 from sqlalchemy import select, delete, exists
 
-from domain.v1.value_objects.user_id import UserId
+from domain.value_objects.user_id import UserId
 from infrastructure.db import User, RefreshToken
 
-from domain.v1.entities.user import User as UserEntity
-from domain.v1.entities.refresh_token import RefreshToken as RefreshTokenEntity
+from domain.entities.user import User as UserEntity
+from domain.entities import RefreshToken as RefreshTokenEntity
 
 from application.common.interfaces import AuthRepository, RefreshTokenRepository
 

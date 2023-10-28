@@ -1,6 +1,6 @@
 from application.common.adapters import PasswordHasher
 
-from domain.v1.value_objects.hashed_password import HashedPassword
+from domain.value_objects.hashed_password import HashedPassword
 
 from passlib.hash import pbkdf2_sha256
 

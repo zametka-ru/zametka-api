@@ -2,10 +2,10 @@ from abc import abstractmethod
 
 from typing import Protocol
 
-from domain.v1.entities.user import User
+from domain.entities.user import User
 
-from domain.v1.value_objects.hashed_password import HashedPassword
-from domain.v1.value_objects.token import Token
+from domain.value_objects.hashed_password import HashedPassword
+from domain.value_objects import Token
 
 
 class TokenSender(Protocol):
@@ -56,6 +56,10 @@ class JWT(Protocol):
     @abstractmethod
     def set_refresh_cookies(self, token: str) -> None:
         """Set refresh cookies"""
+
+    @abstractmethod
+    def get_jwt_subject(self) -> str | int | None:
+        pass
 
 
 class PasswordHasher(Protocol):

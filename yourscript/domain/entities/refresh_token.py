@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from domain.v1.value_objects.user_id import UserId
+from domain.value_objects.user_id import UserId
 
 
 @dataclass

@@ -1,6 +1,6 @@
-from domain.v1.entities.refresh_token import RefreshToken
+from domain.entities import RefreshToken
 
-from domain.v1.value_objects.user_id import UserId
+from domain.value_objects.user_id import UserId
 
 
 class RefreshTokenService:

@@ -5,9 +5,9 @@ from application.common.interactor import Interactor
 from application.common.repository import AuthRepository, RefreshTokenRepository
 from application.common.uow import UoW
 
-from domain.v1.entities.user import User
-from domain.v1.services.refresh_token_service import RefreshTokenService
-from domain.v1.entities.refresh_token import RefreshToken
+from domain.entities.user import User
+from domain.services import RefreshTokenService
+from domain.entities import RefreshToken
 
 
 @dataclass

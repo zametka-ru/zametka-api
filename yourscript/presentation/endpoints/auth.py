@@ -3,7 +3,7 @@ from fastapi_jwt_auth import AuthJWT
 
 from starlette.background import BackgroundTasks
 
-from infrastructure.adapters.v1.auth.mailer import ConfirmationTokenMailer
+from infrastructure.adapters.auth.mailer import ConfirmationTokenMailer
 from infrastructure.settings import load_authjwt_settings, AuthJWTSettings
 
 from infrastructure.dependencies import (
@@ -15,25 +15,25 @@ from infrastructure.dependencies import (
     JinjaDependency,
 )
 
-from application.v1.auth.use_case import (
+from application.auth import (
     register_user,
     user_verify_email,
     user_login as user_login_case,
     token_refresh,
 )
 
-from application.v1.auth.dto import (
+from application.auth import (
     RegisterInputDTO,
     VerificationInputDTO,
     LoginInputDTO,
 )
 
-from application.v1.auth.interfaces import JWTOpsInterface
+from application.auth import JWTOpsInterface
 
 from infrastructure.db.repositories import AuthRepository
 from infrastructure.db.repositories import UnitOfWork
 
-from ..schemas.auth import (
+from presentation.schemas.auth import (
     UserRegisterSchema,
     UserLoginSchema,
 )

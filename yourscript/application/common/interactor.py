@@ -1,4 +1,4 @@
-from typing import Callable, Generic, TypeVar
+from typing import Callable, Generic, TypeVar, Protocol
 
 InputDTO = TypeVar("InputDTO")
 OutputDTO = TypeVar("OutputDTO")
@@ -9,5 +9,21 @@ class Interactor(Generic[InputDTO, OutputDTO]):
         raise NotImplementedError
 
 
+class CRUDInteractor(Protocol):
+    async def create(self, data: InputDTO) -> OutputDTO:
+        raise NotImplementedError
+
+    async def read(self, data: InputDTO) -> OutputDTO:
+        raise NotImplementedError
+
+    async def update(self, data: InputDTO) -> OutputDTO:
+        raise NotImplementedError
+
+    async def delete(self, data: InputDTO) -> OutputDTO:
+        raise NotImplementedError
+
+
 InteractorT = TypeVar("InteractorT")
-InteractorFactory = Callable[[], InteractorT]
+CRUDInteractorT = TypeVar("CRUDInteractorT")
+
+InteractorFactory = Callable[[], InteractorT | CRUDInteractorT]

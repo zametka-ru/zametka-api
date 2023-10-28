@@ -11,7 +11,7 @@ from application.common.interactor import Interactor
 from application.common.repository import AuthRepository
 from application.common.uow import UoW
 
-from domain.v1.services.user_service import UserService
+from domain.services.user_service import UserService
 
 
 @dataclass
@@ -35,11 +35,11 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
         token_sender: MailTokenSender,
         auth_settings: AuthSettings,
         uow: UoW,
-        jwt: JWTOperations,
+        jwt_ops: JWTOperations,
         service: UserService,
     ):
         self.uow = uow
-        self.jwt = jwt
+        self.jwt_ops = jwt_ops
         self.service = service
         self.auth_settings = auth_settings
         self.pwd_context = pwd_context
@@ -67,7 +67,7 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
         secret_key: str = self.auth_settings.secret_key
         algorithm: str = self.auth_settings.algorithm
 
-        token: str = self.token_sender.create(secret_key, algorithm, user, self.jwt)
+        token: str = self.token_sender.create(secret_key, algorithm, user, self.jwt_ops)
 
         self.token_sender.send(
             token, subject="Завершите регистрацию в yourscript.", to_email=user.email

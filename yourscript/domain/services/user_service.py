@@ -1,6 +1,6 @@
 import datetime
 
-from domain.v1.entities.user import User
+from domain.entities.user import User
 
 
 class UserService:

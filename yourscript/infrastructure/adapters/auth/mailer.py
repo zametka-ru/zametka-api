@@ -1,12 +1,22 @@
+from datetime import datetime, timedelta
+
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from jinja2 import Environment
 
 from starlette.background import BackgroundTasks
 
-from application.v1.auth.interfaces import MailTokenSenderInterface
+from application.common.adapters import MailTokenSender
+
+from domain.entities.user import User
+from domain.value_objects.token import Token
 
 
-class ConfirmationTokenMailer(MailTokenSenderInterface):
+def _get_token_link(token: str) -> str:
+    # TODO: make it better
+    return "/v1/auth/verify/{}".format(token)  # how make it better? temp solution
+
+
+class ConfirmationTokenMailer(MailTokenSender):
     """MailTokenSenderInterface implementation"""
 
     mail: FastMail
@@ -19,14 +29,10 @@ class ConfirmationTokenMailer(MailTokenSenderInterface):
         self._background_tasks = background_tasks
         self._jinja = jinja
 
-    def _get_token_link(self, token: str) -> str:
-        # TODO: make it better
-        return "/v1/auth/verify/{}".format(token)  # how make it better? temp solution
-
     def _render_html(self, token: str) -> str:
         template = self._jinja.get_template("confirmation-mail.html")
 
-        rendered: str = template.render(token_link=self._get_token_link(token))
+        rendered: str = template.render(token_link=_get_token_link(token))
 
         return rendered
 
@@ -51,3 +57,19 @@ class ConfirmationTokenMailer(MailTokenSenderInterface):
             self._mail.send_message,
             self._get_message_schema(subject=subject, html=html, to_email=to_email),
         )
+
+    def create(
+        self, secret_key: str, algorithm: str, user: User, jwt: "JWTOperations"
+    ) -> Token:
+
+        exp: datetime = (datetime.now() + timedelta(minutes=5)).utcnow()
+
+        payload = {
+            "user_id": user.user_id,
+            "exp": exp,
+            "user_is_active": user.is_active,
+        }
+
+        token: str = jwt.encode(payload, secret_key, algorithm)
+
+        return Token(token)

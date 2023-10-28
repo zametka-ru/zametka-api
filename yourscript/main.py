@@ -26,8 +26,8 @@ from application.common.adapters import JWTOperations, PasswordHasher, MailToken
 from application.common.repository import AuthRepository, ScriptRepository
 from application.common.uow import UoW
 
-from infrastructure.adapters.v1.auth.jwtops import JWTOperationsImpl
-from infrastructure.adapters.v1.auth.password_hasher import PasswordHasherImpl
+from infrastructure.adapters.auth import JWTOperationsImpl
+from infrastructure.adapters.auth import PasswordHasherImpl
 
 settings = load_settings()
 
@@ -58,7 +58,7 @@ async def on_startup():
 
     mail = FastMail(mail_settings)
     jinja_env: Environment = Environment(
-        loader=PackageLoader("infrastructure.adapters.v1.auth"),
+        loader=PackageLoader("infrastructure.adapters.auth"),
         autoescape=select_autoescape(),
     )
 

@@ -7,8 +7,8 @@ from application.common.interactor import Interactor
 from application.common.repository import AuthRepository
 from application.common.uow import UoW
 
-from domain.v1.entities.user import User
-from domain.v1.value_objects.user_id import UserId
+from domain.entities.user import User
+from domain.value_objects.user_id import UserId
 
 
 @dataclass

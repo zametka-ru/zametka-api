@@ -1,9 +1,9 @@
 from sqlalchemy import select, update, delete
 
-from domain.v1.value_objects.script_id import ScriptId
+from domain.value_objects.script_id import ScriptId
 from infrastructure.db import Script
 
-from domain.v1.entities.script import Script as ScriptEntity
+from domain.entities import Script as ScriptEntity
 
 from application.common.interfaces import ScriptRepository
 

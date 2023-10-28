@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi_jwt_auth import AuthJWT
 
-from presentation.v1.schemas.script import (
+from presentation.schemas.script import (
     CreateScriptSchema,
     UpdateScriptSchema,
 )
@@ -17,13 +17,13 @@ from infrastructure.db.repositories import UnitOfWork
 from infrastructure.db.repositories import AuthRepository
 from infrastructure.db.repositories.script import ScriptRepository
 
-from application.v1.script.use_case import (
+from application.script import (
     create_script_case,
     read_script_case,
     update_script_case,
     delete_script_case,
 )
-from application.v1.script.dto import (
+from application.script.dto import (
     CreateScriptInputDTO,
     ReadScriptInputDTO,
     UpdateScriptInputDTO,
