@@ -5,7 +5,9 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from domain.services.script_service import ScriptService
 
+from application.common.adapters import JWT
 from application.script.script_interactor import ScriptInteractor
+
 from application.script.dto import (
     CreateScriptInputDTO,
     CreateScriptOutputDTO,
@@ -30,7 +32,7 @@ class IoC(InteractorFactory):
         self._session_factory = session_factory
         self._script_service = ScriptService()
 
-    def _construct_script_interactor(self, session: AsyncSession) -> ScriptInteractor:
+    def _construct_script_interactor(self, session: AsyncSession, jwt: JWT) -> ScriptInteractor:
         script_repository = get_script_repository(session)
         auth_repository = get_auth_repository(session)
         uow = get_uow(session)
@@ -41,15 +43,16 @@ class IoC(InteractorFactory):
             auth_repository=auth_repository,
             uow=uow,
             service=service,
+            jwt=jwt,
         )
 
     @asynccontextmanager
     async def create_script(
-        self,
+        self, jwt: JWT
     ) -> AsyncContextManager[
         Callable[[CreateScriptInputDTO], Awaitable[CreateScriptOutputDTO]]
     ]:
         async with self._session_factory() as session:
-            interactor = self._construct_script_interactor(session)
+            interactor = self._construct_script_interactor(session, jwt)
 
             yield interactor.create
