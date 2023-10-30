@@ -9,7 +9,6 @@ from application.v1.exceptions.auth import JWTAlreadyUsedError, JWTExpiredError
 from .interfaces import JWTOpsInterface
 
 
-
 def jwt_already_used_check(
     secret_key: str, algorithm: str, user: User, token: str, jwtops: JWTOpsInterface
 ) -> None:

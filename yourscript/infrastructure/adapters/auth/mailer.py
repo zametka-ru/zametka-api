@@ -61,7 +61,6 @@ class ConfirmationTokenMailer(MailTokenSender):
     def create(
         self, secret_key: str, algorithm: str, user: User, jwt: "JWTOperations"
     ) -> Token:
-
         exp: datetime = (datetime.now() + timedelta(minutes=5)).utcnow()
 
         payload = {

@@ -24,12 +24,12 @@ from .dto import (
 
 class ScriptInteractor(CRUDInteractor):
     def __init__(
-            self,
-            script_repository: ScriptRepository,
-            auth_repository: AuthRepository,
-            uow: UoW,
-            service: ScriptService,
-            jwt: JWT,
+        self,
+        script_repository: ScriptRepository,
+        auth_repository: AuthRepository,
+        uow: UoW,
+        service: ScriptService,
+        jwt: JWT,
     ):
         self.uow = uow
         self.service = service
@@ -99,11 +99,11 @@ class ScriptInteractor(CRUDInteractor):
     async def update(self, data: UpdateScriptInputDTO) -> UpdateScriptOutputDTO:
         script: Script = await self._get_script(data.script_id)
 
-        new_script: Script = self.service.create(data.title, data.text, script.author_id)
-
-        await self.script_repository.update(
-            data.script_id, new_script
+        new_script: Script = self.service.create(
+            data.title, data.text, script.author_id
         )
+
+        await self.script_repository.update(data.script_id, new_script)
 
         await self.uow.commit()
 
