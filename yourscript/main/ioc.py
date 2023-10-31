@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from typing import Callable, Awaitable, AsyncContextManager
+from typing import Callable, Awaitable, AsyncIterator, TypeVar, TypeAlias
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
@@ -9,16 +9,6 @@ from domain.services.script_service import ScriptService
 from application.common.adapters import JWT
 from application.script.script_interactor import ScriptInteractor
 
-from application.script.dto import (
-    CreateScriptInputDTO,
-    CreateScriptOutputDTO,
-    ReadScriptInputDTO,
-    ReadScriptOutputDTO,
-    UpdateScriptInputDTO,
-    UpdateScriptOutputDTO,
-    DeleteScriptInputDTO,
-    DeleteScriptOutputDTO,
-)
 
 from presentation.interactor_factory import InteractorFactory
 from infrastructure.db.provider import (
@@ -27,6 +17,12 @@ from infrastructure.db.provider import (
     get_uow,
 )
 
+# G means generic
+GInputDTO  = TypeVar("GInputDTO")
+GOutputDTO = TypeVar("GOutputDTO")
+
+InteractorCallable: TypeAlias = Callable[[GInputDTO], Awaitable[GOutputDTO]]
+InteractorPicker: TypeAlias = Callable[[ScriptInteractor], InteractorCallable[GInputDTO, GOutputDTO]]
 
 class IoC(InteractorFactory):
     _session_factory: async_sessionmaker
@@ -53,45 +49,11 @@ class IoC(InteractorFactory):
         )
 
     @asynccontextmanager
-    async def create_script(
-        self, jwt: JWT
-    ) -> AsyncContextManager[
-        Callable[[CreateScriptInputDTO], Awaitable[CreateScriptOutputDTO]]
-    ]:
+    async def pick_script_interactor(
+        self,
+        jwt: JWT,
+        picker: InteractorPicker[GInputDTO, GOutputDTO]
+    ) -> AsyncIterator[InteractorCallable[GInputDTO, GOutputDTO]]:
         async with self._session_factory() as session:
             interactor = self._construct_script_interactor(session, jwt)
-
-            yield interactor.create
-
-    @asynccontextmanager
-    async def read_script(
-        self, jwt: JWT
-    ) -> AsyncContextManager[
-        Callable[[ReadScriptInputDTO], Awaitable[ReadScriptOutputDTO]]
-    ]:
-        async with self._session_factory() as session:
-            interactor = self._construct_script_interactor(session, jwt)
-
-            yield interactor.read
-
-    @asynccontextmanager
-    async def update_script(
-        self, jwt: JWT
-    ) -> AsyncContextManager[
-        Callable[[UpdateScriptInputDTO], Awaitable[UpdateScriptOutputDTO]]
-    ]:
-        async with self._session_factory() as session:
-            interactor = self._construct_script_interactor(session, jwt)
-
-            yield interactor.update
-
-    @asynccontextmanager
-    async def delete_script(
-        self, jwt: JWT
-    ) -> AsyncContextManager[
-        Callable[[DeleteScriptInputDTO], Awaitable[DeleteScriptOutputDTO]]
-    ]:
-        async with self._session_factory() as session:
-            interactor = self._construct_script_interactor(session, jwt)
-
-            yield interactor.delete
+            yield picker(interactor)
