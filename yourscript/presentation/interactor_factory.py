@@ -17,7 +17,7 @@ from application.script.dto import (
 
 class InteractorFactory(ABC):
     @abstractmethod
-    async def create_script(
+    def create_script(
         self, jwt: JWT
     ) -> AsyncContextManager[
         Callable[[CreateScriptInputDTO], Awaitable[CreateScriptOutputDTO]]
@@ -25,7 +25,7 @@ class InteractorFactory(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_script(
+    def read_script(
         self, jwt: JWT
     ) -> AsyncContextManager[
         Callable[[ReadScriptInputDTO], Awaitable[ReadScriptOutputDTO]]
@@ -33,7 +33,7 @@ class InteractorFactory(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update_script(
+    def update_script(
         self, jwt: JWT
     ) -> AsyncContextManager[
         Callable[[UpdateScriptInputDTO], Awaitable[UpdateScriptOutputDTO]]
@@ -41,7 +41,7 @@ class InteractorFactory(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_script(
+    def delete_script(
         self, jwt: JWT
     ) -> AsyncContextManager[
         Callable[[DeleteScriptInputDTO], Awaitable[DeleteScriptOutputDTO]]
