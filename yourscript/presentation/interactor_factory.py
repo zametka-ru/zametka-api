@@ -1,49 +1,23 @@
-from abc import abstractmethod, ABC
-
-from typing import AsyncContextManager, Callable, Awaitable
+from abc import ABC
+from contextlib import asynccontextmanager
+from typing import TypeVar, TypeAlias, Callable, Awaitable, AsyncIterator
 
 from application.common.adapters import JWT
-from application.script.dto import (
-    ReadScriptInputDTO,
-    ReadScriptOutputDTO,
-    UpdateScriptInputDTO,
-    UpdateScriptOutputDTO,
-    DeleteScriptInputDTO,
-    DeleteScriptOutputDTO,
-    CreateScriptOutputDTO,
-    CreateScriptInputDTO,
-)
+from application.script.script_interactor import ScriptInteractor
+
+# G means generic
+GInputDTO = TypeVar("GInputDTO")
+GOutputDTO = TypeVar("GOutputDTO")
+
+InteractorCallable: TypeAlias = Callable[[GInputDTO], Awaitable[GOutputDTO]]
+InteractorPicker: TypeAlias = Callable[
+    [ScriptInteractor], InteractorCallable[GInputDTO, GOutputDTO]
+]
 
 
 class InteractorFactory(ABC):
-    @abstractmethod
-    def create_script(
-        self, jwt: JWT
-    ) -> AsyncContextManager[
-        Callable[[CreateScriptInputDTO], Awaitable[CreateScriptOutputDTO]]
-    ]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def read_script(
-        self, jwt: JWT
-    ) -> AsyncContextManager[
-        Callable[[ReadScriptInputDTO], Awaitable[ReadScriptOutputDTO]]
-    ]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def update_script(
-        self, jwt: JWT
-    ) -> AsyncContextManager[
-        Callable[[UpdateScriptInputDTO], Awaitable[UpdateScriptOutputDTO]]
-    ]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def delete_script(
-        self, jwt: JWT
-    ) -> AsyncContextManager[
-        Callable[[DeleteScriptInputDTO], Awaitable[DeleteScriptOutputDTO]]
-    ]:
+    @asynccontextmanager
+    def pick_script_interactor(
+        self, jwt: JWT, picker: InteractorPicker[GInputDTO, GOutputDTO]
+    ) -> AsyncIterator[InteractorCallable[GInputDTO, GOutputDTO]]:
         raise NotImplementedError

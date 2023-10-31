@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from typing import Callable, Awaitable, AsyncIterator, TypeVar, TypeAlias
+from typing import AsyncIterator
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
@@ -9,20 +9,20 @@ from domain.services.script_service import ScriptService
 from application.common.adapters import JWT
 from application.script.script_interactor import ScriptInteractor
 
+from presentation.interactor_factory import (
+    InteractorFactory,
+    InteractorPicker,
+    GInputDTO,
+    GOutputDTO,
+    InteractorCallable,
+)
 
-from presentation.interactor_factory import InteractorFactory
 from infrastructure.db.provider import (
     get_script_repository,
     get_auth_repository,
     get_uow,
 )
 
-# G means generic
-GInputDTO  = TypeVar("GInputDTO")
-GOutputDTO = TypeVar("GOutputDTO")
-
-InteractorCallable: TypeAlias = Callable[[GInputDTO], Awaitable[GOutputDTO]]
-InteractorPicker: TypeAlias = Callable[[ScriptInteractor], InteractorCallable[GInputDTO, GOutputDTO]]
 
 class IoC(InteractorFactory):
     _session_factory: async_sessionmaker
@@ -50,9 +50,7 @@ class IoC(InteractorFactory):
 
     @asynccontextmanager
     async def pick_script_interactor(
-        self,
-        jwt: JWT,
-        picker: InteractorPicker[GInputDTO, GOutputDTO]
+        self, jwt: JWT, picker: InteractorPicker[GInputDTO, GOutputDTO]
     ) -> AsyncIterator[InteractorCallable[GInputDTO, GOutputDTO]]:
         async with self._session_factory() as session:
             interactor = self._construct_script_interactor(session, jwt)
