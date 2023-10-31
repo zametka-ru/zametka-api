@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+
 from typing import Callable, Awaitable, AsyncContextManager
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
@@ -11,9 +12,9 @@ from application.script.script_interactor import ScriptInteractor
 from application.script.dto import (
     CreateScriptInputDTO,
     CreateScriptOutputDTO,
-    # ReadScriptInputDTO, ReadScriptOutputDTO,
-    # UpdateScriptInputDTO, UpdateScriptOutputDTO,
-    # DeleteScriptInputDTO, DeleteScriptOutputDTO,
+    ReadScriptInputDTO, ReadScriptOutputDTO,
+    UpdateScriptInputDTO, UpdateScriptOutputDTO,
+    DeleteScriptInputDTO, DeleteScriptOutputDTO,
 )
 
 from presentation.interactor_factory import InteractorFactory
@@ -56,3 +57,36 @@ class IoC(InteractorFactory):
             interactor = self._construct_script_interactor(session, jwt)
 
             yield interactor.create
+
+    @asynccontextmanager
+    async def read_script(
+        self, jwt: JWT
+    ) -> AsyncContextManager[
+        Callable[[ReadScriptInputDTO], Awaitable[ReadScriptOutputDTO]]
+    ]:
+        async with self._session_factory() as session:
+            interactor = self._construct_script_interactor(session, jwt)
+
+            yield interactor.read
+
+    @asynccontextmanager
+    async def update_script(
+        self, jwt: JWT
+    ) -> AsyncContextManager[
+        Callable[[UpdateScriptInputDTO], Awaitable[UpdateScriptOutputDTO]]
+    ]:
+        async with self._session_factory() as session:
+            interactor = self._construct_script_interactor(session, jwt)
+
+            yield interactor.update
+
+    @asynccontextmanager
+    async def delete_script(
+        self, jwt: JWT
+    ) -> AsyncContextManager[
+        Callable[[DeleteScriptInputDTO], Awaitable[DeleteScriptOutputDTO]]
+    ]:
+        async with self._session_factory() as session:
+            interactor = self._construct_script_interactor(session, jwt)
+
+            yield interactor.delete

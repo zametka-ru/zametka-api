@@ -9,11 +9,11 @@ services:
         env_file:
             - .env
         volumes:
-            - ./backend/infrastructure/db/migrations/versions:/home/app/backend/infrastructure/db/migrations/versions
+            - ./yourscript/infrastructure/db/migrations/versions:/home/app/yourscript/infrastructure/db/migrations/versions
         depends_on:
-            - backend_database
+            - db
 
-    backend_database:
+    db:
         image: postgres:14.5-alpine
         volumes:
             - backend_pg_data:/var/lib/postgresql/data/

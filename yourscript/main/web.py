@@ -1,33 +1,14 @@
 import uvicorn
 
 from fastapi import FastAPI
-from fastapi_mail import FastMail
 from fastapi.middleware.cors import CORSMiddleware
-from jinja2 import Environment, PackageLoader, select_autoescape
 
-from infrastructure.db.provider import (
-    DbProvider,
-    get_uow,
-    get_auth_repository,
-    get_script_repository,
-)
-from presentation.v1 import include_routers, include_exception_handlers
+from main.ioc import IoC
+from presentation import include_routers, include_exception_handlers
 
 from infrastructure.config_loader import load_settings, load_mail_settings
 
 from infrastructure.db import get_async_sessionmaker
-
-from infrastructure.stubs import (
-    SessionStub,
-    JinjaStub,
-)
-
-from application.common.adapters import JWTOperations, PasswordHasher, MailTokenSender
-from application.common.repository import AuthRepository, ScriptRepository
-from application.common.uow import UoW
-
-from infrastructure.adapters.auth import JWTOperationsImpl
-from infrastructure.adapters.auth import PasswordHasherImpl
 
 settings = load_settings()
 
@@ -50,29 +31,9 @@ include_exception_handlers(app)
 
 @app.on_event("startup")
 async def on_startup():
-    auth_settings = settings.auth
-    mail_settings = load_mail_settings()
+    session_factory = await get_async_sessionmaker(settings.db)
 
-    async_sessionmaker = await get_async_sessionmaker(settings.db)
-    db_provider = DbProvider(pool=async_sessionmaker)
-
-    mail = FastMail(mail_settings)
-    jinja_env: Environment = Environment(
-        loader=PackageLoader("infrastructure.adapters.auth"),
-        autoescape=select_autoescape(),
-    )
-
-    password_hasher = PasswordHasherImpl()
-    jwt_operations = JWTOperationsImpl()
-
-    app.dependency_overrides[SessionStub] = db_provider.get_session
-    app.dependency_overrides[PasswordHasher] = lambda: password_hasher
-    app.dependency_overrides[MailTokenSender] = lambda: mail
-    app.dependency_overrides[AuthRepository] = get_auth_repository
-    app.dependency_overrides[UoW] = get_uow
-    app.dependency_overrides[ScriptRepository] = get_script_repository
-    app.dependency_overrides[JinjaStub] = lambda: jinja_env
-    app.dependency_overrides[JWTOperations] = lambda: jwt_operations
+    ioc: IoC = IoC(session_factory=session_factory)
 
     include_routers(app)
 
