@@ -1,28 +1,13 @@
 from fastapi import APIRouter, Depends
-from fastapi_jwt_auth import AuthJWT
 
+from application.common.adapters import JWT
+from domain.value_objects.script_id import ScriptId
+from presentation.interactor_factory import InteractorFactory
 from presentation.schemas.script import (
     CreateScriptSchema,
     UpdateScriptSchema,
 )
 
-from infrastructure.dependencies import (
-    ScriptRepositoryDependency,
-    AuthRepositoryDependency,
-    UnitOfWorkDependency,
-)
-
-from infrastructure.db.repositories import UnitOfWork
-
-from infrastructure.db.repositories import AuthRepository
-from infrastructure.db.repositories.script import ScriptRepository
-
-from application.script import (
-    create_script_case,
-    read_script_case,
-    update_script_case,
-    delete_script_case,
-)
 from application.script.dto import (
     CreateScriptInputDTO,
     ReadScriptInputDTO,
@@ -38,108 +23,57 @@ router = APIRouter(
 
 
 @router.post("/create")
-async def create_script(
-    script: CreateScriptSchema,
-    repository: ScriptRepositoryDependency = Depends(),
-    auth_repository: AuthRepositoryDependency = Depends(),
-    Authorize: AuthJWT = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
-):
+async def create(script: CreateScriptSchema, ioc: InteractorFactory = Depends(), jwt: JWT = Depends()):
     """Create script object"""
 
-    repository: ScriptRepository  # type:ignore
-    auth_repository: AuthRepository  # type:ignore
-    uow: UnitOfWork  # type:ignore
+    async with ioc.create_script(jwt) as create_script:
+        result = await create_script(CreateScriptInputDTO(
+            text=script.text,
+            title=script.title,
+        ))
 
-    Authorize.jwt_required()
-
-    dto = CreateScriptInputDTO(
-        script_text=script.text,
-        script_title=script.title,
-    )
-
-    response = await create_script_case(
-        dto=dto,
-        repository=repository,
-        auth_repository=auth_repository,
-        uow=uow,
-        Authorize=Authorize,
-    )
-
-    return response
+        return result
 
 
 @router.get("/{script_id}")
-async def read_script(
-    script_id: int,
-    Authorize: AuthJWT = Depends(),
-    repository: ScriptRepositoryDependency = Depends(),
-    auth_repository: AuthRepositoryDependency = Depends(),
+async def read(
+    script_id: int, ioc: InteractorFactory = Depends(), jwt: JWT = Depends()
 ):
     """Read a script by id"""
 
-    repository: ScriptRepository  # type:ignore
-    auth_repository: AuthRepository  # type:ignore
+    async with ioc.read_script(jwt) as read_script:
+        result = await read_script(ReadScriptInputDTO(
+            script_id=ScriptId(script_id),
+        ))
 
-    Authorize.jwt_required()
-
-    dto = ReadScriptInputDTO(script_id=script_id)
-
-    response = await read_script_case(dto, Authorize, auth_repository, repository)
-
-    return response
+        return result
 
 
 @router.put("/{script_id}")
-async def update_script(
-    script_update: UpdateScriptSchema,
-    script_id: int,
-    Authorize: AuthJWT = Depends(),
-    repository: ScriptRepositoryDependency = Depends(),
-    auth_repository: AuthRepositoryDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+async def update(
+    new_script: UpdateScriptSchema, script_id: int, ioc: InteractorFactory = Depends(), jwt: JWT = Depends()
 ):
     """Update script by id"""
 
-    repository: ScriptRepository  # type:ignore
-    auth_repository: AuthRepository  # type:ignore
-    uow: UnitOfWork  # type:ignore
+    async with ioc.update_script(jwt) as update_script:
+        result = await update_script(UpdateScriptInputDTO(
+            script_id=ScriptId(script_id),
+            title=new_script.title,
+            text=new_script.text,
+        ))
 
-    Authorize.jwt_required()
-
-    dto = UpdateScriptInputDTO(
-        script_id=script_id,
-        script_title=script_update.title,
-        script_text=script_update.text,
-    )
-
-    response = await update_script_case(
-        dto, Authorize, auth_repository, repository, uow
-    )
-
-    return response
+        return result
 
 
 @router.delete("/{script_id}")
-async def delete_script(
-    script_id: int,
-    Authorize: AuthJWT = Depends(),
-    repository: ScriptRepositoryDependency = Depends(),
-    auth_repository: AuthRepositoryDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+async def delete(
+    script_id: int, ioc: InteractorFactory = Depends(), jwt: JWT = Depends()
 ):
     """Delete script by id"""
 
-    repository: ScriptRepository  # type:ignore
-    auth_repository: AuthRepository  # type:ignore
-    uow: UnitOfWork  # type:ignore
+    async with ioc.delete_script(jwt) as delete_script:
+        result = await delete_script(DeleteScriptInputDTO(
+            script_id=ScriptId(script_id),
+        ))
 
-    Authorize.jwt_required()
-
-    dto = DeleteScriptInputDTO(script_id=script_id)
-
-    response = await delete_script_case(
-        dto, Authorize, auth_repository, repository, uow
-    )
-
-    return response
+        return result

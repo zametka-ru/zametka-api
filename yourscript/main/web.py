@@ -6,9 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from main.ioc import IoC
 from presentation import include_routers, include_exception_handlers
 
-from infrastructure.config_loader import load_settings, load_mail_settings
+from infrastructure.config_loader import load_settings
 
 from infrastructure.db import get_async_sessionmaker
+from presentation.interactor_factory import InteractorFactory
 
 settings = load_settings()
 
@@ -33,7 +34,9 @@ include_exception_handlers(app)
 async def on_startup():
     session_factory = await get_async_sessionmaker(settings.db)
 
-    ioc: IoC = IoC(session_factory=session_factory)
+    ioc: InteractorFactory = IoC(session_factory=session_factory)
+
+    app.dependency_overrides[InteractorFactory] = ioc
 
     include_routers(app)
 

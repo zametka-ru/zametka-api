@@ -12,9 +12,12 @@ from application.script.script_interactor import ScriptInteractor
 from application.script.dto import (
     CreateScriptInputDTO,
     CreateScriptOutputDTO,
-    ReadScriptInputDTO, ReadScriptOutputDTO,
-    UpdateScriptInputDTO, UpdateScriptOutputDTO,
-    DeleteScriptInputDTO, DeleteScriptOutputDTO,
+    ReadScriptInputDTO,
+    ReadScriptOutputDTO,
+    UpdateScriptInputDTO,
+    UpdateScriptOutputDTO,
+    DeleteScriptInputDTO,
+    DeleteScriptOutputDTO,
 )
 
 from presentation.interactor_factory import InteractorFactory
@@ -33,7 +36,9 @@ class IoC(InteractorFactory):
         self._session_factory = session_factory
         self._script_service = ScriptService()
 
-    def _construct_script_interactor(self, session: AsyncSession, jwt: JWT) -> ScriptInteractor:
+    def _construct_script_interactor(
+        self, session: AsyncSession, jwt: JWT
+    ) -> ScriptInteractor:
         script_repository = get_script_repository(session)
         auth_repository = get_auth_repository(session)
         uow = get_uow(session)
