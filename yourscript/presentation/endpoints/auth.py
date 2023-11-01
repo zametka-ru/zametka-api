@@ -1,12 +1,17 @@
 from fastapi import APIRouter, Depends
+from fastapi_another_jwt_auth import AuthJWT
+
 from starlette.background import BackgroundTasks
 
-from application.common.adapters import JWT
+from application.auth.sign_up import SignUpInputDTO, SignUpOutputDTO
+from application.auth.sign_in import SignInInputDTO, SignInOutputDTO
 
-from application.auth.sign_up import SignUpInputDTO
-from application.auth.sign_in import SignInInputDTO
-from application.auth.email_verification import EmailVerificationInputDTO
-from application.auth.refresh_token import RefreshTokenInputDTO
+from application.auth.email_verification import (
+    EmailVerificationInputDTO,
+    EmailVerificationOutputDTO,
+)
+from application.auth.refresh_token import RefreshTokenInputDTO, RefreshTokenOutputDTO
+
 from domain.entities.refresh_token import RefreshToken
 from domain.value_objects.user_id import UserId
 
@@ -23,7 +28,7 @@ router = APIRouter(
 )
 
 
-@router.post("/sign-up")
+@router.post("/sign-up", response_model=SignUpOutputDTO)
 async def sign_up(
     user_data: UserRegisterSchema,
     background_tasks: BackgroundTasks,
@@ -44,10 +49,10 @@ async def sign_up(
         return response
 
 
-@router.post("/sign-in")
+@router.post("/sign-in", response_model=SignInOutputDTO)
 async def sign_in(
     auth_data: UserLoginSchema,
-    jwt: JWT = Depends(),
+    jwt: AuthJWT = Depends(),
     ioc: InteractorFactory = Depends(),
 ):
     """Login endpoint"""
@@ -60,7 +65,7 @@ async def sign_in(
         return response
 
 
-@router.get("/verify/{token}")
+@router.get("/verify/{token}", response_model=EmailVerificationOutputDTO)
 async def email_verification(token: str, ioc: InteractorFactory = Depends()):
     """Email verification endpoint"""
 
@@ -74,9 +79,9 @@ async def email_verification(token: str, ioc: InteractorFactory = Depends()):
         return response
 
 
-@router.post("/refresh")
+@router.post("/refresh", response_model=RefreshTokenOutputDTO)
 async def refresh_token(
-    jwt: JWT = Depends(),
+    jwt: AuthJWT = Depends(),
     ioc: InteractorFactory = Depends(),
 ):
     """Refresh access token endpoint"""

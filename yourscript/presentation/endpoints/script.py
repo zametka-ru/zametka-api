@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
+from fastapi_another_jwt_auth import AuthJWT
 
-from application.common.adapters import JWT
 from domain.value_objects.script_id import ScriptId
 from presentation.interactor_factory import InteractorFactory
 from presentation.schemas.script import (
@@ -10,9 +10,13 @@ from presentation.schemas.script import (
 
 from application.script.dto import (
     CreateScriptInputDTO,
+    CreateScriptOutputDTO,
     ReadScriptInputDTO,
+    ReadScriptOutputDTO,
     UpdateScriptInputDTO,
+    UpdateScriptOutputDTO,
     DeleteScriptInputDTO,
+    DeleteScriptOutputDTO,
 )
 
 router = APIRouter(
@@ -22,9 +26,11 @@ router = APIRouter(
 )
 
 
-@router.post("/create")
+@router.post("/create", response_model=CreateScriptOutputDTO)
 async def create(
-    script: CreateScriptSchema, ioc: InteractorFactory = Depends(), jwt: JWT = Depends()
+    script: CreateScriptSchema,
+    ioc: InteractorFactory = Depends(),
+    jwt: AuthJWT = Depends(),
 ):
     """Create script object"""
 
@@ -39,9 +45,9 @@ async def create(
         return response
 
 
-@router.get("/{script_id}")
+@router.get("/{script_id}", response_model=ReadScriptOutputDTO)
 async def read(
-    script_id: int, ioc: InteractorFactory = Depends(), jwt: JWT = Depends()
+    script_id: int, ioc: InteractorFactory = Depends(), jwt: AuthJWT = Depends()
 ):
     """Read a script by id"""
 
@@ -55,12 +61,12 @@ async def read(
         return response
 
 
-@router.put("/{script_id}")
+@router.put("/{script_id}", response_model=UpdateScriptOutputDTO)
 async def update(
     new_script: UpdateScriptSchema,
     script_id: int,
     ioc: InteractorFactory = Depends(),
-    jwt: JWT = Depends(),
+    jwt: AuthJWT = Depends(),
 ):
     """Update script by id"""
 
@@ -76,9 +82,9 @@ async def update(
         return response
 
 
-@router.delete("/{script_id}")
+@router.delete("/{script_id}", response_model=DeleteScriptOutputDTO)
 async def delete(
-    script_id: int, ioc: InteractorFactory = Depends(), jwt: JWT = Depends()
+    script_id: int, ioc: InteractorFactory = Depends(), jwt: AuthJWT = Depends()
 ):
     """Delete script by id"""
 

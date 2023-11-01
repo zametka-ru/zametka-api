@@ -3,9 +3,9 @@ from application.common.interactor import CRUDInteractor
 from application.common.repository import AuthRepository, ScriptRepository
 from application.common.uow import UoW
 
-from domain.entities import Script
+from domain.entities.script import Script
 from domain.entities.user import User
-from domain.exceptions import ScriptNotExists, ScriptAccessDenied
+from domain.exceptions.script import ScriptNotExists, ScriptAccessDenied
 from domain.services.script_service import ScriptService
 from domain.value_objects.script_id import ScriptId
 from domain.value_objects.user_id import UserId

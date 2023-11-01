@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from domain.entities import Script
+from domain.entities.script import Script
 from domain.value_objects.script_id import ScriptId
 
 

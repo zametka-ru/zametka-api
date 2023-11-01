@@ -1,10 +1,12 @@
+from typing import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from infrastructure.config_loader import DB
 
 
-async def get_engine(settings: DB):
+async def get_engine(settings: DB) -> AsyncGenerator[AsyncEngine, None]:
     """Get async SA engine"""
 
     engine = create_async_engine(

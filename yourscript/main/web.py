@@ -1,14 +1,20 @@
-import uvicorn
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_another_jwt_auth import AuthJWT
 from fastapi_mail import FastMail
+
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from main.ioc import IoC
+from infrastructure.db.main import get_engine
 from presentation import include_routers, include_exception_handlers
 
-from infrastructure.config_loader import load_settings, load_mail_settings
+from main.ioc import IoC
+
+from infrastructure.config_loader import (
+    load_settings,
+    load_mail_settings,
+    load_authjwt_settings,
+)
 
 from infrastructure.db import get_async_sessionmaker
 from presentation.interactor_factory import InteractorFactory
@@ -32,9 +38,22 @@ app.add_middleware(
 include_exception_handlers(app)
 
 
+@AuthJWT.load_config
+def load_authjwt_config():
+    authjwt_config = load_authjwt_settings()
+
+    return [
+        ("authjwt_secret_key", authjwt_config.authjwt_secret_key),
+        ("authjwt_token_location", authjwt_config.authjwt_token_location),
+    ]
+
+
 @app.on_event("startup")
 async def on_startup():
-    session_factory = await get_async_sessionmaker()
+    engine_factory = get_engine(settings.db)
+    engine = await engine_factory.__anext__()
+
+    session_factory = await get_async_sessionmaker(engine)
 
     auth_settings = settings.auth
     mail_settings = load_mail_settings()
@@ -57,7 +76,3 @@ async def on_startup():
     app.dependency_overrides[InteractorFactory] = ioc
 
     include_routers(app)
-
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", reload=True, port=80)

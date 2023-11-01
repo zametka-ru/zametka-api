@@ -3,6 +3,7 @@ from typing import AsyncIterator
 
 from fastapi_mail import FastMail
 from jinja2 import Environment
+
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from starlette.background import BackgroundTasks
 
@@ -23,19 +24,20 @@ from infrastructure.adapters.auth.mailer import MailTokenSenderImpl
 from infrastructure.adapters.auth.password_hasher import PasswordHasherImpl
 from infrastructure.config_loader import AuthSettings
 
+from infrastructure.db.provider import (
+    get_script_repository,
+    get_auth_repository,
+    get_uow,
+    get_token_repository,
+)
+
+
 from presentation.interactor_factory import (
     InteractorFactory,
     InteractorPicker,
     GInputDTO,
     GOutputDTO,
     InteractorCallable,
-)
-
-from infrastructure.db.provider import (
-    get_script_repository,
-    get_auth_repository,
-    get_uow,
-    get_token_repository,
 )
 
 

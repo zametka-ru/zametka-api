@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
     backend:
-        build: yourscript
+        build: .
         command: python main.py
         ports:
             - "8000:80"
