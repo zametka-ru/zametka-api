@@ -3,9 +3,9 @@ from sqlalchemy import select, update, delete
 from domain.value_objects.script_id import ScriptId
 from infrastructure.db import Script
 
-from domain.entities import Script as ScriptEntity
+from domain.entities.script import Script as ScriptEntity
 
-from application.common.interfaces import ScriptRepository
+from application.common.repository import ScriptRepository
 
 
 class ScriptRepositoryImpl(ScriptRepository):
@@ -21,7 +21,7 @@ class ScriptRepositoryImpl(ScriptRepository):
             title=script.title,
             text=script.text,
             created_at=script.created_at,
-            user_id=script.user_id,
+            author_id=script.author_id,
         )
 
         self.session.add(db_script)
@@ -31,7 +31,7 @@ class ScriptRepositoryImpl(ScriptRepository):
     async def get(self, script_id: ScriptId) -> ScriptEntity:
         """Get script by id"""
 
-        q = select(Script).where(Script.id == script_id)
+        q = select(Script.text, Script.title, Script.created_at, Script.user_id).where(Script.id == script_id)
 
         res = await self.session.execute(q)
         script: Script = res.scalar()
@@ -40,7 +40,7 @@ class ScriptRepositoryImpl(ScriptRepository):
             title=script.title,
             text=script.text,
             created_at=script.created_at,
-            user_id=script.user_id,
+            author_id=script.user_id,
         )
 
     async def update(self, script_id: ScriptId, script: ScriptEntity) -> ScriptEntity:

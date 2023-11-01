@@ -53,6 +53,9 @@ class IoC(InteractorFactory):
 
         self._auth_settings: AuthSettings = auth_settings
 
+        self._secret_key = self._auth_settings.secret_key
+        self._algorithm = self._auth_settings.algorithm
+
     def _construct_script_interactor(
         self, session: AsyncSession, jwt: JWT
     ) -> ScriptInteractor:
@@ -78,14 +81,14 @@ class IoC(InteractorFactory):
             yield picker(interactor)
 
     @asynccontextmanager
-    async def sign_up(self) -> AsyncContextManager[SignUp]:
+    async def sign_up(self) -> AsyncIterator[SignUp]:
         async with self._session_factory() as session:
             interactor = SignUp(
                 repository=get_auth_repository(session),
                 pwd_context=self._password_hasher,
                 token_sender=MailTokenSenderImpl(),
-                secret_key=self._auth_settings.secret_key,
-                algorithm=self._auth_settings.algorithm,
+                secret_key=self._secret_key,
+                algorithm=self._algorithm,
                 jwt_ops=self._jwt_ops,
                 service=self._user_service,
                 uow=get_uow(session),
@@ -94,7 +97,7 @@ class IoC(InteractorFactory):
             yield interactor
 
     @asynccontextmanager
-    async def sign_in(self, jwt: JWT) -> AsyncContextManager[SignIn]:
+    async def sign_in(self, jwt: JWT) -> AsyncIterator[SignIn]:
         async with self._session_factory() as session:
             interactor = SignIn(
                 repository=get_auth_repository(session),
@@ -108,9 +111,7 @@ class IoC(InteractorFactory):
             yield interactor
 
     @asynccontextmanager
-    async def refresh_token(
-        self, jwt: JWT
-    ) -> AsyncContextManager[RefreshTokenInteractor]:
+    async def refresh_token(self, jwt: JWT) -> AsyncIterator[RefreshTokenInteractor]:
         async with self._session_factory() as session:
             interactor = RefreshTokenInteractor(
                 uow=get_uow(session),
@@ -122,12 +123,14 @@ class IoC(InteractorFactory):
             yield interactor
 
     @asynccontextmanager
-    async def email_verification(self) -> AsyncContextManager[EmailVerification]:
+    async def email_verification(self) -> AsyncIterator[EmailVerification]:
         async with self._session_factory() as session:
             interactor = EmailVerification(
                 repository=get_auth_repository(session),
                 uow=get_uow(session),
                 jwt_ops=self._jwt_ops,
+                secret_key=self._secret_key,
+                algorithm=self._algorithm,
             )
 
             yield interactor

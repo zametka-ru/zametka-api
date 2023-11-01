@@ -48,11 +48,9 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
         self._algorithm = algorithm
 
     async def __call__(self, data: SignUpInputDTO) -> SignUpOutputDTO:
-        user_password: str = data.user_password
+        self.service.check_password(data.user_password)
 
-        self.service.check_password(user_password)
-
-        user_password: HashedPassword = self.pwd_context.hash(user_password)
+        user_password: HashedPassword = self.pwd_context.hash(data.user_password)
 
         user = self.service.create(
             email=data.user_email,

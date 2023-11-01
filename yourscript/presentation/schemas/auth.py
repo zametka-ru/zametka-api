@@ -29,8 +29,8 @@ class UserRegisterSchema(BaseModel):
 
     @root_validator
     def validate_names(cls, values: dict):
-        first_name: str = values.get("first_name")
-        last_name: str = values.get("last_name")
+        first_name = values.get("first_name")
+        last_name = values.get("last_name")
 
         if bool(re.search(r"\d", first_name)) or bool(re.search(r"\d", last_name)):
             raise ValueError("В имени и фамилии не может быть цифр.")

@@ -1,6 +1,6 @@
 import datetime
 
-from domain.entities import Script
+from domain.entities.script import Script
 from domain.value_objects.user_id import UserId
 
 

@@ -9,5 +9,5 @@ class JWTOperationsImpl(JWTOperations):
     def encode(self, payload: dict, secret_key: str, algorithm: str) -> str:
         return str(jwt.encode(payload, secret_key, algorithm))[2:-1]
 
-    def decode(self, token: str, secret_key: str, algorithm: str) -> dict:
+    def decode(self, token: str, secret_key: str, algorithm: list[str]) -> dict:
         return jwt.decode(token, secret_key, algorithm)

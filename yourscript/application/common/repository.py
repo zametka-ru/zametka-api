@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from domain.entities import RefreshToken
+from domain.entities.refresh_token import RefreshToken
 from domain.entities.user import User
-from domain.entities import Script
+from domain.entities.script import Script
 from domain.value_objects.script_id import ScriptId
 
 from domain.value_objects.user_id import UserId

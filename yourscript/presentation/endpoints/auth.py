@@ -23,35 +23,36 @@ router = APIRouter(
 
 @router.post("/sign-up")
 async def sign_up(
-        user_data: UserRegisterSchema,
-        ioc: InteractorFactory = Depends(),
+    user_data: UserRegisterSchema,
+    ioc: InteractorFactory = Depends(),
 ):
     """Register endpoint"""
 
     async with ioc.sign_up() as interactor:
-        response = await interactor(SignUpInputDTO(
-            user_email=user_data.email,
-            user_password=user_data.password,
-            user_first_name=user_data.first_name,
-            user_last_name=user_data.last_name,
-        ))
+        response = await interactor(
+            SignUpInputDTO(
+                user_email=user_data.email,
+                user_password=user_data.password,
+                user_first_name=user_data.first_name,
+                user_last_name=user_data.last_name,
+            )
+        )
 
         return response
 
 
 @router.post("/sign-in")
 async def sign_in(
-        auth_data: UserLoginSchema,
-        jwt: JWT = Depends(),
-        ioc: InteractorFactory = Depends(),
+    auth_data: UserLoginSchema,
+    jwt: JWT = Depends(),
+    ioc: InteractorFactory = Depends(),
 ):
     """Login endpoint"""
 
     async with ioc.sign_in(jwt) as interactor:
-        response = await interactor(SignInInputDTO(
-            email=auth_data.email,
-            password=auth_data.password
-        ))
+        response = await interactor(
+            SignInInputDTO(email=auth_data.email, password=auth_data.password)
+        )
 
         return response
 
@@ -61,17 +62,19 @@ async def email_verification(token: str, ioc: InteractorFactory = Depends()):
     """Email verification endpoint"""
 
     async with ioc.email_verification() as interactor:
-        response = await interactor(EmailVerificationInputDTO(
-            token=token,
-        ))
+        response = await interactor(
+            EmailVerificationInputDTO(
+                token=token,
+            )
+        )
 
         return response
 
 
 @router.post("/refresh")
 async def refresh_token(
-        jwt: JWT = Depends(),
-        ioc: InteractorFactory = Depends(),
+    jwt: JWT = Depends(),
+    ioc: InteractorFactory = Depends(),
 ):
     """Refresh access token endpoint"""
 

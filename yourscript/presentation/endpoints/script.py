@@ -28,15 +28,15 @@ async def create(
 ):
     """Create script object"""
 
-    async with ioc.pick_script_interactor(jwt, lambda i: i.create) as create_script:
-        result = await create_script(
+    async with ioc.pick_script_interactor(jwt, lambda i: i.create) as interactor:
+        response = await interactor(
             CreateScriptInputDTO(
                 text=script.text,
                 title=script.title,
             )
         )
 
-        return result
+        return response
 
 
 @router.get("/{script_id}")
@@ -45,14 +45,14 @@ async def read(
 ):
     """Read a script by id"""
 
-    async with ioc.pick_script_interactor(jwt, lambda i: i.read) as read_script:
-        result = await read_script(
+    async with ioc.pick_script_interactor(jwt, lambda i: i.read) as interactor:
+        response = await interactor(
             ReadScriptInputDTO(
                 script_id=ScriptId(script_id),
             )
         )
 
-        return result
+        return response
 
 
 @router.put("/{script_id}")
@@ -64,8 +64,8 @@ async def update(
 ):
     """Update script by id"""
 
-    async with ioc.pick_script_interactor(jwt, lambda i: i.update) as update_script:
-        result = await update_script(
+    async with ioc.pick_script_interactor(jwt, lambda i: i.update) as interactor:
+        response = await interactor(
             UpdateScriptInputDTO(
                 script_id=ScriptId(script_id),
                 title=new_script.title,
@@ -73,7 +73,7 @@ async def update(
             )
         )
 
-        return result
+        return response
 
 
 @router.delete("/{script_id}")
@@ -82,11 +82,11 @@ async def delete(
 ):
     """Delete script by id"""
 
-    async with ioc.pick_script_interactor(jwt, lambda i: i.delete) as delete_script:
-        result = await delete_script(
+    async with ioc.pick_script_interactor(jwt, lambda i: i.delete) as interactor:
+        response = await interactor(
             DeleteScriptInputDTO(
                 script_id=ScriptId(script_id),
             )
         )
 
-        return result
+        return response

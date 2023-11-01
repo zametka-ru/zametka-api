@@ -34,7 +34,7 @@ class JWTOperations(Protocol):
         """Encode JWT"""
 
     @abstractmethod
-    def decode(self, token: str, secret_key: str, algorithm: str) -> dict:
+    def decode(self, token: str, secret_key: str, algorithm: list[str]) -> dict:
         """Decode JWT"""
 
 

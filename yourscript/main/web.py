@@ -34,7 +34,11 @@ include_exception_handlers(app)
 async def on_startup():
     session_factory = await get_async_sessionmaker(settings.db)
 
-    ioc: InteractorFactory = IoC(session_factory=session_factory)
+    auth_settings = settings.auth
+
+    ioc: InteractorFactory = IoC(
+        session_factory=session_factory, auth_settings=auth_settings
+    )
 
     app.dependency_overrides[InteractorFactory] = ioc
 

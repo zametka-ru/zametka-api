@@ -6,8 +6,8 @@ from application.common.repository import AuthRepository, RefreshTokenRepository
 from application.common.uow import UoW
 
 from domain.entities.user import User
-from domain.services import RefreshTokenService
-from domain.entities import RefreshToken
+from domain.services.refresh_token_service import RefreshTokenService
+from domain.entities.refresh_token import RefreshToken
 
 
 @dataclass

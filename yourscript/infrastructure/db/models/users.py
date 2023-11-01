@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship, Mapped
 from datetime import datetime
 
 from . import Base
+from .. import Script
 
 
 class User(Base):
@@ -23,7 +24,7 @@ class User(Base):
     is_superuser: Mapped[bool] = Column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = Column(Boolean, default=False, nullable=False)
 
-    scripts = relationship("Script", back_populates="user")
+    scripts = relationship(Script, back_populates="user")
 
 
 class RefreshToken(Base):

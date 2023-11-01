@@ -1,12 +1,12 @@
-from sqlalchemy import select, delete, exists
+from sqlalchemy import select, delete
 
 from domain.value_objects.user_id import UserId
 from infrastructure.db import User, RefreshToken
 
 from domain.entities.user import User as UserEntity
-from domain.entities import RefreshToken as RefreshTokenEntity
+from domain.entities.refresh_token import RefreshToken as RefreshTokenEntity
 
-from application.common.interfaces import AuthRepository, RefreshTokenRepository
+from application.common.repository import AuthRepository, RefreshTokenRepository
 
 
 class AuthRepositoryImpl(AuthRepository):
@@ -102,7 +102,7 @@ class RefreshTokenRepositoryImpl(RefreshTokenRepository):
         await self.session.execute(q)
 
     async def exists(self, token: str) -> bool:
-        q = select(exists().where(RefreshToken.token == token))
+        q = (select(RefreshToken.id).where(RefreshToken.token == token)).exists()
 
         result = await self.session.execute(q)
 

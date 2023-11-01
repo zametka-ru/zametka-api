@@ -1,4 +1,4 @@
-from domain.entities import RefreshToken
+from domain.entities.refresh_token import RefreshToken
 
 from domain.value_objects.user_id import UserId
 

@@ -5,7 +5,7 @@ from application.common.interactor import Interactor
 from application.common.repository import RefreshTokenRepository, AuthRepository
 from application.common.uow import UoW
 
-from domain.entities import RefreshToken
+from domain.entities.refresh_token import RefreshToken
 from domain.entities.user import User
 from domain.value_objects.user_id import UserId
 
