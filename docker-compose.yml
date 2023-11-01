@@ -2,23 +2,23 @@ version: '3.8'
 
 services:
     backend:
-        build: ./backend
+        build: .
         command: python main.py
         ports:
             - "8000:80"
         env_file:
-            - ./backend/core/.env
+            - .env
         volumes:
-            - ./backend/domain/db/migrations/versions:/home/app/backend/domain/db/migrations/versions
+            - ./yourscript/infrastructure/db/migrations/versions:/home/app/yourscript/infrastructure/db/migrations/versions
         depends_on:
-            - backend_database
+            - db
 
-    backend_database:
+    db:
         image: postgres:14.5-alpine
         volumes:
             - backend_pg_data:/var/lib/postgresql/data/
         env_file:
-            - ./backend/core/.env
+            - .env
 
 volumes:
     backend_pg_data:
