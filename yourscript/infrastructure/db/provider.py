@@ -1,6 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from application.common.repository import AuthRepository, ScriptRepository
+from infrastructure.db.repositories.auth import (
+    AuthRepositoryImpl,
+    RefreshTokenRepositoryImpl,
+)
+from infrastructure.db.repositories.script import ScriptRepositoryImpl
 
 from infrastructure.db.uow import UnitOfWork
 
@@ -10,8 +14,12 @@ def get_uow(session: AsyncSession):
 
 
 def get_auth_repository(session: AsyncSession):
-    return AuthRepository(session=session)
+    return AuthRepositoryImpl(session=session)
 
 
 def get_script_repository(session: AsyncSession):
-    return ScriptRepository(session=session)
+    return ScriptRepositoryImpl(session=session)
+
+
+def get_token_repository(session: AsyncSession):
+    return RefreshTokenRepositoryImpl(session)

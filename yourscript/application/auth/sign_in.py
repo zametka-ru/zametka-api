@@ -22,7 +22,7 @@ class SignInOutputDTO:
     refresh: str
 
 
-class SignUp(Interactor[SignInInputDTO, SignInOutputDTO]):
+class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
     def __init__(
         self,
         repository: AuthRepository,

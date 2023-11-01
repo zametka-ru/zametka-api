@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from application.common.adapters import (
     JWTOperations,
-    AuthSettings,
     MailTokenSender,
     PasswordHasher,
     HashedPassword,
@@ -33,18 +32,20 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
         repository: AuthRepository,
         pwd_context: PasswordHasher,
         token_sender: MailTokenSender,
-        auth_settings: AuthSettings,
         uow: UoW,
         jwt_ops: JWTOperations,
         service: UserService,
+        secret_key: str,
+        algorithm: str,
     ):
         self.uow = uow
         self.jwt_ops = jwt_ops
         self.service = service
-        self.auth_settings = auth_settings
         self.pwd_context = pwd_context
         self.token_sender = token_sender
         self.repository = repository
+        self._secret_key = secret_key
+        self._algorithm = algorithm
 
     async def __call__(self, data: SignUpInputDTO) -> SignUpOutputDTO:
         user_password: str = data.user_password
@@ -64,8 +65,8 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
 
         await self.uow.commit()
 
-        secret_key: str = self.auth_settings.secret_key
-        algorithm: str = self.auth_settings.algorithm
+        secret_key: str = self._secret_key
+        algorithm: str = self._algorithm
 
         token: str = self.token_sender.create(secret_key, algorithm, user, self.jwt_ops)
 

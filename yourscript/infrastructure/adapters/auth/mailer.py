@@ -16,7 +16,7 @@ def _get_token_link(token: str) -> str:
     return "/v1/auth/verify/{}".format(token)  # how make it better? temp solution
 
 
-class ConfirmationTokenMailer(MailTokenSender):
+class MailTokenSenderImpl(MailTokenSender):
     """MailTokenSenderInterface implementation"""
 
     mail: FastMail

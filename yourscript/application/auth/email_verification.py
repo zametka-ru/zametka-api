@@ -14,9 +14,6 @@ from domain.value_objects.user_id import UserId
 @dataclass
 class EmailVerificationInputDTO:
     token: str
-    secret_key: str
-    algorithm: str
-
 
 @dataclass
 class EmailVerificationOutputDTO:
@@ -30,10 +27,10 @@ class EmailVerification(
         self,
         repository: AuthRepository,
         uow: UoW,
-        jwt: JWTOperations,
+        jwt_ops: JWTOperations,
     ):
         self.uow = uow
-        self.jwt = jwt
+        self.jwt_ops = jwt_ops
         self.repository = repository
 
     async def __call__(
@@ -42,7 +39,7 @@ class EmailVerification(
         secret_key: str = data.secret_key
         algorithm: str = data.algorithm
 
-        payload: dict[str, str | int | bool] = self.jwt.decode(
+        payload: dict[str, str | int | bool] = self.jwt_ops.decode(
             data.token, secret_key, algorithm
         )
 

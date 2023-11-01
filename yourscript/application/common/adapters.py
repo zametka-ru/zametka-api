@@ -5,7 +5,7 @@ from typing import Protocol
 from domain.entities.user import User
 
 from domain.value_objects.hashed_password import HashedPassword
-from domain.value_objects import Token
+from domain.value_objects.token import Token
 
 
 class TokenSender(Protocol):
@@ -41,6 +41,8 @@ class JWTOperations(Protocol):
 class JWT(Protocol):
     """JWT Tokens management"""
 
+    _token: str
+
     @abstractmethod
     def create_access_token(self, subject: str) -> str:
         """Create access JWT"""
@@ -61,6 +63,10 @@ class JWT(Protocol):
     def get_jwt_subject(self) -> str | int | None:
         pass
 
+    @abstractmethod
+    def jwt_refresh_token_required(self) -> None:
+        """Ensure that requester have valid refresh token"""
+
 
 class PasswordHasher(Protocol):
     """CryptContext interface"""
@@ -75,7 +81,7 @@ class PasswordHasher(Protocol):
 
 
 class AuthSettings(Protocol):
-    """Auth settings interface"""
+    """Auth settings"""
 
     secret_key: str
     algorithm: str

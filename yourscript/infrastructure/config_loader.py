@@ -85,7 +85,7 @@ def load_alembic_settings() -> AlembicDB:
     """Get alembic settings"""
 
 
-def load_authjwt_settings() -> AuthJWTSettings:
+def load_auth_settings() -> AuthJWTSettings:
     pass
 
 

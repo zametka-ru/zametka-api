@@ -1,38 +1,14 @@
 from fastapi import APIRouter, Depends
-from fastapi_jwt_auth import AuthJWT
 
-from starlette.background import BackgroundTasks
+from application.common.adapters import JWT
 
-from infrastructure.adapters.auth.mailer import ConfirmationTokenMailer
-from infrastructure.settings import load_authjwt_settings, AuthJWTSettings
+from application.auth.sign_up import SignUpInputDTO
+from application.auth.sign_in import SignInInputDTO
+from application.auth.email_verification import EmailVerificationInputDTO
+from application.auth.refresh_token import RefreshTokenInputDTO
+from domain.value_objects.user_id import UserId
 
-from infrastructure.dependencies import (
-    MailDependency,
-    AuthSettingsDependency,
-    AuthRepositoryDependency,
-    UnitOfWorkDependency,
-    CryptContextDependency,
-    JinjaDependency,
-)
-
-from application.auth import (
-    register_user,
-    user_verify_email,
-    user_login as user_login_case,
-    token_refresh,
-)
-
-from application.auth import (
-    RegisterInputDTO,
-    VerificationInputDTO,
-    LoginInputDTO,
-)
-
-from application.auth import JWTOpsInterface
-
-from infrastructure.db.repositories import AuthRepository
-from infrastructure.db.repositories import UnitOfWork
-
+from presentation.interactor_factory import InteractorFactory
 from presentation.schemas.auth import (
     UserRegisterSchema,
     UserLoginSchema,
@@ -45,114 +21,68 @@ router = APIRouter(
 )
 
 
-@AuthJWT.load_config
-def load_settings() -> AuthJWTSettings:
-    """Load settings for AuthJWT"""
-
-    return load_authjwt_settings()
-
-
-@router.post("/register")
-async def register(
-    register_data: UserRegisterSchema,
-    background_tasks: BackgroundTasks,
-    pwd_context: CryptContextDependency = Depends(),
-    auth_settings: AuthSettingsDependency = Depends(),
-    repository: AuthRepositoryDependency = Depends(),
-    mail_context: MailDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
-    jinja: JinjaDependency = Depends(),
-    jwtops: JWTOpsInterface = Depends(),
+@router.post("/sign-up")
+async def sign_up(
+        user_data: UserRegisterSchema,
+        ioc: InteractorFactory = Depends(),
 ):
     """Register endpoint"""
 
-    dto = RegisterInputDTO(
-        user_email=register_data.email,
-        user_password=register_data.password,
-        user_first_name=register_data.first_name,
-        user_last_name=register_data.last_name,
-    )
+    async with ioc.sign_up() as interactor:
+        response = await interactor(SignUpInputDTO(
+            user_email=user_data.email,
+            user_password=user_data.password,
+            user_first_name=user_data.first_name,
+            user_last_name=user_data.last_name,
+        ))
 
-    mailer = ConfirmationTokenMailer(
-        background_tasks=background_tasks, mail=mail_context, jinja=jinja
-    )
-
-    response = await register_user(
-        dto=dto,
-        repository=repository,
-        pwd_context=pwd_context,
-        token_sender=mailer,
-        auth_settings=auth_settings,
-        uow=uow,
-        jwtops=jwtops,
-    )
-
-    return response
+        return response
 
 
-@router.get("/verify/{token}")
-async def verify_email(
-    token: str,
-    auth_settings: AuthSettingsDependency = Depends(),
-    repository: AuthRepositoryDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
-    jwtops: JWTOpsInterface = Depends(),
-):
-    """Email verification endpoint"""
-
-    repository: AuthRepository  # type:ignore
-    uow: UnitOfWork  # type:ignore
-
-    dto = VerificationInputDTO(token=token)
-
-    response = await user_verify_email(
-        dto=dto,
-        repository=repository,
-        auth_settings=auth_settings,
-        uow=uow,
-        jwtops=jwtops,
-    )
-
-    return response
-
-
-@router.post("/login")
-async def login(
-    user_login: UserLoginSchema,
-    Authorize: AuthJWT = Depends(),
-    repository: AuthRepositoryDependency = Depends(),
-    pwd_context: CryptContextDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+@router.post("/sign-in")
+async def sign_in(
+        auth_data: UserLoginSchema,
+        jwt: JWT = Depends(),
+        ioc: InteractorFactory = Depends(),
 ):
     """Login endpoint"""
 
-    repository: AuthRepository  # type:ignore
-    uow: UnitOfWork  # type:ignore
+    async with ioc.sign_in(jwt) as interactor:
+        response = await interactor(SignInInputDTO(
+            email=auth_data.email,
+            password=auth_data.password
+        ))
 
-    dto = LoginInputDTO(
-        user_email=user_login.email,
-        user_password=user_login.password,
-    )
+        return response
 
-    response = await user_login_case(
-        dto=dto,
-        repository=repository,
-        Authorize=Authorize,
-        pwd_context=pwd_context,
-        uow=uow,
-    )
 
-    return response
+@router.get("/verify/{token}")
+async def email_verification(token: str, ioc: InteractorFactory = Depends()):
+    """Email verification endpoint"""
+
+    async with ioc.email_verification() as interactor:
+        response = await interactor(EmailVerificationInputDTO(
+            token=token,
+        ))
+
+        return response
 
 
 @router.post("/refresh")
-async def refresh(
-    Authorize: AuthJWT = Depends(),
-    repository: AuthRepositoryDependency = Depends(),
-    uow: UnitOfWorkDependency = Depends(),
+async def refresh_token(
+        jwt: JWT = Depends(),
+        ioc: InteractorFactory = Depends(),
 ):
     """Refresh access token endpoint"""
 
-    Authorize.jwt_refresh_token_required()
+    jwt.jwt_refresh_token_required()
 
-    return await token_refresh(Authorize=Authorize, repository=repository, uow=uow)
+    async with ioc.refresh_token(jwt) as interactor:
+        response = await interactor(
+            RefreshTokenInputDTO(
+                user_id=UserId(jwt.get_jwt_subject()),
+                refresh=jwt._token,
+            )
+        )
+
+        return response
