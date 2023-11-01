@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
-from typing import AsyncIterator, AsyncContextManager
+from typing import AsyncIterator
 
+from fastapi_mail import FastMail
+from jinja2 import Environment
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from starlette.background import BackgroundTasks
 
 from application.auth.email_verification import EmailVerification
 from application.auth.refresh_token import RefreshTokenInteractor
@@ -41,7 +44,12 @@ class IoC(InteractorFactory):
     _script_service: ScriptService
 
     def __init__(
-        self, session_factory: async_sessionmaker, auth_settings: AuthSettings
+        self,
+        session_factory: async_sessionmaker,
+        auth_settings: AuthSettings,
+        mailer: FastMail,
+        jinja_env: Environment,
+        token_link: str,
     ):
         self._session_factory = session_factory
 
@@ -54,7 +62,12 @@ class IoC(InteractorFactory):
         self._auth_settings: AuthSettings = auth_settings
 
         self._secret_key = self._auth_settings.secret_key
-        self._algorithm = self._auth_settings.algorithm
+        self._algorithm: str = self._auth_settings.algorithm
+
+        self._mailer = mailer
+        self._jinja_env = jinja_env
+
+        self._token_link = token_link
 
     def _construct_script_interactor(
         self, session: AsyncSession, jwt: JWT
@@ -81,12 +94,17 @@ class IoC(InteractorFactory):
             yield picker(interactor)
 
     @asynccontextmanager
-    async def sign_up(self) -> AsyncIterator[SignUp]:
+    async def sign_up(self, background_tasks: BackgroundTasks) -> AsyncIterator[SignUp]:
         async with self._session_factory() as session:
             interactor = SignUp(
                 repository=get_auth_repository(session),
                 pwd_context=self._password_hasher,
-                token_sender=MailTokenSenderImpl(),
+                token_sender=MailTokenSenderImpl(
+                    jinja=self._jinja_env,
+                    mail=self._mailer,
+                    background_tasks=background_tasks,
+                    token_link=self._token_link,
+                ),
                 secret_key=self._secret_key,
                 algorithm=self._algorithm,
                 jwt_ops=self._jwt_ops,

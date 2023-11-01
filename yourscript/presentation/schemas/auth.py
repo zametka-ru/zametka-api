@@ -32,7 +32,7 @@ class UserRegisterSchema(BaseModel):
         first_name = values.get("first_name")
         last_name = values.get("last_name")
 
-        if bool(re.search(r"\d", first_name)) or bool(re.search(r"\d", last_name)):
+        if bool(re.search(r"\d", first_name)) or bool(re.search(r"\d", last_name)): # type:ignore
             raise ValueError("В имени и фамилии не может быть цифр.")
 
         return values

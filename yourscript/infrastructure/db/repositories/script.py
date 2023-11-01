@@ -31,7 +31,9 @@ class ScriptRepositoryImpl(ScriptRepository):
     async def get(self, script_id: ScriptId) -> ScriptEntity:
         """Get script by id"""
 
-        q = select(Script.text, Script.title, Script.created_at, Script.user_id).where(Script.id == script_id)
+        q = select(Script.text, Script.title, Script.created_at, Script.user_id).where(
+            Script.id == script_id
+        )
 
         res = await self.session.execute(q)
         script: Script = res.scalar()

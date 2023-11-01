@@ -11,11 +11,6 @@ from domain.entities.user import User
 from domain.value_objects.token import Token
 
 
-# def _get_token_link(token: str) -> str:
-#     # TODO: make it better
-#     return "/v1/auth/verify/{}".format(token)  # how make it better? temp solution
-
-
 def get_message_schema(subject: str, to_email: str, html: str) -> MessageSchema:
     message_schema = MessageSchema(
         subject=subject,
@@ -49,7 +44,7 @@ class MailTokenSenderImpl(MailTokenSender):
     def _render_html(self, token: str) -> str:
         template = self._jinja.get_template("confirmation-mail.html")
 
-        rendered: str = template.render(token_link=self._token_link)
+        rendered: str = template.render(token_link=self._token_link.format("token"))
 
         return rendered
 

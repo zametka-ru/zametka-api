@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from starlette.background import BackgroundTasks
 
 from application.common.adapters import JWT
 
@@ -6,6 +7,7 @@ from application.auth.sign_up import SignUpInputDTO
 from application.auth.sign_in import SignInInputDTO
 from application.auth.email_verification import EmailVerificationInputDTO
 from application.auth.refresh_token import RefreshTokenInputDTO
+from domain.entities.refresh_token import RefreshToken
 from domain.value_objects.user_id import UserId
 
 from presentation.interactor_factory import InteractorFactory
@@ -24,11 +26,12 @@ router = APIRouter(
 @router.post("/sign-up")
 async def sign_up(
     user_data: UserRegisterSchema,
+    background_tasks: BackgroundTasks,
     ioc: InteractorFactory = Depends(),
 ):
     """Register endpoint"""
 
-    async with ioc.sign_up() as interactor:
+    async with ioc.sign_up(background_tasks=background_tasks) as interactor:
         response = await interactor(
             SignUpInputDTO(
                 user_email=user_data.email,
@@ -80,11 +83,13 @@ async def refresh_token(
 
     jwt.jwt_refresh_token_required()
 
+    user_id: UserId = UserId(jwt.get_jwt_subject())
+
     async with ioc.refresh_token(jwt) as interactor:
         response = await interactor(
             RefreshTokenInputDTO(
-                user_id=UserId(jwt.get_jwt_subject()),
-                refresh=jwt._token,
+                user_id=user_id,
+                refresh=RefreshToken(token=jwt._token, user_id=user_id),
             )
         )
 

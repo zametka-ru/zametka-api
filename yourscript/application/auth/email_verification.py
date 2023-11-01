@@ -31,7 +31,7 @@ class EmailVerification(
         uow: UoW,
         jwt_ops: JWTOperations,
         secret_key: str,
-        algorithm: list[str],
+        algorithm: str,
     ):
         self.uow = uow
         self.jwt_ops = jwt_ops
@@ -51,7 +51,7 @@ class EmailVerification(
         self, data: EmailVerificationInputDTO
     ) -> EmailVerificationOutputDTO:
         secret_key: str = self._secret_key
-        algorithm: list[str] = self._algorithm
+        algorithm: str = self._algorithm
 
         payload = self.jwt_ops.decode(data.token, secret_key, algorithm)
 

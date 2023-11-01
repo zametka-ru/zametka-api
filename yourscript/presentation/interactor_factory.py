@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 from typing import TypeVar, TypeAlias, Callable, Awaitable, AsyncContextManager
 
+from starlette.background import BackgroundTasks
+
 from application.common.adapters import JWT
 
 from application.script.script_interactor import ScriptInteractor
@@ -29,7 +31,7 @@ class InteractorFactory(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_up(self) -> AsyncContextManager[SignUp]:
+    def sign_up(self, background_tasks: BackgroundTasks) -> AsyncContextManager[SignUp]:
         raise NotImplementedError
 
     @abstractmethod
