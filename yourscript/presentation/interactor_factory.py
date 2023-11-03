@@ -24,6 +24,10 @@ InteractorPicker: TypeAlias = Callable[
 
 
 class InteractorFactory(ABC):
+
+    def __init__(self):
+        pass
+
     @abstractmethod
     def pick_script_interactor(
         self, jwt: JWT, picker: InteractorPicker[GInputDTO, GOutputDTO]

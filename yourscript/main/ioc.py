@@ -7,17 +7,26 @@ from jinja2 import Environment
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from starlette.background import BackgroundTasks
 
-from application.auth.email_verification import EmailVerification
-from application.auth.refresh_token import RefreshTokenInteractor
-from application.auth.sign_in import SignIn
 from domain.services.refresh_token_service import RefreshTokenService
 from domain.services.script_service import ScriptService
 from domain.services.user_service import UserService
+
+from application.auth.email_verification import EmailVerification
+from application.auth.refresh_token import RefreshTokenInteractor
+from application.auth.sign_in import SignIn
 
 from application.common.adapters import JWT
 from application.script.script_interactor import ScriptInteractor
 
 from application.auth.sign_up import SignUp
+
+from presentation.interactor_factory import (
+    InteractorFactory,
+    InteractorPicker,
+    GInputDTO,
+    GOutputDTO,
+    InteractorCallable,
+)
 
 from infrastructure.adapters.auth.jwtops import JWTOperationsImpl
 from infrastructure.adapters.auth.mailer import MailTokenSenderImpl
@@ -29,15 +38,6 @@ from infrastructure.db.provider import (
     get_auth_repository,
     get_uow,
     get_token_repository,
-)
-
-
-from presentation.interactor_factory import (
-    InteractorFactory,
-    InteractorPicker,
-    GInputDTO,
-    GOutputDTO,
-    InteractorCallable,
 )
 
 

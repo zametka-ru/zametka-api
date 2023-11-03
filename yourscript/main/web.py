@@ -73,6 +73,6 @@ async def on_startup():
         token_link="/v1/auth/verify/{}",
     )
 
-    app.dependency_overrides[InteractorFactory] = ioc
+    app.dependency_overrides[InteractorFactory] = lambda: ioc
 
     include_routers(app)

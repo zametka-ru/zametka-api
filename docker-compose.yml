@@ -12,6 +12,7 @@ services:
             - ./yourscript/infrastructure/db/migrations/versions:/home/app/yourscript/infrastructure/db/migrations/versions
         depends_on:
             - db
+            - migration
 
     db:
         image: postgres:14.5-alpine
@@ -19,6 +20,15 @@ services:
             - backend_pg_data:/var/lib/postgresql/data/
         env_file:
             - .env
+
+    migration:
+        build: .
+        restart: on-failure
+        env_file:
+            - .env
+        depends_on:
+            - db
+        command: [ "alembic", "upgrade", "head" ]
 
 volumes:
     backend_pg_data:

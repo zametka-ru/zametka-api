@@ -1,7 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi_another_jwt_auth import AuthJWT
-
-from starlette.background import BackgroundTasks
 
 from application.auth.sign_up import SignUpInputDTO, SignUpOutputDTO
 from application.auth.sign_in import SignInInputDTO, SignInOutputDTO
@@ -30,9 +28,9 @@ router = APIRouter(
 
 @router.post("/sign-up", response_model=SignUpOutputDTO)
 async def sign_up(
-    user_data: UserRegisterSchema,
-    background_tasks: BackgroundTasks,
-    ioc: InteractorFactory = Depends(),
+        user_data: UserRegisterSchema,
+        background_tasks: BackgroundTasks,
+        ioc: InteractorFactory = Depends(),
 ):
     """Register endpoint"""
 
@@ -51,9 +49,9 @@ async def sign_up(
 
 @router.post("/sign-in", response_model=SignInOutputDTO)
 async def sign_in(
-    auth_data: UserLoginSchema,
-    jwt: AuthJWT = Depends(),
-    ioc: InteractorFactory = Depends(),
+        auth_data: UserLoginSchema,
+        jwt: AuthJWT = Depends(),
+        ioc: InteractorFactory = Depends(),
 ):
     """Login endpoint"""
 
@@ -81,8 +79,8 @@ async def email_verification(token: str, ioc: InteractorFactory = Depends()):
 
 @router.post("/refresh", response_model=RefreshTokenOutputDTO)
 async def refresh_token(
-    jwt: AuthJWT = Depends(),
-    ioc: InteractorFactory = Depends(),
+        jwt: AuthJWT = Depends(),
+        ioc: InteractorFactory = Depends(),
 ):
     """Refresh access token endpoint"""
 

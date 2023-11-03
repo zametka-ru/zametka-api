@@ -78,10 +78,3 @@ class PasswordHasher(Protocol):
     @abstractmethod
     def verify(self, plain: str, hashed: HashedPassword) -> bool:
         """Compare that plain hash is equal hashed"""
-
-
-class AuthSettings(Protocol):
-    """Auth settings"""
-
-    secret_key: str
-    algorithm: str
