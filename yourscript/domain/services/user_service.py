@@ -1,6 +1,7 @@
 import datetime
 
 from domain.entities.user import User
+from domain.exceptions.user import WeakPasswordError
 
 
 class UserService:
@@ -22,7 +23,7 @@ class UserService:
 
         for message, password_validator in error_messages.items():
             if not password_validator(password):
-                raise ValueError(message)
+                raise WeakPasswordError(message)
 
     def create(
         self, email: str, password: str, first_name: str, last_name: str

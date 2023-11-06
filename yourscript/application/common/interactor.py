@@ -1,4 +1,4 @@
-from typing import Callable, Generic, TypeVar, Protocol
+from typing import Generic, TypeVar, Protocol
 
 InputDTO = TypeVar("InputDTO")
 OutputDTO = TypeVar("OutputDTO")
@@ -25,5 +25,3 @@ class CRUDInteractor(Protocol):
 
 InteractorT = TypeVar("InteractorT")
 CRUDInteractorT = TypeVar("CRUDInteractorT")
-
-InteractorFactory = Callable[[], InteractorT | CRUDInteractorT]

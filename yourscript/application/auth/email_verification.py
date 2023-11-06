@@ -8,7 +8,7 @@ from application.common.repository import AuthRepository
 from application.common.uow import UoW
 
 from domain.entities.user import User
-from domain.value_objects.token import Token
+from domain.exceptions.token import TokenAlreadyUsedError
 
 
 @dataclass
@@ -18,7 +18,7 @@ class EmailVerificationInputDTO:
 
 @dataclass
 class EmailVerificationOutputDTO:
-    pass
+    email: Optional[str]
 
 
 class EmailVerification(
@@ -42,7 +42,7 @@ class EmailVerification(
         token_user_is_active: bool = payload.get("user_is_active")
 
         if user.is_active != token_user_is_active:
-            raise ValueError()
+            raise TokenAlreadyUsedError()
 
     async def __call__(
         self, data: EmailVerificationInputDTO
@@ -60,4 +60,4 @@ class EmailVerification(
         await self.repository.set_active(user.user_id)
         await self.uow.commit()
 
-        return EmailVerificationOutputDTO()
+        return EmailVerificationOutputDTO(email=user_email)

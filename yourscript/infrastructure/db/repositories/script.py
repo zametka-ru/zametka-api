@@ -40,7 +40,7 @@ class ScriptRepositoryImpl(ScriptRepository):
         script: Script = res.scalar()
 
         if not script:
-            return
+            return None
 
         return ScriptEntity(
             title=script.title,

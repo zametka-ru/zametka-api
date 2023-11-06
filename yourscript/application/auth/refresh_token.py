@@ -7,6 +7,7 @@ from application.common.uow import UoW
 
 from domain.entities.refresh_token import RefreshToken
 from domain.entities.user import User
+from domain.exceptions.refresh_token import RefreshTokenNotExists
 from domain.value_objects.user_id import UserId
 
 
@@ -35,13 +36,12 @@ class RefreshTokenInteractor(Interactor[RefreshTokenInputDTO, RefreshTokenOutput
         self.auth_repository = auth_repository
 
     async def __call__(self, data: RefreshTokenInputDTO) -> RefreshTokenOutputDTO:
-        refresh_exists = await self.token_repository.exists(data.refresh.token)
+        refresh_exists = await self.token_repository.exists(data.refresh)
 
         if not refresh_exists:
-            raise ValueError("Invalid refresh token")
+            raise RefreshTokenNotExists()
 
-        user_id: UserId = UserId(int(self.jwt.get_jwt_subject()))
-
+        user_id: UserId = data.refresh.user_id
         user: User = await self.auth_repository.get(user_id)
 
         access = self.jwt.create_access_token(subject=str(user.user_id))

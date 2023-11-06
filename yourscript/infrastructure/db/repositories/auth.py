@@ -110,8 +110,8 @@ class RefreshTokenRepositoryImpl(RefreshTokenRepository):
 
         await self.session.execute(q)
 
-    async def exists(self, token: str) -> bool:
-        q = select(exists().where(RefreshToken.token == token))
+    async def exists(self, token: RefreshToken) -> bool:
+        q = select(exists().where(RefreshToken.token == token.token))
 
         result = await self.session.execute(q)
 

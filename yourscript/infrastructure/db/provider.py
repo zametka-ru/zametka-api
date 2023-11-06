@@ -6,11 +6,11 @@ from infrastructure.db.repositories.auth import (
 )
 from infrastructure.db.repositories.script import ScriptRepositoryImpl
 
-from infrastructure.db.uow import UnitOfWork
+from infrastructure.db.uow import SAUnitOfWork
 
 
 def get_uow(session: AsyncSession):
-    return UnitOfWork(session=session)
+    return SAUnitOfWork(session=session)
 
 
 def get_auth_repository(session: AsyncSession):

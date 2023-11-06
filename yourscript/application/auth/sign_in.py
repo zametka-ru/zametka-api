@@ -6,6 +6,7 @@ from application.common.repository import AuthRepository, RefreshTokenRepository
 from application.common.uow import UoW
 
 from domain.entities.user import User
+from domain.exceptions.user import UserIsNotExists, UserIsNotActive, InvalidCredentials
 from domain.services.refresh_token_service import RefreshTokenService
 from domain.entities.refresh_token import RefreshToken
 
@@ -43,13 +44,13 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
         user: User = await self.repository.get_by_email(data.email)
 
         if not user:
-            raise ValueError(f"There is no users with email \n{data.email}")
+            raise UserIsNotExists()
 
         if not user.is_active:
-            raise ValueError("Confirm your email first, or you was banned :)")
+            raise UserIsNotActive()
 
         if not self.pwd_context.verify(data.password, HashedPassword(user.password)):
-            raise ValueError("Invalid credentials (check your password)")
+            raise InvalidCredentials()
 
         subject = str(user.user_id)
 
