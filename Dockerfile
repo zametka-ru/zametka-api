@@ -18,7 +18,7 @@ RUN apt-get update && \
 
 # lint
 RUN pip install --upgrade pip
-COPY yourscript .
+COPY src/yourscript .
 
 # install python dependencies
 COPY requirements.txt .
@@ -51,7 +51,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
 
 # copy project
-COPY yourscript $APP_HOME
+COPY src/yourscript $APP_HOME
 
 # chown all the files to the app user
 RUN chown -R app:app $APP_HOME
