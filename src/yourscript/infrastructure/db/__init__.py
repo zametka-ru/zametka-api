@@ -1,4 +1,4 @@
-from infrastructure.db.main import get_async_sessionmaker
+from yourscript.infrastructure.db.main import get_async_sessionmaker
 
 from .models import Base
 

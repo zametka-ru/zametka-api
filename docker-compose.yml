@@ -3,7 +3,7 @@ version: '3.8'
 services:
     backend:
         build: .
-        command: python main.py
+        command: python src/yourscript/main.py
         ports:
             - "8000:80"
         env_file:
@@ -28,7 +28,7 @@ services:
             - .env
         depends_on:
             - db
-        command: [ "alembic", "upgrade", "head" ]
+        command: [ "python", "-m", "alembic", "upgrade", "head" ]
 
 volumes:
     backend_pg_data:
