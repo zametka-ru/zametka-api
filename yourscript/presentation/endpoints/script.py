@@ -34,6 +34,8 @@ async def create(
 ):
     """Create script object"""
 
+    jwt.jwt_required()
+
     async with ioc.pick_script_interactor(jwt, lambda i: i.create) as interactor:
         response = await interactor(
             CreateScriptInputDTO(
@@ -50,6 +52,8 @@ async def read(
     script_id: int, ioc: InteractorFactory = Depends(), jwt: AuthJWT = Depends()
 ):
     """Read a script by id"""
+
+    jwt.jwt_required()
 
     async with ioc.pick_script_interactor(jwt, lambda i: i.read) as interactor:
         response = await interactor(
@@ -70,6 +74,8 @@ async def update(
 ):
     """Update script by id"""
 
+    jwt.jwt_required()
+
     async with ioc.pick_script_interactor(jwt, lambda i: i.update) as interactor:
         response = await interactor(
             UpdateScriptInputDTO(
@@ -87,6 +93,8 @@ async def delete(
     script_id: int, ioc: InteractorFactory = Depends(), jwt: AuthJWT = Depends()
 ):
     """Delete script by id"""
+
+    jwt.jwt_required()
 
     async with ioc.pick_script_interactor(jwt, lambda i: i.delete) as interactor:
         response = await interactor(

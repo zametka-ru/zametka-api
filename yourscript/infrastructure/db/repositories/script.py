@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import select, update, delete
 
 from domain.value_objects.script_id import ScriptId
@@ -21,22 +23,24 @@ class ScriptRepositoryImpl(ScriptRepository):
             title=script.title,
             text=script.text,
             created_at=script.created_at,
-            author_id=script.author_id,
+            user_id=script.author_id,
         )
 
         self.session.add(db_script)
 
         return script
 
-    async def get(self, script_id: ScriptId) -> ScriptEntity:
+    async def get(self, script_id: ScriptId) -> Optional[ScriptEntity]:
         """Get script by id"""
 
-        q = select(Script.text, Script.title, Script.created_at, Script.user_id).where(
-            Script.id == script_id
-        )
+        q = select(Script).where(Script.id == script_id)
 
         res = await self.session.execute(q)
+
         script: Script = res.scalar()
+
+        if not script:
+            return
 
         return ScriptEntity(
             title=script.title,

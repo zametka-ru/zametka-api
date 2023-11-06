@@ -7,7 +7,7 @@ class JWTOperationsImpl(JWTOperations):
     """JWTOpsInterface implementation"""
 
     def encode(self, payload: dict, secret_key: str, algorithm: str) -> str:
-        return str(jwt.encode(payload, secret_key, algorithm))[2:-1]
+        return jwt.encode(payload, secret_key, algorithm)
 
     def decode(self, token: str, secret_key: str, algorithm: str) -> dict:
-        return jwt.decode(token, secret_key, list(algorithm))
+        return jwt.decode(token, secret_key, algorithm)

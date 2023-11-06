@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from jinja2 import Environment
@@ -44,7 +44,7 @@ class MailTokenSenderImpl(MailTokenSender):
     def _render_html(self, token: str) -> str:
         template = self._jinja.get_template("confirmation-mail.html")
 
-        rendered: str = template.render(token_link=self._token_link.format("token"))
+        rendered: str = template.render(token_link=self._token_link.format(token))
 
         return rendered
 
@@ -62,10 +62,10 @@ class MailTokenSenderImpl(MailTokenSender):
     def create(
         self, secret_key: str, algorithm: str, user: User, jwt: JWTOperations
     ) -> Token:
-        exp: datetime = (datetime.now() + timedelta(minutes=5)).utcnow()
+        exp: datetime = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
 
         payload = {
-            "user_id": user.user_id,
+            "user_email": user.email,
             "exp": exp,
             "user_is_active": user.is_active,
         }

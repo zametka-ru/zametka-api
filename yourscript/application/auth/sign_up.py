@@ -15,7 +15,7 @@ from domain.services.user_service import UserService
 
 @dataclass
 class SignUpOutputDTO:
-    pass
+    first_name: str
 
 
 @dataclass
@@ -72,4 +72,4 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
             token, subject="Завершите регистрацию в yourscript.", to_email=user.email
         )
 
-        return SignUpOutputDTO()
+        return SignUpOutputDTO(first_name=user.first_name)

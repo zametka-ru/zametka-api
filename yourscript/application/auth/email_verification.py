@@ -9,7 +9,6 @@ from application.common.uow import UoW
 
 from domain.entities.user import User
 from domain.value_objects.token import Token
-from domain.value_objects.user_id import UserId
 
 
 @dataclass
@@ -39,10 +38,8 @@ class EmailVerification(
         self._secret_key = secret_key
         self._algorithm = algorithm
 
-    def _jwt_already_used_check(self, token: Token, user: User) -> None:
-        token_payload = self.jwt_ops.decode(token, self._secret_key, self._algorithm)
-
-        token_user_is_active: bool = token_payload.get("user_is_active")
+    def _jwt_already_used_check(self, payload, user: User) -> None:
+        token_user_is_active: bool = payload.get("user_is_active")
 
         if user.is_active != token_user_is_active:
             raise ValueError()
@@ -55,14 +52,12 @@ class EmailVerification(
 
         payload = self.jwt_ops.decode(data.token, secret_key, algorithm)
 
-        user_id: Optional[int] = payload.get("id")
+        user_email: Optional[str] = payload.get("user_email")
+        user: User = await self.repository.get_by_email(user_email)
 
-        user: User = await self.repository.get(UserId(user_id))
-
-        self._jwt_already_used_check(Token(data.token), user)
+        self._jwt_already_used_check(payload, user)
 
         await self.repository.set_active(user.user_id)
-
         await self.uow.commit()
 
         return EmailVerificationOutputDTO()

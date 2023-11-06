@@ -40,9 +40,9 @@ class ScriptInteractor(CRUDInteractor):
     async def _get_current_user(self) -> User:
         """Get current user from JWT"""
 
-        user_id: int = self.jwt.get_jwt_subject()
+        user_id: UserId = UserId(int(self.jwt.get_jwt_subject()))
 
-        user = await self.auth_repository.get(UserId(user_id))
+        user: User = await self.auth_repository.get(user_id)
 
         return user
 

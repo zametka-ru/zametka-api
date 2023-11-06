@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship, Mapped
 
 from datetime import datetime
 
+from domain.value_objects.user_id import UserId
 from . import Base
 
 
@@ -12,7 +13,7 @@ class User(Base):
 
     __tablename__ = "users"
 
-    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[UserId] = Column(Integer, primary_key=True, autoincrement=True)
     email: Mapped[str] = Column(String(60), nullable=False, unique=True)
     password: Mapped[str] = Column(String(100), nullable=False)
     first_name: Mapped[str] = Column(String(40), nullable=False)

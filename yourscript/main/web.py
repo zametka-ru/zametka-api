@@ -70,7 +70,7 @@ async def on_startup():
         auth_settings=auth_settings,
         jinja_env=jinja_env,
         mailer=mail,
-        token_link="/v1/auth/verify/{}",
+        token_link="http://localhost:8000/v1/auth/verify/{}",
     )
 
     app.dependency_overrides[InteractorFactory] = lambda: ioc

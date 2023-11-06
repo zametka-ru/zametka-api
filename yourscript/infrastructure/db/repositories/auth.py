@@ -1,4 +1,4 @@
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update, exists
 
 from domain.value_objects.user_id import UserId
 from infrastructure.db import User, RefreshToken
@@ -30,12 +30,20 @@ class AuthRepositoryImpl(AuthRepository):
 
         self.session.add(db_user)
 
-        return user
+        return UserEntity(
+            email=db_user.email,
+            password=db_user.password,
+            first_name=db_user.first_name,
+            last_name=db_user.last_name,
+            joined_at=db_user.joined_at,
+            is_superuser=db_user.is_superuser,
+            is_active=db_user.is_active,
+        )
 
     async def get(self, user_id: UserId) -> UserEntity:
         """Get user by id"""
 
-        q = select(User).where(User.id == user_id)
+        q = select(User).where(User.id == int(user_id))
 
         res = await self.session.execute(q)
         user: User = res.scalar()
@@ -57,6 +65,7 @@ class AuthRepositoryImpl(AuthRepository):
         q = select(User).where(User.email == email)
 
         res = await self.session.execute(q)
+
         user: User = res.scalar()
 
         return UserEntity(
@@ -75,9 +84,9 @@ class AuthRepositoryImpl(AuthRepository):
         Set user.is_active to True
         """
 
-        user = await self.get(user_id)
+        q = update(User).where(User.id == user_id).values(is_active=True)
 
-        user.is_active = True
+        await self.session.execute(q)
 
 
 class RefreshTokenRepositoryImpl(RefreshTokenRepository):
@@ -102,7 +111,7 @@ class RefreshTokenRepositoryImpl(RefreshTokenRepository):
         await self.session.execute(q)
 
     async def exists(self, token: str) -> bool:
-        q = (select(RefreshToken.id).where(RefreshToken.token == token)).exists()
+        q = select(exists().where(RefreshToken.token == token))
 
         result = await self.session.execute(q)
 

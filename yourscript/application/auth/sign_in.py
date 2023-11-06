@@ -51,11 +51,10 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
         if not self.pwd_context.verify(data.password, HashedPassword(user.password)):
             raise ValueError("Invalid credentials (check your password)")
 
-        access_token = self.jwt.create_access_token(subject=str(user.user_id))
-        refresh_token = self.jwt.create_refresh_token(subject=str(user.user_id))
+        subject = str(user.user_id)
 
-        self.jwt.set_access_cookies(access_token)
-        self.jwt.set_refresh_cookies(refresh_token)
+        access_token = self.jwt.create_access_token(subject=subject)
+        refresh_token = self.jwt.create_refresh_token(subject=subject)
 
         refresh_token_object: RefreshToken = self.token_service.create(
             refresh_token, user.user_id
