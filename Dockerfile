@@ -18,12 +18,7 @@ RUN apt-get update && \
 
 # lint
 RUN pip install --upgrade pip
-COPY src/yourscript .
-
-# install python dependencies
-COPY requirements.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
-
+COPY . .
 
 #########
 # FINAL #
@@ -45,13 +40,11 @@ RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
 # install dependencies
-COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /app/requirements.txt .
 RUN pip install --upgrade pip
-RUN pip install --no-cache /wheels/*
 
 # copy project
-COPY src/yourscript $APP_HOME
+COPY . $APP_HOME
+RUN pip install -e .
 
 # chown all the files to the app user
 RUN chown -R app:app $APP_HOME
