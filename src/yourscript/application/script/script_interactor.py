@@ -69,10 +69,7 @@ class ScriptInteractor:
         DRY
         """
 
-        try:
-            script: Script = await self._check_script_exists(script_id)
-        except ScriptNotExistsError:
-            raise ScriptAccessDeniedError()
+        script: Script = await self._check_script_exists(script_id)
 
         user: DBUser = await self._get_current_user()
 

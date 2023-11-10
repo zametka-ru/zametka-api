@@ -1,7 +1,3 @@
-from exception_handlers.script import (
-    script_access_denied_exception_handler,
-    script_not_exists_exception_handler,
-)
 from fastapi import FastAPI
 from fastapi_another_jwt_auth.exceptions import AuthJWTException
 from jwt.exceptions import ExpiredSignatureError
@@ -35,6 +31,11 @@ from .exception_handlers.auth import (
     user_not_active_exception_handler,
     user_not_exists_exception_handler,
     weak_password_exception_handler,
+)
+
+from .exception_handlers.script import (
+    script_access_denied_exception_handler,
+    script_not_exists_exception_handler,
 )
 
 

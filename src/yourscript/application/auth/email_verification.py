@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+
 from typing import Optional
 
-from domain.exceptions.user import UserIsNotExistsError
+from yourscript.domain.exceptions.user import UserIsNotExistsError
 
 from yourscript.application.common.adapters import JWTOperations
 from yourscript.application.common.interactor import Interactor

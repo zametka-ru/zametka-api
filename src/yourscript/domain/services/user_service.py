@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from yourscript.domain.entities.user import DBUser, User
 from yourscript.domain.exceptions.user import UserIsNotActiveError, WeakPasswordError
@@ -8,16 +9,21 @@ class UserService:
     def check_password(self, password: str) -> None:
         """Validate password"""
 
+        special_symbols_regex = re.compile("[@_!#$%^&*()<>?/}{~:]")
+
         error_messages = {
-            "Password must contain an uppercase letter.": lambda s: any(
+            "Пароль должен содержать заглавную букву.": lambda s: any(
                 x.isupper() for x in s
             ),
-            "Password must contain a lowercase letter.": lambda s: any(
+            "Пароль не должен состоять только из заглавных букв.": lambda s: any(
                 x.islower() for x in s
             ),
-            "Password must contain a digit.": lambda s: any(x.isdigit() for x in s),
-            "Password cannot contain white spaces.": lambda s: not any(
+            "Пароль должен содержать число.": lambda s: any(x.isdigit() for x in s),
+            "Пароль не должен содержать пробелы.": lambda s: not any(
                 x.isspace() for x in s
+            ),
+            "Пароль должен содержать в себе специальный символ (@, #, $, %)": lambda s: not (
+                re.search(special_symbols_regex, s) is None
             ),
         }
 
