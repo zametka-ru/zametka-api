@@ -2,10 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from yourscript.domain.entities.refresh_token import RefreshToken
-from yourscript.domain.entities.user import User, DBUser
 from yourscript.domain.entities.script import Script
+from yourscript.domain.entities.user import DBUser, User
 from yourscript.domain.value_objects.script_id import ScriptId
-
 from yourscript.domain.value_objects.user_id import UserId
 
 
@@ -28,7 +27,7 @@ class AuthRepository(AbstractRepository):
         """Get user by id"""
 
     @abstractmethod
-    async def get_by_email(self, email: str) -> DBUser:
+    async def get_by_email(self, email: str) -> Optional[DBUser]:
         """Get user by email"""
 
     @abstractmethod

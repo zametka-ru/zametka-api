@@ -1,21 +1,21 @@
 from dataclasses import dataclass
+from typing import Optional
 
-from yourscript.application.common.adapters import JWT, PasswordHasher, HashedPassword
+from yourscript.application.common.adapters import JWT, HashedPassword, PasswordHasher
 from yourscript.application.common.interactor import Interactor
 from yourscript.application.common.repository import (
     AuthRepository,
     RefreshTokenRepository,
 )
 from yourscript.application.common.uow import UoW
-
+from yourscript.domain.entities.refresh_token import RefreshToken
 from yourscript.domain.entities.user import DBUser
 from yourscript.domain.exceptions.user import (
-    UserIsNotExists,
-    UserIsNotActive,
-    InvalidCredentials,
+    InvalidCredentialsError,
+    UserIsNotExistsError,
 )
 from yourscript.domain.services.refresh_token_service import RefreshTokenService
-from yourscript.domain.entities.refresh_token import RefreshToken
+from yourscript.domain.services.user_service import UserService
 
 
 @dataclass
@@ -39,6 +39,7 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
         pwd_context: PasswordHasher,
         uow: UoW,
         token_service: RefreshTokenService,
+        user_service: UserService,
     ):
         self.uow = uow
         self.jwt = jwt
@@ -46,18 +47,18 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
         self.repository = repository
         self.token_repository = token_repository
         self.token_service = token_service
+        self.user_service = user_service
 
     async def __call__(self, data: SignInInputDTO) -> SignInOutputDTO:
-        user: DBUser = await self.repository.get_by_email(data.email)
+        user: Optional[DBUser] = await self.repository.get_by_email(data.email)
 
         if not user:
-            raise UserIsNotExists()
-
-        if not user.is_active:
-            raise UserIsNotActive()
+            raise UserIsNotExistsError()
 
         if not self.pwd_context.verify(data.password, HashedPassword(user.password)):
-            raise InvalidCredentials()
+            raise InvalidCredentialsError()
+
+        self.user_service.ensure_can_login(user)
 
         subject = str(user.user_id)
 

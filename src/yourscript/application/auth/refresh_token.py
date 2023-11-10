@@ -3,14 +3,13 @@ from dataclasses import dataclass
 from yourscript.application.common.adapters import JWT
 from yourscript.application.common.interactor import Interactor
 from yourscript.application.common.repository import (
-    RefreshTokenRepository,
     AuthRepository,
+    RefreshTokenRepository,
 )
 from yourscript.application.common.uow import UoW
-
 from yourscript.domain.entities.refresh_token import RefreshToken
 from yourscript.domain.entities.user import DBUser
-from yourscript.domain.exceptions.refresh_token import RefreshTokenNotExists
+from yourscript.domain.exceptions.refresh_token import RefreshTokenNotExistsError
 from yourscript.domain.value_objects.user_id import UserId
 
 
@@ -42,7 +41,7 @@ class RefreshTokenInteractor(Interactor[RefreshTokenInputDTO, RefreshTokenOutput
         refresh_exists = await self.token_repository.exists(data.refresh)
 
         if not refresh_exists:
-            raise RefreshTokenNotExists()
+            raise RefreshTokenNotExistsError()
 
         user_id: UserId = data.refresh.user_id
         user: DBUser = await self.auth_repository.get(user_id)

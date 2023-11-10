@@ -3,13 +3,13 @@ version: '3.8'
 services:
     backend:
         build: .
-        command: python src/yourscript/main.py
+        command: python src/yourscript/main/web.py
         ports:
             - "8000:80"
         env_file:
             - .env
         volumes:
-            - ./yourscript/infrastructure/db/migrations/versions:/home/app/yourscript/infrastructure/db/migrations/versions
+            - ./src/yourscript/infrastructure/db/migrations/versions:/home/app/src/yourscript/infrastructure/db/migrations/versions
         depends_on:
             - db
             - migration

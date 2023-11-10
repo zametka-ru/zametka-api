@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-
 from yourscript.domain.value_objects.user_id import UserId
 
 

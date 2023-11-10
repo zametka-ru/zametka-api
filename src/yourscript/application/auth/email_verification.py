@@ -2,14 +2,17 @@ from dataclasses import dataclass
 
 from typing import Optional
 
+from yourscript.domain.exceptions.user import UserIsNotExistsError
+
 from yourscript.application.common.adapters import JWTOperations
 from yourscript.application.common.interactor import Interactor
 from yourscript.application.common.repository import AuthRepository
 from yourscript.application.common.uow import UoW
-
-from yourscript.domain.entities.user import User, DBUser
-
-from yourscript.domain.exceptions.token import TokenAlreadyUsedError
+from yourscript.domain.entities.user import DBUser, User
+from yourscript.domain.exceptions.token import (
+    CorruptedTokenError,
+    TokenAlreadyUsedError,
+)
 
 
 @dataclass
@@ -56,10 +59,12 @@ class EmailVerification(
         user_email: Optional[str] = payload.get("user_email")
 
         if not user_email:
-            # TODO: refactor
-            raise ValueError()
+            raise CorruptedTokenError()
 
-        user: DBUser = await self.repository.get_by_email(user_email)
+        user: Optional[DBUser] = await self.repository.get_by_email(user_email)
+
+        if not user:
+            raise UserIsNotExistsError()
 
         self._jwt_already_used_check(payload, user)
 

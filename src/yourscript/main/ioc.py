@@ -3,38 +3,34 @@ from typing import AsyncIterator
 
 from fastapi_mail import FastMail
 from jinja2 import Environment
-
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from starlette.background import BackgroundTasks
-
-from yourscript.domain.services.refresh_token_service import RefreshTokenService
-from yourscript.domain.services.script_service import ScriptService
-from yourscript.domain.services.user_service import UserService
 
 from yourscript.application.auth.email_verification import EmailVerification
 from yourscript.application.auth.refresh_token import RefreshTokenInteractor
 from yourscript.application.auth.sign_in import SignIn
+from yourscript.application.auth.sign_up import SignUp
 from yourscript.application.common.adapters import JWT
 from yourscript.application.script.script_interactor import ScriptInteractor
-from yourscript.application.auth.sign_up import SignUp
-
-from yourscript.presentation.interactor_factory import (
-    InteractorFactory,
-    InteractorPicker,
-    GInputDTO,
-    GOutputDTO,
-    InteractorCallable,
-)
-
+from yourscript.domain.services.refresh_token_service import RefreshTokenService
+from yourscript.domain.services.script_service import ScriptService
+from yourscript.domain.services.user_service import UserService
 from yourscript.infrastructure.adapters.auth.jwtops import JWTOperationsImpl
 from yourscript.infrastructure.adapters.auth.mailer import MailTokenSenderImpl
 from yourscript.infrastructure.adapters.auth.password_hasher import PasswordHasherImpl
 from yourscript.infrastructure.config_loader import AuthSettings
 from yourscript.infrastructure.db.provider import (
-    get_script_repository,
     get_auth_repository,
-    get_uow,
+    get_script_repository,
     get_token_repository,
+    get_uow,
+)
+from yourscript.presentation.interactor_factory import (
+    GInputDTO,
+    GOutputDTO,
+    InteractorCallable,
+    InteractorFactory,
+    InteractorPicker,
 )
 
 
@@ -123,6 +119,7 @@ class IoC(InteractorFactory):
                 jwt=jwt,
                 token_repository=get_token_repository(session),
                 token_service=self._token_service,
+                user_service=self._user_service,
             )
 
             yield interactor

@@ -1,9 +1,7 @@
 from abc import abstractmethod
-
 from typing import Protocol
 
 from yourscript.domain.entities.user import User
-
 from yourscript.domain.value_objects.hashed_password import HashedPassword
 from yourscript.domain.value_objects.token import Token
 

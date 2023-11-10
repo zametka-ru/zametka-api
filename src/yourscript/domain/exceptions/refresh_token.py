@@ -1,5 +1,5 @@
 from .base import DomainError
 
 
-class RefreshTokenNotExists(DomainError):
+class RefreshTokenNotExistsError(DomainError):
     pass

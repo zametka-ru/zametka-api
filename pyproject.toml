@@ -31,6 +31,9 @@ dependencies= [
 [tool.setuptools]
 package-dir = {"" = "src"}
 
+[tool.isort]
+profile = "black"
+
 [[project.authors]]
 name = 'lubaskinc0de'
 email = 'lubaskincorporation@gmail.com'

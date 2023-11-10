@@ -1,2 +1,6 @@
+from typing import Optional
+
+
 class DomainError(Exception):
-    pass
+    def __init__(self, message: Optional[str] = None):
+        self.message = message

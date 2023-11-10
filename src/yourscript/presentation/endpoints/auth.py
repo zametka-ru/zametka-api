@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi_another_jwt_auth import AuthJWT
 
-from yourscript.application.auth.sign_up import SignUpInputDTO, SignUpOutputDTO
-from yourscript.application.auth.sign_in import SignInInputDTO, SignInOutputDTO
 from yourscript.application.auth.email_verification import (
     EmailVerificationInputDTO,
     EmailVerificationOutputDTO,
@@ -11,15 +9,12 @@ from yourscript.application.auth.refresh_token import (
     RefreshTokenInputDTO,
     RefreshTokenOutputDTO,
 )
-
+from yourscript.application.auth.sign_in import SignInInputDTO, SignInOutputDTO
+from yourscript.application.auth.sign_up import SignUpInputDTO, SignUpOutputDTO
 from yourscript.domain.entities.refresh_token import RefreshToken
 from yourscript.domain.value_objects.user_id import UserId
-
 from yourscript.presentation.interactor_factory import InteractorFactory
-from yourscript.presentation.schemas.auth import (
-    UserRegisterSchema,
-    UserLoginSchema,
-)
+from yourscript.presentation.schemas.auth import UserLoginSchema, UserRegisterSchema
 
 router = APIRouter(
     prefix="/v1/auth",

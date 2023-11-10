@@ -1,9 +1,9 @@
 from .base import DomainError
 
 
-class ScriptNotExists(DomainError):
+class ScriptNotExistsError(DomainError):
     pass
 
 
-class ScriptAccessDenied(DomainError):
+class ScriptAccessDeniedError(DomainError):
     pass

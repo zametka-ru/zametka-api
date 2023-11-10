@@ -1,8 +1,7 @@
 import os
+from dataclasses import dataclass
 
 from fastapi_mail import ConnectionConfig
-
-from dataclasses import dataclass
 
 
 @dataclass
