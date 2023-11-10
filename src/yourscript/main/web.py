@@ -1,23 +1,20 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_another_jwt_auth import AuthJWT
 from fastapi_mail import FastMail
-
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from yourscript.infrastructure.db.main import get_engine
 from yourscript.infrastructure.config_loader import (
-    load_settings,
-    load_mail_settings,
     load_authjwt_settings,
+    load_mail_settings,
+    load_settings,
 )
 from yourscript.infrastructure.db import get_async_sessionmaker
-
-from yourscript.presentation import include_routers, include_exception_handlers
+from yourscript.infrastructure.db.main import get_engine
+from yourscript.main.ioc import IoC
+from yourscript.presentation import include_exception_handlers, include_routers
 from yourscript.presentation.interactor_factory import InteractorFactory
-
-from main.ioc import IoC
-
 
 settings = load_settings()
 
@@ -61,7 +58,7 @@ async def on_startup():
     mail = FastMail(mail_settings)
 
     jinja_env: Environment = Environment(
-        loader=PackageLoader("infrastructure.adapters.auth"),
+        loader=PackageLoader("yourscript.infrastructure.adapters.auth"),
         autoescape=select_autoescape(),
     )
 
@@ -76,3 +73,7 @@ async def on_startup():
     app.dependency_overrides[InteractorFactory] = lambda: ioc
 
     include_routers(app)
+
+
+if __name__ == "__main__":
+    uvicorn.run("web:app", host="0.0.0.0", reload=True, port=80)

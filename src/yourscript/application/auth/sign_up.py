@@ -1,15 +1,14 @@
 from dataclasses import dataclass
 
 from yourscript.application.common.adapters import (
+    HashedPassword,
     JWTOperations,
     MailTokenSender,
     PasswordHasher,
-    HashedPassword,
 )
 from yourscript.application.common.interactor import Interactor
 from yourscript.application.common.repository import AuthRepository
 from yourscript.application.common.uow import UoW
-
 from yourscript.domain.services.user_service import UserService
 
 

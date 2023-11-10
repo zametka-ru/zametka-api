@@ -2,11 +2,9 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from jinja2 import Environment
-
 from starlette.background import BackgroundTasks
 
-from yourscript.application.common.adapters import MailTokenSender, JWTOperations
-
+from yourscript.application.common.adapters import JWTOperations, MailTokenSender
 from yourscript.domain.entities.user import User
 from yourscript.domain.value_objects.token import Token
 

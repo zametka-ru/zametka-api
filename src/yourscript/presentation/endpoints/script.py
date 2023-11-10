@@ -1,23 +1,21 @@
 from fastapi import APIRouter, Depends
 from fastapi_another_jwt_auth import AuthJWT
 
-from domain.value_objects.script_id import ScriptId
-
-from yourscript.presentation.interactor_factory import InteractorFactory
-from yourscript.presentation.schemas.script import (
-    CreateScriptSchema,
-    UpdateScriptSchema,
-)
-
 from yourscript.application.script.dto import (
     CreateScriptInputDTO,
     CreateScriptOutputDTO,
+    DeleteScriptInputDTO,
+    DeleteScriptOutputDTO,
     ReadScriptInputDTO,
     ReadScriptOutputDTO,
     UpdateScriptInputDTO,
     UpdateScriptOutputDTO,
-    DeleteScriptInputDTO,
-    DeleteScriptOutputDTO,
+)
+from yourscript.domain.value_objects.script_id import ScriptId
+from yourscript.presentation.interactor_factory import InteractorFactory
+from yourscript.presentation.schemas.script import (
+    CreateScriptSchema,
+    UpdateScriptSchema,
 )
 
 router = APIRouter(

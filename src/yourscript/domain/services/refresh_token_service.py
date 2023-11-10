@@ -1,5 +1,4 @@
 from yourscript.domain.entities.refresh_token import RefreshToken
-
 from yourscript.domain.value_objects.user_id import UserId
 
 

@@ -1,7 +1,7 @@
 import datetime
 
-from yourscript.domain.entities.user import User
-from yourscript.domain.exceptions.user import WeakPasswordError
+from yourscript.domain.entities.user import DBUser, User
+from yourscript.domain.exceptions.user import UserIsNotActiveError, WeakPasswordError
 
 
 class UserService:
@@ -37,3 +37,7 @@ class UserService:
             last_name=last_name,
             joined_at=datetime.datetime.now(),
         )
+
+    def ensure_can_login(self, user: DBUser) -> None:
+        if not user.is_active:
+            raise UserIsNotActiveError

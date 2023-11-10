@@ -1,16 +1,14 @@
 from abc import ABC, abstractmethod
-
-from typing import TypeVar, TypeAlias, Callable, Awaitable, AsyncContextManager
+from typing import AsyncContextManager, Awaitable, Callable, TypeAlias, TypeVar
 
 from starlette.background import BackgroundTasks
 
+from yourscript.application.auth.email_verification import EmailVerification
+from yourscript.application.auth.refresh_token import RefreshTokenInteractor
+from yourscript.application.auth.sign_in import SignIn
+from yourscript.application.auth.sign_up import SignUp
 from yourscript.application.common.adapters import JWT
 from yourscript.application.script.script_interactor import ScriptInteractor
-
-from yourscript.application.auth.sign_up import SignUp
-from yourscript.application.auth.sign_in import SignIn
-from yourscript.application.auth.refresh_token import RefreshTokenInteractor
-from yourscript.application.auth.email_verification import EmailVerification
 
 # G means generic
 GInputDTO = TypeVar("GInputDTO")

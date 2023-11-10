@@ -1,15 +1,16 @@
-from sqlalchemy import select, delete, update, exists
+from typing import Optional
 
-from yourscript.domain.value_objects.user_id import UserId
-from yourscript.infrastructure.db import User, RefreshToken
-
-from yourscript.domain.entities.user import User as UserEntity, DBUser as DBUserEntity
-from yourscript.domain.entities.refresh_token import RefreshToken as RefreshTokenEntity
+from sqlalchemy import delete, exists, select, update
 
 from yourscript.application.common.repository import (
     AuthRepository,
     RefreshTokenRepository,
 )
+from yourscript.domain.entities.refresh_token import RefreshToken as RefreshTokenEntity
+from yourscript.domain.entities.user import DBUser
+from yourscript.domain.entities.user import User as UserEntity
+from yourscript.domain.value_objects.user_id import UserId
+from yourscript.infrastructure.db import RefreshToken, User
 
 
 class AuthRepositoryImpl(AuthRepository):
@@ -43,7 +44,7 @@ class AuthRepositoryImpl(AuthRepository):
             is_active=db_user.is_active,
         )
 
-    async def get(self, user_id: UserId) -> DBUserEntity:
+    async def get(self, user_id: UserId) -> DBUser:
         """Get user by id"""
 
         q = select(User).where(User.id == int(user_id))
@@ -51,7 +52,7 @@ class AuthRepositoryImpl(AuthRepository):
         res = await self.session.execute(q)
         user: User = res.scalar()
 
-        return DBUserEntity(
+        return DBUser(
             user_id=user.id,
             email=user.email,
             password=user.password,
@@ -62,7 +63,7 @@ class AuthRepositoryImpl(AuthRepository):
             is_active=user.is_active,
         )
 
-    async def get_by_email(self, email: str) -> DBUserEntity:
+    async def get_by_email(self, email: str) -> Optional[DBUser]:
         """Get user by email"""
 
         q = select(User).where(User.email == email)
@@ -71,7 +72,10 @@ class AuthRepositoryImpl(AuthRepository):
 
         user: User = res.scalar()
 
-        return DBUserEntity(
+        if not user:
+            return None
+
+        return DBUser(
             user_id=user.id,
             email=user.email,
             password=user.password,

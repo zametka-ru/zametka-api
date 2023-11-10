@@ -10,4 +10,4 @@ class JWTOperationsImpl(JWTOperations):
         return jwt.encode(payload, secret_key, algorithm)
 
     def decode(self, token: str, secret_key: str, algorithm: str) -> dict:
-        return jwt.decode(token, secret_key, list(algorithm))
+        return jwt.decode(token, secret_key, algorithm)  # type:ignore

@@ -1,8 +1,7 @@
 import re
 
-from pydantic import BaseModel, Field, validator, root_validator
-
-from email_validator import validate_email
+from email_validator import EmailNotValidError, validate_email
+from pydantic import BaseModel, Field, root_validator, validator
 
 
 # noinspection PyMethodParameters
@@ -21,7 +20,10 @@ class UserRegisterSchema(BaseModel):
     def validate_email(cls, email: str) -> str:
         """Validate email"""
 
-        email_info = validate_email(email, check_deliverability=False)
+        try:
+            email_info = validate_email(email, check_deliverability=False)
+        except EmailNotValidError:
+            raise ValueError("Неправильный e-mail!")
 
         email = email_info.original_email
 
@@ -52,7 +54,7 @@ class UserRegisterSchema(BaseModel):
         pw1, pw2 = values.get("password"), values.get("password2")
 
         if pw1 is not None and pw2 is not None and pw1 != pw2:
-            raise ValueError("Passwords do not match.")
+            raise ValueError("Пароли не совпадают")
 
         return values
 

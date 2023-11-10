@@ -1,7 +1,7 @@
-from sqlalchemy import Integer, String, DateTime, Boolean, ForeignKey, Text
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-
 from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from yourscript.domain.value_objects.user_id import UserId
 

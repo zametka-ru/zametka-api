@@ -3,10 +3,12 @@ from typing import Optional
 from yourscript.application.common.adapters import JWT
 from yourscript.application.common.repository import AuthRepository, ScriptRepository
 from yourscript.application.common.uow import UoW
-
 from yourscript.domain.entities.script import Script
 from yourscript.domain.entities.user import DBUser
-from yourscript.domain.exceptions.script import ScriptNotExists, ScriptAccessDenied
+from yourscript.domain.exceptions.script import (
+    ScriptAccessDeniedError,
+    ScriptNotExistsError,
+)
 from yourscript.domain.services.script_service import ScriptService
 from yourscript.domain.value_objects.script_id import ScriptId
 from yourscript.domain.value_objects.user_id import UserId
@@ -14,12 +16,12 @@ from yourscript.domain.value_objects.user_id import UserId
 from .dto import (
     CreateScriptInputDTO,
     CreateScriptOutputDTO,
+    DeleteScriptInputDTO,
+    DeleteScriptOutputDTO,
     ReadScriptInputDTO,
     ReadScriptOutputDTO,
     UpdateScriptInputDTO,
     UpdateScriptOutputDTO,
-    DeleteScriptInputDTO,
-    DeleteScriptOutputDTO,
 )
 
 
@@ -53,7 +55,7 @@ class ScriptInteractor:
         script: Optional[Script] = await self.script_repository.get(script_id)
 
         if not script:
-            raise ScriptNotExists()
+            raise ScriptNotExistsError()
 
         return script
 
@@ -69,13 +71,13 @@ class ScriptInteractor:
 
         try:
             script: Script = await self._check_script_exists(script_id)
-        except ScriptNotExists:
-            raise ScriptAccessDenied()
+        except ScriptNotExistsError:
+            raise ScriptAccessDeniedError()
 
         user: DBUser = await self._get_current_user()
 
         if not self.service.has_access(script, user.user_id):
-            raise ScriptAccessDenied()
+            raise ScriptAccessDeniedError()
 
         return script
 

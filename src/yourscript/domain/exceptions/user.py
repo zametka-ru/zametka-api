@@ -1,15 +1,15 @@
 from .base import DomainError
 
 
-class UserIsNotExists(DomainError):
+class UserIsNotExistsError(DomainError):
     pass
 
 
-class UserIsNotActive(DomainError):
+class UserIsNotActiveError(DomainError):
     pass
 
 
-class InvalidCredentials(DomainError):
+class InvalidCredentialsError(DomainError):
     pass
 
 

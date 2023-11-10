@@ -1,8 +1,7 @@
-from yourscript.application.common.adapters import PasswordHasher
-
-from yourscript.domain.value_objects.hashed_password import HashedPassword
-
 from passlib.hash import pbkdf2_sha256
+
+from yourscript.application.common.adapters import PasswordHasher
+from yourscript.domain.value_objects.hashed_password import HashedPassword
 
 
 class PasswordHasherImpl(PasswordHasher):
