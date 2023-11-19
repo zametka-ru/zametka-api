@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List
 
 from yourscript.domain.entities.refresh_token import RefreshToken
 from yourscript.domain.entities.script import Script
@@ -49,6 +49,14 @@ class ScriptRepository(AbstractRepository):
     @abstractmethod
     async def update(self, script_id: ScriptId, script: Script) -> Script:
         """Update script"""
+
+    @abstractmethod
+    async def list(self, limit: int, offset: int, author_id: UserId) -> list[Script]:
+        """List scripts"""
+
+    @abstractmethod
+    async def search(self, query: str, limit: int, offset: int) -> List[Script]:
+        """FTS Scripts"""
 
     @abstractmethod
     async def delete(self, script_id: ScriptId) -> None:

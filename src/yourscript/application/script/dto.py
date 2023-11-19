@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from yourscript.domain.entities.script import Script
 from yourscript.domain.value_objects.script_id import ScriptId
@@ -35,6 +36,17 @@ class ReadScriptInputDTO:
 @dataclass
 class ReadScriptOutputDTO:
     script: Script
+
+
+@dataclass
+class ListScriptsInputDTO:
+    page: int
+    search: Optional[str] = None
+
+
+@dataclass
+class ListScriptsOutputDTO:
+    scripts: list[Script]
 
 
 @dataclass
