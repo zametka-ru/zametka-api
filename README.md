@@ -7,27 +7,180 @@
 сценариев</span></h2>
 
 ------------------------
-### *О нас*
+### *API*
 
-Мы молодой стартап под названием yourscript, призванный облегчить жизнь кинорежиссерам и контентмейкерам.
-Мы готовы предоставить им
+API для приложения написания сценариев - **yourscript**.
 
-- ⚡ быструю
-- 🌶️ удобную
-- 🥑 понятную
+*Чистая архитектура, безопасная аутентификация*.
 
-Платформу для воплощениях их идей - написания сценариев!
+---------------------
 
-### *Киллер фича*
+### *Эндпоинты*
 
-Главной особенностью нашего продукта является
+#### Auth
 
-- Уникальная функция зачитывания сценария!
-С ней вы сможете удобно и качественно озвучить свои сценарии прямо на нашем сайте!
+#### POST /v1/auth/sign-up/
 
-- Статистика! Смотрите статистику написания своих сценариев прямо на сайте!
+```bash
+curl -X "POST" \
+  "http://127.0.0.1:8000/v1/auth/sign-up/" \
+  -d '{
+      "email": "string",
+      "password": "string",
+      "password2": "string",
+      "first_name": "string",
+      "last_name": "string",
+      "is_superuser": false,
+      "is_active": false
+  }'
+```
 
-- Удобный MarkDown редактор сценариев! Выделите самое важное!
+```json
+{
+    "first_name": "string"
+}
+```
+
+#### POST /v1/auth/sign-in/
+
+```bash
+curl -X "POST" \
+  "http://127.0.0.1:8000/v1/auth/sign-in/" \
+  -d '{
+      "email": "string",
+      "password": "string"
+  }'
+```
+
+```json
+{
+  "access": "string",
+  "refresh": "string"
+}
+```
+
+#### GET /v1/auth/verify/{token}/
+```bash
+curl -X "GET" "http://127.0.0.1:8000/v1/auth/verify/{token}"
+```
+```json
+{
+  "email": "string"
+}
+```
+
+#### POST /v1/auth/refresh/
+
+```bash
+curl -X "POST" --header "X-CSRF-Token: <csrf_refresh_token>" "http://127.0.0.1:8000/v1/auth/refresh/"
+```
+
+```json
+{
+  "access": "string",
+  "refresh": "string"
+}
+```
+
+
+#### Scripts
+
+#### POST /v1/script/create/
+
+```bash
+curl -X "POST" \
+  "http://127.0.0.1:8000/v1/script/create" \
+  -d '{
+      "title": "string",
+      "text": "string"
+  }'
+```
+
+```json
+{
+    "script": {
+        "title": "string",
+        "text": "string",
+        "created_at": "2023-11-20T08:39:01.841Z",
+        "author_id": 0
+    }
+}
+```
+
+#### GET /v1/script/{script_id}/
+```bash
+curl -X "GET" "http://127.0.0.1:8000/v1/script/{script_id}/"
+```
+```json
+{
+    "script": {
+        "title": "string",
+        "text": "string",
+        "created_at": "2023-11-20T08:39:56.439Z",
+        "author_id": 0
+    }
+}
+```
+
+#### PUT /v1/script/{script_id}/
+
+```bash
+curl -X "PUT" \
+  "http://127.0.0.1:8000/v1/script/{script_id}/" \
+  -d '{
+      "title": "string",
+      "text": "string"
+  }'
+```
+
+```json
+{
+    "script": {
+        "title": "string",
+        "text": "string",
+        "created_at": "2023-11-20T08:39:01.841Z",
+        "author_id": 0
+    }
+}
+```
+
+#### DELETE /v1/script/{script_id}/
+
+```bash
+curl -X "DELETE" \
+  "http://127.0.0.1:8000/v1/script/{script_id}/"
+```
+
+```json
+{}
+```
+
+#### GET /v1/script/
+
+Possible query parameters:
+
+```plain
+page: integer (query)
+Default value : 1
+
+search: string (query)
+```
+
+```bash
+curl -X "GET" "http://127.0.0.1:8000/v1/script/"
+```
+```json
+{
+  "scripts": [
+    {
+      "title": "string",
+      "text": "string",
+      "created_at": "2023-11-20T08:44:10.739Z",
+      "author_id": 0
+    }
+  ]
+}
+```
 
 ---------------------
 
@@ -43,17 +196,6 @@
 - PostgreSQL
 - Alembic
 - Pytest
-
-### Стэк технологий frontend
-
-- Vue
-- Vue Router
-- Pinia
-- Quasar
-
-### Статус
-
-Проект в активной разработке!
 
 ### Лицензия
 
