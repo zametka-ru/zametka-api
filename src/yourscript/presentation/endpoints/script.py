@@ -23,13 +23,13 @@ from yourscript.presentation.schemas.script import (
 )
 
 router = APIRouter(
-    prefix="/v1/script",
+    prefix="/v1/scripts",
     tags=["script"],
     responses={404: {"description": "Not found"}},
 )
 
 
-@router.post("/create", response_model=CreateScriptOutputDTO)
+@router.post("/", response_model=CreateScriptOutputDTO)
 async def create(
     script: CreateScriptSchema,
     ioc: InteractorFactory = Depends(),

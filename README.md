@@ -59,9 +59,9 @@ curl -X "POST" \
 }
 ```
 
-#### GET /v1/auth/verify/{token}/
+#### GET /v1/auth/{token}/
 ```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/auth/verify/{token}"
+curl -X "GET" "http://127.0.0.1:8000/v1/auth/{token}"
 ```
 ```json
 {
@@ -85,11 +85,11 @@ curl -X "POST" --header "X-CSRF-Token: <csrf_refresh_token>" "http://127.0.0.1:8
 
 #### Scripts
 
-#### POST /v1/script/create/
+#### POST /v1/scripts/
 
 ```bash
 curl -X "POST" \
-  "http://127.0.0.1:8000/v1/script/create" \
+  "http://127.0.0.1:8000/v1/scripts/" \
   -d '{
       "title": "string",
       "text": "string"
@@ -107,9 +107,9 @@ curl -X "POST" \
 }
 ```
 
-#### GET /v1/script/{script_id}/
+#### GET /v1/scripts/{script_id}/
 ```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/script/{script_id}/"
+curl -X "GET" "http://127.0.0.1:8000/v1/scripts/{script_id}/"
 ```
 ```json
 {
@@ -122,11 +122,11 @@ curl -X "GET" "http://127.0.0.1:8000/v1/script/{script_id}/"
 }
 ```
 
-#### PUT /v1/script/{script_id}/
+#### PUT /v1/scripts/{script_id}/
 
 ```bash
 curl -X "PUT" \
-  "http://127.0.0.1:8000/v1/script/{script_id}/" \
+  "http://127.0.0.1:8000/v1/scripts/{script_id}/" \
   -d '{
       "title": "string",
       "text": "string"
@@ -144,18 +144,18 @@ curl -X "PUT" \
 }
 ```
 
-#### DELETE /v1/script/{script_id}/
+#### DELETE /v1/scripts/{script_id}/
 
 ```bash
 curl -X "DELETE" \
-  "http://127.0.0.1:8000/v1/script/{script_id}/"
+  "http://127.0.0.1:8000/v1/scripts/{script_id}/"
 ```
 
 ```json
 {}
 ```
 
-#### GET /v1/script/
+#### GET /v1/scripts/
 
 Possible query parameters:
 
@@ -167,7 +167,7 @@ search: string (query)
 ```
 
 ```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/script/"
+curl -X "GET" "http://127.0.0.1:8000/v1/scripts/"
 ```
 ```json
 {
