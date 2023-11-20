@@ -190,12 +190,9 @@ curl -X "GET" "http://127.0.0.1:8000/v1/scripts/"
 - SQLAlchemy (asyncpg)
 - Pydantic
 - JWT Auth
-- Mypy
-- Black
 - Docker
 - PostgreSQL
 - Alembic
-- Pytest
 
 ### Лицензия
 
