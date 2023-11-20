@@ -63,7 +63,7 @@ async def sign_in(
     return response
 
 
-@router.get("/verify/{token}", response_model=EmailVerificationOutputDTO)
+@router.get("/{token}", response_model=EmailVerificationOutputDTO)
 async def email_verification(token: str, ioc: InteractorFactory = Depends()):
     """Email verification endpoint"""
 
