@@ -22,9 +22,10 @@ class UserService:
             "Пароль не должен содержать пробелы.": lambda s: not any(
                 x.isspace() for x in s
             ),
-            "Пароль должен содержать в себе специальный символ (@, #, $, %)": lambda s: not (
-                re.search(special_symbols_regex, s) is None
-            ),
+            "Пароль должен содержать в себе специальный символ (@, #, $, %)": lambda s: re.search(
+                special_symbols_regex, s
+            )
+            is not None,
         }
 
         for message, password_validator in error_messages.items():

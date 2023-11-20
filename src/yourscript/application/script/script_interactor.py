@@ -31,12 +31,12 @@ PAGE_SIZE = 3
 
 class ScriptInteractor:
     def __init__(
-        self,
-        script_repository: ScriptRepository,
-        auth_repository: AuthRepository,
-        uow: UoW,
-        service: ScriptService,
-        jwt: JWT,
+            self,
+            script_repository: ScriptRepository,
+            auth_repository: AuthRepository,
+            uow: UoW,
+            service: ScriptService,
+            jwt: JWT,
     ):
         self.uow = uow
         self.service = service
@@ -130,7 +130,7 @@ class ScriptInteractor:
                 query=data.search,
                 limit=limit,
                 offset=offset,
-            )
+            )  # type:ignore
 
         return ListScriptsOutputDTO(scripts=scripts)
 
