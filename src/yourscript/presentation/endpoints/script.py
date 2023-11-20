@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 from fastapi_another_jwt_auth import AuthJWT
 
@@ -8,6 +10,8 @@ from yourscript.application.script.dto import (
     DeleteScriptOutputDTO,
     ReadScriptInputDTO,
     ReadScriptOutputDTO,
+    ListScriptsInputDTO,
+    ListScriptsOutputDTO,
     UpdateScriptInputDTO,
     UpdateScriptOutputDTO,
 )
@@ -81,6 +85,28 @@ async def update(
                 script_id=ScriptId(script_id),
                 title=new_script.title,
                 text=new_script.text,
+            )
+        )
+
+        return response
+
+
+@router.get("/", response_model=ListScriptsOutputDTO)
+async def list_scripts(
+    page: int = 1,
+    search: Optional[str] = None,
+    ioc: InteractorFactory = Depends(),
+    jwt: AuthJWT = Depends(),
+):
+    """List scripts"""
+
+    jwt.jwt_required()
+
+    async with ioc.pick_script_interactor(jwt, lambda i: i.list) as interactor:
+        response = await interactor(
+            ListScriptsInputDTO(
+                page=page,
+                search=search,
             )
         )
 
