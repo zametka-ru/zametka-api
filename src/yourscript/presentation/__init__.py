@@ -1,16 +1,17 @@
+from jwt.exceptions import DecodeError
+
 from fastapi import FastAPI
 from fastapi_another_jwt_auth.exceptions import AuthJWTException
 from jwt.exceptions import ExpiredSignatureError
 from sqlalchemy.exc import IntegrityError
 
-from yourscript.domain.exceptions.refresh_token import RefreshTokenNotExistsError
 from yourscript.domain.exceptions.script import (
     ScriptAccessDeniedError,
     ScriptNotExistsError,
 )
-from yourscript.domain.exceptions.token import (
-    CorruptedTokenError,
-    TokenAlreadyUsedError,
+from yourscript.domain.exceptions.email_token import (
+    CorruptedEmailTokenError,
+    EmailTokenAlreadyUsedError,
 )
 from yourscript.domain.exceptions.user import (
     InvalidCredentialsError,
@@ -25,12 +26,12 @@ from .exception_handlers.auth import (
     corrupted_token_exception_handler,
     expired_token_exception_handler,
     invalid_credentials_exception_handler,
-    refresh_not_exists_exception_handler,
     token_already_used_exception_handler,
     unique_exception_handler,
     user_not_active_exception_handler,
     user_not_exists_exception_handler,
     weak_password_exception_handler,
+    invalid_encoded_token_exception_handler,
 )
 
 from .exception_handlers.script import (
@@ -59,18 +60,19 @@ def include_exception_handlers(app: FastAPI) -> None:
     )
     app.add_exception_handler(ExpiredSignatureError, expired_token_exception_handler)
     app.add_exception_handler(
-        TokenAlreadyUsedError, token_already_used_exception_handler
-    )
-    app.add_exception_handler(
-        RefreshTokenNotExistsError, refresh_not_exists_exception_handler
+        EmailTokenAlreadyUsedError, token_already_used_exception_handler
     )
     app.add_exception_handler(
         AuthJWTException,
         authjwt_exception_handler,
     )
     app.add_exception_handler(
-        CorruptedTokenError,
+        CorruptedEmailTokenError,
         corrupted_token_exception_handler,
+    )
+    app.add_exception_handler(
+        DecodeError,
+        invalid_encoded_token_exception_handler,
     )
 
     # Script

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from yourscript.domain.value_objects.user_id import UserId
@@ -23,16 +23,3 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     scripts = relationship("Script", back_populates="user")
-
-
-class RefreshToken(Base):
-    """JWT Refresh token"""
-
-    __tablename__ = "refresh_tokens"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    token: Mapped[str] = mapped_column(Text, nullable=False)
-
-    user_id: Mapped[UserId] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )

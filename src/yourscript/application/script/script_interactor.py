@@ -1,8 +1,9 @@
 from typing import Optional
 
-from yourscript.application.common.adapters import JWT
 from yourscript.application.common.repository import AuthRepository, ScriptRepository
 from yourscript.application.common.uow import UoW
+from yourscript.application.common.id_provider import IdProvider
+
 from yourscript.domain.entities.script import Script
 from yourscript.domain.entities.user import DBUser
 from yourscript.domain.exceptions.script import (
@@ -11,7 +12,6 @@ from yourscript.domain.exceptions.script import (
 )
 from yourscript.domain.services.script_service import ScriptService
 from yourscript.domain.value_objects.script_id import ScriptId
-from yourscript.domain.value_objects.user_id import UserId
 
 from .dto import (
     CreateScriptInputDTO,
@@ -26,28 +26,28 @@ from .dto import (
     UpdateScriptOutputDTO,
 )
 
-PAGE_SIZE = 3
+PAGE_SIZE = 5
 
 
 class ScriptInteractor:
     def __init__(
-            self,
-            script_repository: ScriptRepository,
-            auth_repository: AuthRepository,
-            uow: UoW,
-            service: ScriptService,
-            jwt: JWT,
+        self,
+        script_repository: ScriptRepository,
+        auth_repository: AuthRepository,
+        uow: UoW,
+        service: ScriptService,
+        id_provider: IdProvider,
     ):
         self.uow = uow
         self.service = service
         self.script_repository = script_repository
         self.auth_repository = auth_repository
-        self.jwt = jwt
+        self.id_provider = id_provider
 
     async def _get_current_user(self) -> DBUser:
         """Get current user from JWT"""
 
-        user_id = UserId(int(self.jwt.get_jwt_subject()))
+        user_id = self.id_provider.get_current_user_id()
 
         user: DBUser = await self.auth_repository.get(user_id)
 
@@ -126,11 +126,11 @@ class ScriptInteractor:
                 offset=offset,
             )
         else:
-            scripts: list[Script] = await self.script_repository.search(
+            scripts: list[Script] = await self.script_repository.search(  # type:ignore
                 query=data.search,
                 limit=limit,
                 offset=offset,
-            )  # type:ignore
+            )
 
         return ListScriptsOutputDTO(scripts=scripts)
 

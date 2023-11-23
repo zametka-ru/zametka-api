@@ -2,25 +2,25 @@ from dataclasses import dataclass
 
 from typing import Optional
 
-from yourscript.domain.exceptions.user import UserIsNotExistsError
-
 from yourscript.application.common.adapters import JWTOperations
 from yourscript.application.common.interactor import Interactor
 from yourscript.application.common.repository import AuthRepository
 from yourscript.application.common.uow import UoW
-from yourscript.domain.entities.user import DBUser, User
-from yourscript.domain.exceptions.token import (
-    CorruptedTokenError,
-    TokenAlreadyUsedError,
+
+from yourscript.domain.exceptions.user import UserIsNotExistsError
+from yourscript.domain.entities.user import DBUser
+from yourscript.domain.exceptions.email_token import (
+    CorruptedEmailTokenError,
+    EmailTokenAlreadyUsedError,
 )
 
 
-@dataclass
+@dataclass(frozen=True)
 class EmailVerificationInputDTO:
     token: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class EmailVerificationOutputDTO:
     email: Optional[str]
 
@@ -42,12 +42,6 @@ class EmailVerification(
         self._secret_key = secret_key
         self._algorithm = algorithm
 
-    def _jwt_already_used_check(self, payload, user: User) -> None:
-        token_user_is_active: bool = payload.get("user_is_active")
-
-        if user.is_active != token_user_is_active:
-            raise TokenAlreadyUsedError()
-
     async def __call__(
         self, data: EmailVerificationInputDTO
     ) -> EmailVerificationOutputDTO:
@@ -59,14 +53,17 @@ class EmailVerification(
         user_email: Optional[str] = payload.get("user_email")
 
         if not user_email:
-            raise CorruptedTokenError()
+            raise CorruptedEmailTokenError()
 
         user: Optional[DBUser] = await self.repository.get_by_email(user_email)
 
         if not user:
             raise UserIsNotExistsError()
 
-        self._jwt_already_used_check(payload, user)
+        token_user_is_active: bool = payload.get("user_is_active")
+
+        if user.is_active != token_user_is_active:
+            raise EmailTokenAlreadyUsedError()
 
         await self.repository.set_active(user.user_id)
         await self.uow.commit()

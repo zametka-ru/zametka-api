@@ -5,55 +5,55 @@ from yourscript.domain.entities.script import Script
 from yourscript.domain.value_objects.script_id import ScriptId
 
 
-@dataclass
+@dataclass(frozen=True)
 class CreateScriptInputDTO:
     title: str
     text: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class CreateScriptOutputDTO:
     script: Script
 
 
-@dataclass
+@dataclass(frozen=True)
 class UpdateScriptInputDTO:
     script_id: ScriptId
     title: str
     text: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class UpdateScriptOutputDTO:
     script: Script
 
 
-@dataclass
+@dataclass(frozen=True)
 class ReadScriptInputDTO:
     script_id: ScriptId
 
 
-@dataclass
+@dataclass(frozen=True)
 class ReadScriptOutputDTO:
     script: Script
 
 
-@dataclass
+@dataclass(frozen=True)
 class ListScriptsInputDTO:
     page: int
     search: Optional[str] = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class ListScriptsOutputDTO:
     scripts: list[Script]
 
 
-@dataclass
+@dataclass(frozen=True)
 class DeleteScriptInputDTO:
     script_id: ScriptId
 
 
-@dataclass
+@dataclass(frozen=True)
 class DeleteScriptOutputDTO:
     pass

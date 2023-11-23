@@ -12,12 +12,12 @@ from yourscript.application.common.uow import UoW
 from yourscript.domain.services.user_service import UserService
 
 
-@dataclass
+@dataclass(frozen=True)
 class SignUpOutputDTO:
     first_name: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class SignUpInputDTO:
     user_email: str
     user_password: str

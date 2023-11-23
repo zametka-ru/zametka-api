@@ -1,3 +1,5 @@
+import logging
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +19,8 @@ from yourscript.presentation import include_exception_handlers, include_routers
 from yourscript.presentation.interactor_factory import InteractorFactory
 
 settings = load_settings()
+
+logging.info("Config was loaded.")
 
 app = FastAPI()
 
@@ -42,6 +46,7 @@ def load_authjwt_config():
     return [
         ("authjwt_secret_key", authjwt_config.authjwt_secret_key),
         ("authjwt_token_location", authjwt_config.authjwt_token_location),
+        ("authjwt_access_token_expires", authjwt_config.authjwt_access_token_expires),
     ]
 
 
@@ -67,12 +72,14 @@ async def on_startup():
         auth_settings=auth_settings,
         jinja_env=jinja_env,
         mailer=mail,
-        token_link="http://localhost:8000/v1/auth/verify/{}",
+        token_link=f"{settings.cors.frontend_url}/verify?token=" + "{}",
     )
 
     app.dependency_overrides[InteractorFactory] = lambda: ioc
 
     include_routers(app)
+
+    logging.info("Routers was included.")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from typing import AsyncContextManager, Awaitable, Callable, TypeAlias, TypeVar
 from starlette.background import BackgroundTasks
 
 from yourscript.application.auth.email_verification import EmailVerification
-from yourscript.application.auth.refresh_token import RefreshTokenInteractor
+from yourscript.application.auth.get_user import GetUser
 from yourscript.application.auth.sign_in import SignIn
 from yourscript.application.auth.sign_up import SignUp
 from yourscript.application.common.adapters import JWT
@@ -32,11 +32,11 @@ class InteractorFactory(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_in(self, jwt: JWT) -> AsyncContextManager[SignIn]:
+    def sign_in(self) -> AsyncContextManager[SignIn]:
         raise NotImplementedError
 
     @abstractmethod
-    def refresh_token(self, jwt: JWT) -> AsyncContextManager[RefreshTokenInteractor]:
+    def get_user(self, jwt: JWT) -> AsyncContextManager[GetUser]:
         raise NotImplementedError
 
     @abstractmethod

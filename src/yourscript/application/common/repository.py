@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from yourscript.domain.entities.refresh_token import RefreshToken
 from yourscript.domain.entities.script import Script
 from yourscript.domain.entities.user import DBUser, User
 from yourscript.domain.value_objects.script_id import ScriptId
@@ -61,19 +60,3 @@ class ScriptRepository(AbstractRepository):
     @abstractmethod
     async def delete(self, script_id: ScriptId) -> None:
         """Delete script"""
-
-
-class RefreshTokenRepository(AbstractRepository):
-    """Refresh token repository interface"""
-
-    @abstractmethod
-    async def create(self, refresh_token: RefreshToken) -> RefreshToken:
-        """Create refresh token instance"""
-
-    @abstractmethod
-    async def delete(self, user_id: UserId) -> None:
-        """Delete user tokens"""
-
-    @abstractmethod
-    async def exists(self, token: RefreshToken) -> bool:
-        """Is token exists"""

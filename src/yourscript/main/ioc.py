@@ -6,13 +6,15 @@ from jinja2 import Environment
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from starlette.background import BackgroundTasks
 
+from yourscript.infrastructure.adapters.auth.id_provider import TokenIdProvider
+
 from yourscript.application.auth.email_verification import EmailVerification
-from yourscript.application.auth.refresh_token import RefreshTokenInteractor
 from yourscript.application.auth.sign_in import SignIn
 from yourscript.application.auth.sign_up import SignUp
+from yourscript.application.auth.get_user import GetUser
+
 from yourscript.application.common.adapters import JWT
 from yourscript.application.script.script_interactor import ScriptInteractor
-from yourscript.domain.services.refresh_token_service import RefreshTokenService
 from yourscript.domain.services.script_service import ScriptService
 from yourscript.domain.services.user_service import UserService
 from yourscript.infrastructure.adapters.auth.jwtops import JWTOperationsImpl
@@ -22,7 +24,6 @@ from yourscript.infrastructure.config_loader import AuthSettings
 from yourscript.infrastructure.db.provider import (
     get_auth_repository,
     get_script_repository,
-    get_token_repository,
     get_uow,
 )
 from yourscript.presentation.interactor_factory import (
@@ -50,7 +51,6 @@ class IoC(InteractorFactory):
 
         self._script_service = ScriptService()
         self._user_service = UserService()
-        self._token_service = RefreshTokenService()
         self._password_hasher = PasswordHasherImpl()
         self._jwt_ops = JWTOperationsImpl()
 
@@ -70,6 +70,7 @@ class IoC(InteractorFactory):
         script_repository = get_script_repository(session)
         auth_repository = get_auth_repository(session)
         uow = get_uow(session)
+        id_provider = TokenIdProvider(jwt)
         service = self._script_service
 
         return ScriptInteractor(
@@ -77,7 +78,7 @@ class IoC(InteractorFactory):
             auth_repository=auth_repository,
             uow=uow,
             service=service,
-            jwt=jwt,
+            id_provider=id_provider,
         )
 
     @asynccontextmanager
@@ -110,28 +111,22 @@ class IoC(InteractorFactory):
             yield interactor
 
     @asynccontextmanager
-    async def sign_in(self, jwt: JWT) -> AsyncIterator[SignIn]:
+    async def sign_in(self) -> AsyncIterator[SignIn]:
         async with self._session_factory() as session:
             interactor = SignIn(
                 repository=get_auth_repository(session),
                 pwd_context=self._password_hasher,
-                uow=get_uow(session),
-                jwt=jwt,
-                token_repository=get_token_repository(session),
-                token_service=self._token_service,
                 user_service=self._user_service,
             )
 
             yield interactor
 
     @asynccontextmanager
-    async def refresh_token(self, jwt: JWT) -> AsyncIterator[RefreshTokenInteractor]:
+    async def get_user(self, jwt: JWT) -> AsyncIterator[GetUser]:
         async with self._session_factory() as session:
-            interactor = RefreshTokenInteractor(
-                uow=get_uow(session),
-                jwt=jwt,
-                token_repository=get_token_repository(session),
+            interactor = GetUser(
                 auth_repository=get_auth_repository(session),
+                id_provider=TokenIdProvider(jwt),
             )
 
             yield interactor

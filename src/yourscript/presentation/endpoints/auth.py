@@ -5,14 +5,10 @@ from yourscript.application.auth.email_verification import (
     EmailVerificationInputDTO,
     EmailVerificationOutputDTO,
 )
-from yourscript.application.auth.refresh_token import (
-    RefreshTokenInputDTO,
-    RefreshTokenOutputDTO,
-)
+from yourscript.application.auth.get_user import GetUserOutputDTO, GetUserInputDTO
+
 from yourscript.application.auth.sign_in import SignInInputDTO, SignInOutputDTO
 from yourscript.application.auth.sign_up import SignUpInputDTO, SignUpOutputDTO
-from yourscript.domain.entities.refresh_token import RefreshToken
-from yourscript.domain.value_objects.user_id import UserId
 from yourscript.presentation.interactor_factory import InteractorFactory
 from yourscript.presentation.schemas.auth import UserLoginSchema, UserRegisterSchema
 
@@ -25,9 +21,9 @@ router = APIRouter(
 
 @router.post("/sign-up", response_model=SignUpOutputDTO)
 async def sign_up(
-    user_data: UserRegisterSchema,
-    background_tasks: BackgroundTasks,
-    ioc: InteractorFactory = Depends(),
+        user_data: UserRegisterSchema,
+        background_tasks: BackgroundTasks,
+        ioc: InteractorFactory = Depends(),
 ):
     """Register endpoint"""
 
@@ -46,24 +42,44 @@ async def sign_up(
 
 @router.post("/sign-in", response_model=SignInOutputDTO)
 async def sign_in(
-    auth_data: UserLoginSchema,
-    jwt: AuthJWT = Depends(),
-    ioc: InteractorFactory = Depends(),
+        auth_data: UserLoginSchema,
+        jwt_auth: AuthJWT = Depends(),
+        ioc: InteractorFactory = Depends(),
 ):
     """Login endpoint"""
 
-    async with ioc.sign_in(jwt) as interactor:
+    async with ioc.sign_in() as interactor:
         response = await interactor(
             SignInInputDTO(email=auth_data.email, password=auth_data.password)
         )
 
-    jwt.set_access_cookies(response.access)
-    jwt.set_refresh_cookies(response.refresh)
+    subject = response.user_id
+
+    access = jwt_auth.create_access_token(subject=subject)
+
+    jwt_auth.set_access_cookies(access)
 
     return response
 
 
-@router.get("/{token}", response_model=EmailVerificationOutputDTO)
+@router.get("/whoami", response_model=GetUserOutputDTO)
+async def get_user(
+        jwt_auth: AuthJWT = Depends(),
+        ioc: InteractorFactory = Depends(),
+):
+    """Get user endpoint"""
+
+    jwt_auth.jwt_required()
+
+    async with ioc.get_user(jwt=jwt_auth) as interactor:
+        response = await interactor(
+            GetUserInputDTO()
+        )
+
+    return response
+
+
+@router.get("/verify/{token}", response_model=EmailVerificationOutputDTO)
 async def email_verification(token: str, ioc: InteractorFactory = Depends()):
     """Email verification endpoint"""
 
@@ -75,27 +91,3 @@ async def email_verification(token: str, ioc: InteractorFactory = Depends()):
         )
 
         return response
-
-
-@router.post("/refresh", response_model=RefreshTokenOutputDTO)
-async def refresh_token(
-    jwt: AuthJWT = Depends(),
-    ioc: InteractorFactory = Depends(),
-):
-    """Refresh access token endpoint"""
-
-    jwt.jwt_refresh_token_required()
-
-    user_id: UserId = UserId(int(jwt.get_jwt_subject()))
-
-    async with ioc.refresh_token(jwt) as interactor:
-        response = await interactor(
-            RefreshTokenInputDTO(
-                refresh=RefreshToken(token=jwt._token, user_id=user_id),
-            )
-        )
-
-    jwt.set_access_cookies(response.access)
-    jwt.set_refresh_cookies(response.refresh)
-
-    return response

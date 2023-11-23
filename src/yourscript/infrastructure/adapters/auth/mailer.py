@@ -6,7 +6,7 @@ from starlette.background import BackgroundTasks
 
 from yourscript.application.common.adapters import JWTOperations, MailTokenSender
 from yourscript.domain.entities.user import User
-from yourscript.domain.value_objects.token import Token
+from yourscript.domain.value_objects.email_token import EmailToken
 
 
 def get_message_schema(subject: str, to_email: str, html: str) -> MessageSchema:
@@ -59,7 +59,7 @@ class MailTokenSenderImpl(MailTokenSender):
 
     def create(
         self, secret_key: str, algorithm: str, user: User, jwt: JWTOperations
-    ) -> Token:
+    ) -> EmailToken:
         exp: datetime = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
 
         payload = {
@@ -70,4 +70,4 @@ class MailTokenSenderImpl(MailTokenSender):
 
         token: str = jwt.encode(payload, secret_key, algorithm)
 
-        return Token(token)
+        return EmailToken(token)
