@@ -3,7 +3,7 @@ from typing import Protocol
 
 from yourscript.domain.entities.user import User
 from yourscript.domain.value_objects.hashed_password import HashedPassword
-from yourscript.domain.value_objects.token import Token
+from yourscript.domain.value_objects.email_token import EmailToken
 
 
 class TokenSender(Protocol):
@@ -12,7 +12,7 @@ class TokenSender(Protocol):
     @abstractmethod
     def create(
         self, secret_key: str, algorithm: str, user: User, jwt: "JWTOperations"
-    ) -> Token:
+    ) -> EmailToken:
         """Create verification token"""
 
 
@@ -46,24 +46,12 @@ class JWT(Protocol):
         """Create access JWT"""
 
     @abstractmethod
-    def create_refresh_token(self, subject: str) -> str:
-        """Create refresh JWT"""
-
-    @abstractmethod
     def set_access_cookies(self, token: str) -> None:
         """Set access cookies"""
 
     @abstractmethod
-    def set_refresh_cookies(self, token: str) -> None:
-        """Set refresh cookies"""
-
-    @abstractmethod
     def get_jwt_subject(self) -> str | int:
         pass
-
-    @abstractmethod
-    def jwt_refresh_token_required(self) -> None:
-        """Ensure that requester have valid refresh token"""
 
 
 class PasswordHasher(Protocol):

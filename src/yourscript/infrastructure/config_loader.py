@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from datetime import timedelta
 
 from fastapi_mail import ConnectionConfig
 
@@ -59,11 +60,13 @@ class AuthJWTSettings:
 
     authjwt_token_location: set
 
+    authjwt_access_token_expires: timedelta
+
     authjwt_cookie_secure: bool = False
 
     authjwt_cookie_csrf_protect: bool = True
 
-    # authjwt_cookie_samesite: str = 'lax' production mode
+    # authjwt_cookie_samesite: str = 'lax'
 
 
 @dataclass
@@ -117,6 +120,7 @@ def load_authjwt_settings() -> AuthJWTSettings:
     return AuthJWTSettings(
         authjwt_secret_key=os.environ["AUTHJWT_SECRET_KEY"],
         authjwt_token_location={"cookies"},
+        authjwt_access_token_expires=timedelta(minutes=int(os.environ['AUTHJWT_TOKEN_EXPIRES_MINUTES']))
     )
 
 

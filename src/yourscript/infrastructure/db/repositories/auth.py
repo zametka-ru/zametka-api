@@ -1,16 +1,15 @@
 from typing import Optional
 
-from sqlalchemy import delete, exists, select, update
+from sqlalchemy import select, update
 
 from yourscript.application.common.repository import (
     AuthRepository,
-    RefreshTokenRepository,
 )
-from yourscript.domain.entities.refresh_token import RefreshToken as RefreshTokenEntity
+
 from yourscript.domain.entities.user import DBUser
 from yourscript.domain.entities.user import User as UserEntity
 from yourscript.domain.value_objects.user_id import UserId
-from yourscript.infrastructure.db import RefreshToken, User
+from yourscript.infrastructure.db import User
 
 
 class AuthRepositoryImpl(AuthRepository):
@@ -95,31 +94,3 @@ class AuthRepositoryImpl(AuthRepository):
 
         await self.session.execute(q)
 
-
-class RefreshTokenRepositoryImpl(RefreshTokenRepository):
-    """Repository of refresh tokens"""
-
-    async def create(self, refresh_token: RefreshTokenEntity) -> RefreshTokenEntity:
-        """Create refresh token instance"""
-
-        refresh_obj = RefreshToken(
-            user_id=refresh_token.user_id, token=refresh_token.token
-        )
-
-        self.session.add(refresh_obj)
-
-        return refresh_token
-
-    async def delete(self, user_id: UserId) -> None:
-        """Delete all user refresh tokens"""
-
-        q = delete(RefreshToken).where(RefreshToken.user_id == user_id)
-
-        await self.session.execute(q)
-
-    async def exists(self, token: RefreshTokenEntity) -> bool:
-        q = select(exists().where(RefreshToken.token == token.token))
-
-        result = await self.session.execute(q)
-
-        return result.scalar()

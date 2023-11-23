@@ -1,13 +1,14 @@
+import jwt
+
 from asyncpg import UniqueViolationError
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi_another_jwt_auth.exceptions import AuthJWTException
 from jwt.exceptions import ExpiredSignatureError
 
-from yourscript.domain.exceptions.refresh_token import RefreshTokenNotExistsError
-from yourscript.domain.exceptions.token import (
-    CorruptedTokenError,
-    TokenAlreadyUsedError,
+from yourscript.domain.exceptions.email_token import (
+    CorruptedEmailTokenError,
+    EmailTokenAlreadyUsedError,
 )
 from yourscript.domain.exceptions.user import (
     InvalidCredentialsError,
@@ -60,15 +61,6 @@ async def invalid_credentials_exception_handler(
     )
 
 
-async def refresh_not_exists_exception_handler(
-    _request: Request, _exc: RefreshTokenNotExistsError
-):
-    return JSONResponse(
-        status_code=404,
-        content={"message": "Такого refresh-токена не существует!"},
-    )
-
-
 async def expired_token_exception_handler(
     _request: Request, _exc: ExpiredSignatureError
 ):
@@ -79,7 +71,16 @@ async def expired_token_exception_handler(
 
 
 async def corrupted_token_exception_handler(
-    _request: Request, _exc: CorruptedTokenError
+    _request: Request, _exc: CorruptedEmailTokenError
+):
+    return JSONResponse(
+        status_code=422,
+        content={"message": "Токен повреждён."},
+    )
+
+
+async def invalid_encoded_token_exception_handler(
+    _request: Request, _exc: jwt.exceptions.DecodeError
 ):
     return JSONResponse(
         status_code=422,
@@ -88,7 +89,7 @@ async def corrupted_token_exception_handler(
 
 
 async def token_already_used_exception_handler(
-    _request: Request, _exc: TokenAlreadyUsedError
+    _request: Request, _exc: EmailTokenAlreadyUsedError
 ):
     return JSONResponse(
         status_code=422,
