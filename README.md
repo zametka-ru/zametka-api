@@ -1,20 +1,3 @@
-<p align="center">
-<img height="200" width="200" src="https://github.com/lubaskinc0de/yourscript/assets/100635212/e9393d8b-e3b5-4990-8796-bdadf986e3c4"></img>
-</p>
-
-<h1 align="center" style="color: #92b4a7">your<span style="color: #81667a">script</span></h1>
-<h2 align="center" style="color: #777da7">Инновационное решение в области написания <span style="color: #d5573b">
-сценариев</span></h2>
-
-------------------------
-### *API*
-
-API для приложения написания сценариев - **yourscript**.
-
-*Чистая архитектура, безопасная аутентификация*.
-
----------------------
-
 ### *Эндпоинты*
 
 #### Auth
@@ -30,8 +13,6 @@ curl -X "POST" \
       "password2": "string",
       "first_name": "string",
       "last_name": "string",
-      "is_superuser": false,
-      "is_active": false
   }'
 ```
 
@@ -54,14 +35,14 @@ curl -X "POST" \
 
 ```json
 {
-  "access": "string",
-  "refresh": "string"
+  "user_id": 1
 }
 ```
 
-#### GET /v1/auth/{token}/
+
+#### GET /v1/auth/verify/{token}/
 ```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/auth/{token}"
+curl -X "GET" "http://127.0.0.1:8000/v1/auth/verify/{token}"
 ```
 ```json
 {
@@ -69,27 +50,14 @@ curl -X "GET" "http://127.0.0.1:8000/v1/auth/{token}"
 }
 ```
 
-#### POST /v1/auth/refresh/
-
-```bash
-curl -X "POST" --header "X-CSRF-Token: <csrf_refresh_token>" "http://127.0.0.1:8000/v1/auth/refresh/"
-```
-
-```json
-{
-  "access": "string",
-  "refresh": "string"
-}
-```
-
 
 #### Scripts
 
-#### POST /v1/scripts/
+#### POST /v1/notes/
 
 ```bash
 curl -X "POST" \
-  "http://127.0.0.1:8000/v1/scripts/" \
+  "http://127.0.0.1:8000/v1/notes/" \
   -d '{
       "title": "string",
       "text": "string"
@@ -98,7 +66,7 @@ curl -X "POST" \
 
 ```json
 {
-    "script": {
+    "note": {
         "title": "string",
         "text": "string",
         "created_at": "2023-11-20T08:39:01.841Z",
@@ -107,13 +75,13 @@ curl -X "POST" \
 }
 ```
 
-#### GET /v1/scripts/{script_id}/
+#### GET /v1/notes/{note_id}/
 ```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/scripts/{script_id}/"
+curl -X "GET" "http://127.0.0.1:8000/v1/notes/{note_id}/"
 ```
 ```json
 {
-    "script": {
+    "note": {
         "title": "string",
         "text": "string",
         "created_at": "2023-11-20T08:39:56.439Z",
@@ -122,11 +90,11 @@ curl -X "GET" "http://127.0.0.1:8000/v1/scripts/{script_id}/"
 }
 ```
 
-#### PUT /v1/scripts/{script_id}/
+#### PUT /v1/notes/{note_id}/
 
 ```bash
 curl -X "PUT" \
-  "http://127.0.0.1:8000/v1/scripts/{script_id}/" \
+  "http://127.0.0.1:8000/v1/notes/{note_id}/" \
   -d '{
       "title": "string",
       "text": "string"
@@ -135,7 +103,7 @@ curl -X "PUT" \
 
 ```json
 {
-    "script": {
+    "note": {
         "title": "string",
         "text": "string",
         "created_at": "2023-11-20T08:39:01.841Z",
@@ -144,18 +112,18 @@ curl -X "PUT" \
 }
 ```
 
-#### DELETE /v1/scripts/{script_id}/
+#### DELETE /v1/notes/{note_id}/
 
 ```bash
 curl -X "DELETE" \
-  "http://127.0.0.1:8000/v1/scripts/{script_id}/"
+  "http://127.0.0.1:8000/v1/notes/{note_id}/"
 ```
 
 ```json
 {}
 ```
 
-#### GET /v1/scripts/
+#### GET /v1/notes/
 
 Possible query parameters:
 
@@ -167,11 +135,11 @@ search: string (query)
 ```
 
 ```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/scripts/"
+curl -X "GET" "http://127.0.0.1:8000/v1/notes/"
 ```
 ```json
 {
-  "scripts": [
+  "notes": [
     {
       "title": "string",
       "text": "string",
