@@ -5,9 +5,9 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'yourscript'
+name = 'zametka'
 version = '1.0.0'
-description = 'Yourscript backend application'
+description = 'Zametka note app API'
 readme = 'README.md'
 requires-python = '>=3.10.8'
 dependencies = [

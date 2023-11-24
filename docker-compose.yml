@@ -3,13 +3,13 @@ version: '3.8'
 services:
     backend:
         build: .
-        command: python src/yourscript/main/web.py
+        command: python src/zametka/main/web.py
         ports:
             - "8000:80"
         env_file:
             - .env
         volumes:
-            - ./src/yourscript/infrastructure/db/migrations/versions:/home/app/src/yourscript/infrastructure/db/migrations/versions
+            - ./src/zametka/infrastructure/db/migrations/versions:/home/app/src/zametka/infrastructure/db/migrations/versions
         depends_on:
             - db
 

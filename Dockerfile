@@ -18,6 +18,7 @@ RUN apt-get update && \
 
 # lint
 RUN pip install --upgrade pip
+
 COPY . .
 
 #########
@@ -35,16 +36,16 @@ RUN addgroup --system app && adduser --system --group app
 
 # create the appropriate directories
 ENV HOME=/home/app
-ENV APP_HOME=/home/app/backend
+ENV APP_HOME=/home/app/
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
 # install dependencies
 RUN pip install --upgrade pip
+RUN pip install -e .
 
 # copy project
 COPY . $APP_HOME
-RUN pip install -e .
 
 # chown all the files to the app user
 RUN chown -R app:app $APP_HOME
