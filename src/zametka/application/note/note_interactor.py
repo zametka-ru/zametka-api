@@ -4,29 +4,29 @@ from zametka.application.common.repository import AuthRepository, NoteRepository
 from zametka.application.common.uow import UoW
 from zametka.application.common.id_provider import IdProvider
 
-from zametka.domain.entities.note import Note
+from zametka.domain.entities.note import Note, DBNote
 from zametka.domain.entities.user import DBUser
 from zametka.domain.exceptions.note import (
     NoteAccessDeniedError,
     NoteNotExistsError,
 )
 from zametka.domain.services.note_service import NoteService
-from zametka.domain.value_objects.note_id import NoteId
+from zametka.domain.value_objects.note.note_id import NoteId
 
 from .dto import (
     CreateNoteInputDTO,
-    CreateNoteOutputDTO,
     DeleteNoteInputDTO,
     DeleteNoteOutputDTO,
     ReadNoteInputDTO,
-    ReadNoteOutputDTO,
     ListNotesInputDTO,
-    ListNotesOutputDTO,
+    ListNotesDTO,
     UpdateNoteInputDTO,
-    UpdateNoteOutputDTO,
+    DBNoteDTO,
+    NoteDTO,
 )
-
-PAGE_SIZE = 5
+from zametka.domain.exceptions.user import IsNotAuthorizedError
+from zametka.domain.value_objects.note.note_text import NoteText
+from zametka.domain.value_objects.note.note_title import NoteTitle
 
 
 class NoteInteractor:
@@ -49,21 +49,24 @@ class NoteInteractor:
 
         user_id = self.id_provider.get_current_user_id()
 
-        user: DBUser = await self.auth_repository.get(user_id)
+        user: Optional[DBUser] = await self.auth_repository.get(user_id)
+
+        if not user:
+            raise IsNotAuthorizedError()
 
         return user
 
-    async def _check_exists(self, note_id: NoteId) -> Note:
+    async def _check_exists(self, note_id: NoteId) -> DBNote:
         """Raises NoteNotExists if note with given id is not exists"""
 
-        note: Optional[Note] = await self.note_repository.get(note_id)
+        note: Optional[DBNote] = await self.note_repository.get(note_id)
 
         if not note:
             raise NoteNotExistsError()
 
         return note
 
-    async def _get_note(self, note_id: NoteId) -> Note:
+    async def _get_note(self, note_id: NoteId) -> DBNote:
         """
         Check can user do actions with this note. These are two checks.
 
@@ -71,7 +74,7 @@ class NoteInteractor:
         2. Is user are author of this note
         """
 
-        note: Note = await self._check_exists(note_id)
+        note: DBNote = await self._check_exists(note_id)
 
         user: DBUser = await self._get_current_user()
 
@@ -80,57 +83,68 @@ class NoteInteractor:
 
         return note
 
-    async def create(self, data: CreateNoteInputDTO) -> CreateNoteOutputDTO:
+    async def create(self, data: CreateNoteInputDTO) -> NoteDTO:
         user = await self._get_current_user()
 
-        note: Note = self.service.create(data.title, data.text, user.user_id)
+        title = NoteTitle(data.title)
+        text = NoteText(data.text) if data.text else None
 
-        await self.note_repository.create(note)
+        note: Note = self.service.create(title, user.user_id, text)
 
+        note_dto = await self.note_repository.create(note)
         await self.uow.commit()
 
-        return CreateNoteOutputDTO(note=note)
+        return note_dto
 
-    async def read(self, data: ReadNoteInputDTO) -> ReadNoteOutputDTO:
+    async def read(self, data: ReadNoteInputDTO) -> DBNoteDTO:
         """Read by id use case"""
 
-        note: Note = await self._get_note(data.note_id)
+        note: DBNote = await self._get_note(data.note_id)
 
-        return ReadNoteOutputDTO(note=note)
-
-    async def update(self, data: UpdateNoteInputDTO) -> UpdateNoteOutputDTO:
-        note: Note = await self._get_note(data.note_id)
-
-        new_note: Note = self.service.create(
-            data.title, data.text, note.author_id
+        return DBNoteDTO(
+            title=note.title.to_raw(),
+            text=note.text.to_raw() if note.text else None,
+            note_id=note.note_id.to_raw(),
         )
 
-        await self.note_repository.update(data.note_id, new_note)
+    async def update(self, data: UpdateNoteInputDTO) -> DBNoteDTO:
+        note: DBNote = await self._get_note(data.note_id)
+
+        title = NoteTitle(data.title)
+        text = NoteText(data.text) if data.text else None
+
+        new_note: Note = self.service.create(title, note.author_id, text)
+        updated_note: DBNote = self.service.edit(note, new_note)
+
+        updated_db_note = await self.note_repository.update(data.note_id, updated_note)
+
+        if not updated_db_note:
+            raise NoteNotExistsError()
 
         await self.uow.commit()
 
-        return UpdateNoteOutputDTO(note=new_note)
+        return updated_db_note
 
-    async def list(self, data: ListNotesInputDTO) -> ListNotesOutputDTO:
+    async def list(self, data: ListNotesInputDTO) -> ListNotesDTO:
         user: DBUser = await self._get_current_user()
 
-        offset: int = data.page * PAGE_SIZE
-        limit: int = PAGE_SIZE
+        offset: int = data.offset
+        limit: int = data.limit
 
         if not data.search:
-            notes: list[Note] = await self.note_repository.list(
+            dto: ListNotesDTO = await self.note_repository.list(
                 author_id=user.user_id,
                 limit=limit,
                 offset=offset,
             )
         else:
-            notes: list[Note] = await self.note_repository.search(  # type:ignore
+            dto: ListNotesDTO = await self.note_repository.search(  # type:ignore
                 query=data.search,
                 limit=limit,
                 offset=offset,
             )
 
-        return ListNotesOutputDTO(notes=notes)
+        return ListNotesDTO(notes=dto.notes, has_next=dto.has_next)
 
     async def delete(self, data: DeleteNoteInputDTO) -> DeleteNoteOutputDTO:
         await self._get_note(data.note_id)

@@ -6,6 +6,7 @@ from jinja2 import Environment
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from starlette.background import BackgroundTasks
 
+from zametka.domain.services.email_token_service import EmailTokenService
 from zametka.infrastructure.adapters.auth.id_provider import TokenIdProvider
 
 from zametka.application.auth.email_verification import EmailVerification
@@ -36,10 +37,9 @@ from zametka.presentation.interactor_factory import (
 
 
 class IoC(InteractorFactory):
-
     def __init__(
         self,
-        session_factory: async_sessionmaker,
+        session_factory: async_sessionmaker[AsyncSession],
         auth_settings: AuthSettings,
         mailer: FastMail,
         jinja_env: Environment,
@@ -49,6 +49,7 @@ class IoC(InteractorFactory):
 
         self._note_service = NoteService()
         self._user_service = UserService()
+        self._email_token_service = EmailTokenService()
         self._password_hasher = PasswordHasherImpl()
         self._jwt_ops = JWTOperationsImpl()
 
@@ -104,6 +105,7 @@ class IoC(InteractorFactory):
                 jwt_ops=self._jwt_ops,
                 service=self._user_service,
                 uow=get_uow(session),
+                email_token_service=self._email_token_service,
             )
 
             yield interactor
@@ -138,6 +140,7 @@ class IoC(InteractorFactory):
                 jwt_ops=self._jwt_ops,
                 secret_key=self._secret_key,
                 algorithm=self._algorithm,
+                email_token_service=self._email_token_service,
             )
 
             yield interactor

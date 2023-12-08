@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from zametka.domain.value_objects.user_id import UserId
-from zametka.application.common.adapters import HashedPassword, PasswordHasher
+from zametka.domain.value_objects.user.user_email import UserEmail
+from zametka.application.common.adapters import PasswordHasher
 from zametka.application.common.interactor import Interactor
 from zametka.application.common.repository import (
     AuthRepository,
@@ -24,7 +24,7 @@ class SignInInputDTO:
 
 @dataclass(frozen=True)
 class SignInOutputDTO:
-    user_id: UserId
+    user_id: int
 
 
 class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
@@ -39,12 +39,14 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
         self.user_service = user_service
 
     async def __call__(self, data: SignInInputDTO) -> SignInOutputDTO:
-        user: Optional[DBUser] = await self.repository.get_by_email(data.email)
+        user: Optional[DBUser] = await self.repository.get_by_email(
+            UserEmail(data.email)
+        )
 
         if not user:
             raise UserIsNotExistsError()
 
-        if not self.pwd_context.verify(data.password, HashedPassword(user.password)):
+        if not self.pwd_context.verify(data.password, user.hashed_password):
             raise InvalidCredentialsError()
 
         self.user_service.ensure_can_login(user)
@@ -52,5 +54,5 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
         user_id = user.user_id
 
         return SignInOutputDTO(
-            user_id=user_id,
+            user_id=user_id.to_raw(),
         )

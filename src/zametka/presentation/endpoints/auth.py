@@ -1,11 +1,12 @@
 from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi_another_jwt_auth import AuthJWT
 
+from zametka.application.auth.dto import DBUserDTO
 from zametka.application.auth.email_verification import (
     EmailVerificationInputDTO,
     EmailVerificationOutputDTO,
 )
-from zametka.application.auth.get_user import GetUserOutputDTO, GetUserInputDTO
+from zametka.application.auth.get_user import GetUserInputDTO
 
 from zametka.application.auth.sign_in import SignInInputDTO, SignInOutputDTO
 from zametka.application.auth.sign_up import SignUpInputDTO, SignUpOutputDTO
@@ -19,12 +20,12 @@ router = APIRouter(
 )
 
 
-@router.post("/sign-up", response_model=SignUpOutputDTO)
+@router.post("/sign-up")
 async def sign_up(
     user_data: UserRegisterSchema,
     background_tasks: BackgroundTasks,
     ioc: InteractorFactory = Depends(),
-):
+) -> SignUpOutputDTO:
     """Register endpoint"""
 
     async with ioc.sign_up(background_tasks=background_tasks) as interactor:
@@ -40,12 +41,12 @@ async def sign_up(
         return response
 
 
-@router.post("/sign-in", response_model=SignInOutputDTO)
+@router.post("/sign-in")
 async def sign_in(
     auth_data: UserLoginSchema,
     jwt_auth: AuthJWT = Depends(),
     ioc: InteractorFactory = Depends(),
-):
+) -> SignInOutputDTO:
     """Login endpoint"""
 
     async with ioc.sign_in() as interactor:
@@ -62,11 +63,11 @@ async def sign_in(
     return response
 
 
-@router.get("/whoami", response_model=GetUserOutputDTO)
+@router.get("/whoami")
 async def get_user(
     jwt_auth: AuthJWT = Depends(),
     ioc: InteractorFactory = Depends(),
-):
+) -> DBUserDTO:
     """Get user endpoint"""
 
     jwt_auth.jwt_required()
@@ -77,8 +78,10 @@ async def get_user(
     return response
 
 
-@router.get("/verify/{token}", response_model=EmailVerificationOutputDTO)
-async def email_verification(token: str, ioc: InteractorFactory = Depends()):
+@router.get("/verify/{token}")
+async def email_verification(
+    token: str, ioc: InteractorFactory = Depends()
+) -> EmailVerificationOutputDTO:
     """Email verification endpoint"""
 
     async with ioc.email_verification() as interactor:

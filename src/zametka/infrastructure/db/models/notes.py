@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from . import Base
@@ -13,7 +14,7 @@ class Note(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(50), nullable=False)
-    text: Mapped[str] = mapped_column(Text, nullable=False)
+    text: Mapped[Optional[str]] = mapped_column(String(60000), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     user_id: Mapped[int] = mapped_column(

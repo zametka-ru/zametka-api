@@ -1,11 +1,8 @@
-from pydantic import BaseModel, Field
+from typing import Optional
+
+from pydantic import BaseModel
 
 
-class CreateNoteSchema(BaseModel):
-    title: str = Field(max_length=50)
-    text: str
-
-
-class UpdateNoteSchema(BaseModel):
-    title: str = Field(max_length=50)
-    text: str
+class NoteSchema(BaseModel):
+    title: str
+    text: Optional[str] = None

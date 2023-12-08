@@ -1,18 +1,18 @@
-from datetime import datetime, timedelta, timezone
-
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from jinja2 import Environment
 from starlette.background import BackgroundTasks
 
 from zametka.application.common.adapters import JWTOperations, MailTokenSender
 from zametka.domain.entities.user import User
+from zametka.domain.services.email_token_service import EmailTokenService, Payload
 from zametka.domain.value_objects.email_token import EmailToken
+from zametka.domain.value_objects.user.user_email import UserEmail
 
 
-def get_message_schema(subject: str, to_email: str, html: str) -> MessageSchema:
+def get_message_schema(subject: str, to_email: UserEmail, html: str) -> MessageSchema:
     message_schema = MessageSchema(
         subject=subject,
-        recipients=[to_email],
+        recipients=[to_email.to_raw()],
         body=html,
         subtype=MessageType.html,
     )
@@ -39,14 +39,16 @@ class MailTokenSenderImpl(MailTokenSender):
         self._jinja = jinja
         self._token_link = token_link
 
-    def _render_html(self, token: str) -> str:
+    def _render_html(self, token: EmailToken) -> str:
         template = self._jinja.get_template("confirmation-mail.html")
 
-        rendered: str = template.render(token_link=self._token_link.format(token))
+        rendered: str = template.render(
+            token_link=self._token_link.format(token.to_raw())
+        )
 
         return rendered
 
-    def send(self, token: str, subject: str, to_email: str) -> None:
+    def send(self, token: EmailToken, subject: str, to_email: UserEmail) -> None:
         """Send email token to the user"""
 
         html = self._render_html(token)
@@ -58,15 +60,14 @@ class MailTokenSenderImpl(MailTokenSender):
         )
 
     def create(
-        self, secret_key: str, algorithm: str, user: User, jwt: JWTOperations
+        self,
+        secret_key: str,
+        algorithm: str,
+        user: User,
+        jwt: JWTOperations,
+        email_token_service: EmailTokenService,
     ) -> EmailToken:
-        exp: datetime = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
-
-        payload = {
-            "user_email": user.email,
-            "exp": exp,
-            "user_is_active": user.is_active,
-        }
+        payload: Payload = email_token_service.encode_payload(user)
 
         token: str = jwt.encode(payload, secret_key, algorithm)
 

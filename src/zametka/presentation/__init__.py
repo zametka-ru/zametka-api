@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from zametka.domain.exceptions.note import (
     NoteAccessDeniedError,
     NoteNotExistsError,
+    NoteDataError,
 )
 from zametka.domain.exceptions.email_token import (
     CorruptedEmailTokenError,
@@ -18,6 +19,8 @@ from zametka.domain.exceptions.user import (
     UserIsNotActiveError,
     UserIsNotExistsError,
     WeakPasswordError,
+    IsNotAuthorizedError,
+    UserDataError,
 )
 
 from .endpoints import auth, note
@@ -32,11 +35,14 @@ from .exception_handlers.auth import (
     user_not_exists_exception_handler,
     weak_password_exception_handler,
     invalid_encoded_token_exception_handler,
+    is_not_authorized_exception_handler,
+    user_data_exception_handler,
 )
 
 from .exception_handlers.note import (
     note_access_denied_exception_handler,
     note_not_exists_exception_handler,
+    note_data_exception_handler,
 )
 
 
@@ -74,9 +80,12 @@ def include_exception_handlers(app: FastAPI) -> None:
         DecodeError,
         invalid_encoded_token_exception_handler,
     )
+    app.add_exception_handler(IsNotAuthorizedError, is_not_authorized_exception_handler)
+    app.add_exception_handler(UserDataError, user_data_exception_handler)
 
     # Note
     app.add_exception_handler(
         NoteAccessDeniedError, note_access_denied_exception_handler
     )
     app.add_exception_handler(NoteNotExistsError, note_not_exists_exception_handler)
+    app.add_exception_handler(NoteDataError, note_data_exception_handler)

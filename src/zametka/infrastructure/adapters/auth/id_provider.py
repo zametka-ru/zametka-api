@@ -1,7 +1,7 @@
 from zametka.application.common.adapters import JWT
 from zametka.application.common.id_provider import IdProvider
 
-from zametka.domain.value_objects.user_id import UserId
+from zametka.domain.value_objects.user.user_id import UserId
 
 
 class TokenIdProvider(IdProvider):

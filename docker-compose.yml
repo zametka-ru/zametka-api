@@ -2,6 +2,8 @@ version: '3.8'
 
 services:
     backend:
+        container_name: backend
+        restart: on-failure
         build: .
         command: python src/zametka/main/web.py
         ports:
@@ -9,25 +11,33 @@ services:
         env_file:
             - .env
         volumes:
-            - ./src/zametka/infrastructure/db/migrations/versions:/home/app/src/zametka/infrastructure/db/migrations/versions
+            - ./src/zametka/infrastructure/db/migrations/versions:/home/app/backend/src/zametka/infrastructure/db/migrations/versions
         depends_on:
-            - db
+            - migration
 
     db:
+        container_name: db
         image: postgres:14.5-alpine
         volumes:
             - backend_pg_data:/var/lib/postgresql/data/
         env_file:
             - .env
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+            interval: 2s
+            timeout: 60s
+            retries: 10
+            start_period: 5s
 
     migration:
+        container_name: migration
         build: .
         restart: on-failure
         env_file:
             - .env
         depends_on:
-            - db
-            - backend
+            db:
+                condition: service_healthy
         command: [ "python", "-m", "alembic", "upgrade", "head" ]
 
 volumes:
