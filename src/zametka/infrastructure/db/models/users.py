@@ -3,8 +3,6 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from zametka.domain.value_objects.user_id import UserId
-
 from . import Base
 
 
@@ -13,7 +11,7 @@ class User(Base):
 
     __tablename__ = "users"
 
-    id: Mapped[UserId] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(String(60), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(100), nullable=False)
     first_name: Mapped[str] = mapped_column(String(40), nullable=False)

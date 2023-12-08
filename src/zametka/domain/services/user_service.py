@@ -3,6 +3,11 @@ import re
 
 from zametka.domain.entities.user import DBUser, User
 from zametka.domain.exceptions.user import UserIsNotActiveError, WeakPasswordError
+from zametka.domain.value_objects.user.user_email import UserEmail
+from zametka.domain.value_objects.user.user_first_name import UserFirstName
+from zametka.domain.value_objects.user.user_hashed_password import UserHashedPassword
+from zametka.domain.value_objects.user.user_joined_at import UserJoinedAt
+from zametka.domain.value_objects.user.user_last_name import UserLastName
 
 
 class UserService:
@@ -29,20 +34,22 @@ class UserService:
         }
 
         for message, password_validator in error_messages.items():
-            if not password_validator(password):
+            if not password_validator(password):  # type:ignore
                 raise WeakPasswordError(message)
 
     def create(
-        self, email: str, password: str, first_name: str, last_name: str
+        self,
+        email: UserEmail,
+        hashed_password: UserHashedPassword,
+        first_name: UserFirstName,
+        last_name: UserLastName,
     ) -> User:
-        self.check_password(password)
-
         return User(
             email=email,
-            password=password,
             first_name=first_name,
             last_name=last_name,
-            joined_at=datetime.datetime.now(),
+            joined_at=UserJoinedAt(datetime.datetime.now()),
+            hashed_password=hashed_password,
         )
 
     def ensure_can_login(self, user: DBUser) -> None:

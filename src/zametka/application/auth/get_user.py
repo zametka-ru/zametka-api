@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from datetime import datetime
+from typing import Optional
 
+from zametka.application.auth.dto import DBUserDTO
 from zametka.application.common.id_provider import IdProvider
 from zametka.application.common.interactor import Interactor
 from zametka.application.common.repository import AuthRepository
 from zametka.domain.entities.user import DBUser
+from zametka.domain.exceptions.user import IsNotAuthorizedError
 
 
 @dataclass(frozen=True)
@@ -12,14 +14,7 @@ class GetUserInputDTO:
     pass
 
 
-@dataclass(frozen=True)
-class GetUserOutputDTO:
-    first_name: str
-    last_name: str
-    joined_at: datetime
-
-
-class GetUser(Interactor[GetUserInputDTO, GetUserOutputDTO]):
+class GetUser(Interactor[GetUserInputDTO, DBUserDTO]):
     def __init__(
         self,
         auth_repository: AuthRepository,
@@ -33,15 +28,20 @@ class GetUser(Interactor[GetUserInputDTO, GetUserOutputDTO]):
 
         user_id = self.id_provider.get_current_user_id()
 
-        user: DBUser = await self.auth_repository.get(user_id)
+        user: Optional[DBUser] = await self.auth_repository.get(user_id)
+
+        if not user:
+            raise IsNotAuthorizedError()
 
         return user
 
-    async def __call__(self, data: GetUserInputDTO) -> GetUserOutputDTO:
+    async def __call__(self, data: GetUserInputDTO) -> DBUserDTO:
         user = await self._get_current_user()
 
-        return GetUserOutputDTO(
-            first_name=user.first_name,
-            last_name=user.last_name,
-            joined_at=user.joined_at,
+        return DBUserDTO(
+            user_id=user.user_id.to_raw(),
+            email=user.email.to_raw(),
+            first_name=user.first_name.to_raw(),
+            last_name=user.last_name.to_raw(),
+            joined_at=user.joined_at.to_raw(),
         )

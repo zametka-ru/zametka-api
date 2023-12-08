@@ -1,16 +1,20 @@
 from dataclasses import dataclass
-from datetime import datetime
 
-from zametka.domain.value_objects.user_id import UserId
+from zametka.domain.value_objects.user.user_email import UserEmail
+from zametka.domain.value_objects.user.user_first_name import UserFirstName
+from zametka.domain.value_objects.user.user_hashed_password import UserHashedPassword
+from zametka.domain.value_objects.user.user_id import UserId
+from zametka.domain.value_objects.user.user_joined_at import UserJoinedAt
+from zametka.domain.value_objects.user.user_last_name import UserLastName
 
 
 @dataclass
 class User:
-    email: str
-    password: str
-    first_name: str
-    last_name: str
-    joined_at: datetime
+    email: UserEmail
+    first_name: UserFirstName
+    hashed_password: UserHashedPassword
+    last_name: UserLastName
+    joined_at: UserJoinedAt
     is_superuser: bool = False
     is_active: bool = False
 

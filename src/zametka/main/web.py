@@ -1,4 +1,6 @@
 import logging
+from typing import Any
+
 import uvicorn
 
 from fastapi import FastAPI
@@ -40,19 +42,20 @@ app.add_middleware(
 include_exception_handlers(app)
 
 
-@AuthJWT.load_config
-def load_authjwt_config():
+@AuthJWT.load_config  # type:ignore
+def load_authjwt_config() -> list[tuple[str, Any]]:
     authjwt_config = load_authjwt_settings()
 
     return [
         ("authjwt_secret_key", authjwt_config.authjwt_secret_key),
         ("authjwt_token_location", authjwt_config.authjwt_token_location),
         ("authjwt_access_token_expires", authjwt_config.authjwt_access_token_expires),
+        ("authjwt_cookie_max_age", authjwt_config.authjwt_cookie_expires),
     ]
 
 
 @app.on_event("startup")
-async def on_startup():
+async def on_startup() -> None:
     engine_factory = get_engine(settings.db)
     engine = await engine_factory.__anext__()
 
@@ -84,4 +87,4 @@ async def on_startup():
 
 
 if __name__ == "__main__":
-    uvicorn.run("web:app", host="0.0.0.0", reload=True, port=80)
+    uvicorn.run("web:app", host="0.0.0.0", reload=False, port=80)

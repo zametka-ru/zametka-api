@@ -26,7 +26,7 @@ def upgrade() -> None:
         "notes",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("title", sa.String(length=50), nullable=False),
-        sa.Column("text", sa.Text(), nullable=False),
+        sa.Column("text", sa.String(60000), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )

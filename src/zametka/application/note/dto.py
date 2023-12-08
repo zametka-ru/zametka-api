@@ -1,31 +1,37 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from zametka.domain.entities.note import Note
-from zametka.domain.value_objects.note_id import NoteId
+from zametka.domain.value_objects.note.note_id import NoteId
+
+
+@dataclass(frozen=True)
+class NoteDTO:
+    title: str
+    text: Optional[str]
+
+
+@dataclass(frozen=True, kw_only=True)
+class DBNoteDTO(NoteDTO):
+    note_id: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class ListNoteDTO:
+    title: str
+    note_id: int
 
 
 @dataclass(frozen=True)
 class CreateNoteInputDTO:
     title: str
-    text: str
-
-
-@dataclass(frozen=True)
-class CreateNoteOutputDTO:
-    note: Note
+    text: Optional[str] = None
 
 
 @dataclass(frozen=True)
 class UpdateNoteInputDTO:
     note_id: NoteId
     title: str
-    text: str
-
-
-@dataclass(frozen=True)
-class UpdateNoteOutputDTO:
-    note: Note
+    text: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -34,19 +40,16 @@ class ReadNoteInputDTO:
 
 
 @dataclass(frozen=True)
-class ReadNoteOutputDTO:
-    note: Note
-
-
-@dataclass(frozen=True)
 class ListNotesInputDTO:
-    page: int
+    limit: int
+    offset: int
     search: Optional[str] = None
 
 
 @dataclass(frozen=True)
-class ListNotesOutputDTO:
-    notes: list[Note]
+class ListNotesDTO:
+    notes: list[ListNoteDTO]
+    has_next: bool
 
 
 @dataclass(frozen=True)

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 from typing import Optional
 
@@ -6,13 +7,13 @@ from zametka.application.common.adapters import JWTOperations
 from zametka.application.common.interactor import Interactor
 from zametka.application.common.repository import AuthRepository
 from zametka.application.common.uow import UoW
-
-from zametka.domain.exceptions.user import UserIsNotExistsError
 from zametka.domain.entities.user import DBUser
+
 from zametka.domain.exceptions.email_token import (
     CorruptedEmailTokenError,
-    EmailTokenAlreadyUsedError,
 )
+from zametka.domain.services.email_token_service import EmailTokenService
+from zametka.domain.value_objects.user.user_email import UserEmail
 
 
 @dataclass(frozen=True)
@@ -35,12 +36,14 @@ class EmailVerification(
         jwt_ops: JWTOperations,
         secret_key: str,
         algorithm: str,
+        email_token_service: EmailTokenService,
     ):
         self.uow = uow
         self.jwt_ops = jwt_ops
         self.repository = repository
         self._secret_key = secret_key
         self._algorithm = algorithm
+        self.email_token_service = email_token_service
 
     async def __call__(
         self, data: EmailVerificationInputDTO
@@ -50,25 +53,21 @@ class EmailVerification(
 
         payload = self.jwt_ops.decode(data.token, secret_key, algorithm)
 
-        user_email: Optional[str] = payload.get("user_email")
+        user_email: Optional[str | bool | datetime] = payload.get("user_email")
 
-        if not user_email:
+        if not user_email or not isinstance(user_email, str):
             raise CorruptedEmailTokenError()
 
-        user: Optional[DBUser] = await self.repository.get_by_email(user_email)
+        user: Optional[DBUser] = await self.repository.get_by_email(
+            UserEmail(user_email)
+        )
 
         if not user:
-            raise UserIsNotExistsError()
-
-        token_user_is_active: Optional[bool] = payload.get("user_is_active")
-
-        if not token_user_is_active:
             raise CorruptedEmailTokenError()
 
-        if user.is_active != token_user_is_active:
-            raise EmailTokenAlreadyUsedError()
+        decoded_user: DBUser = self.email_token_service.check_payload(user, payload)
 
-        await self.repository.set_active(user.user_id)
+        await self.repository.set_active(decoded_user.user_id)
         await self.uow.commit()
 
-        return EmailVerificationOutputDTO(email=user_email)
+        return EmailVerificationOutputDTO(email=decoded_user.email.to_raw())

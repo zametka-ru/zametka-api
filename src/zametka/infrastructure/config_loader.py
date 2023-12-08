@@ -58,9 +58,10 @@ class AuthJWTSettings:
 
     authjwt_secret_key: str
 
-    authjwt_token_location: set
+    authjwt_token_location: set[str]
 
     authjwt_access_token_expires: timedelta
+    authjwt_cookie_expires: int
 
     authjwt_cookie_secure: bool = False
 
@@ -123,6 +124,7 @@ def load_authjwt_settings() -> AuthJWTSettings:
         authjwt_access_token_expires=timedelta(
             minutes=int(os.environ["AUTHJWT_TOKEN_EXPIRES_MINUTES"])
         ),
+        authjwt_cookie_expires=int(os.environ["AUTHJWT_COOKIE_EXPIRES_SECONDS"]),
     )
 
 

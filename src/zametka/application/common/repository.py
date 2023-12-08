@@ -1,32 +1,28 @@
-from abc import ABC, abstractmethod
-from typing import Optional, List
+from abc import abstractmethod
+from typing import Optional, Protocol
 
-from zametka.domain.entities.note import Note
-from zametka.domain.entities.user import DBUser, User
-from zametka.domain.value_objects.note_id import NoteId
-from zametka.domain.value_objects.user_id import UserId
-
-
-class AbstractRepository(ABC):
-    """Abstract implementation of SA repository"""
-
-    def __init__(self, session) -> None:
-        self.session = session
+from zametka.application.auth.dto import UserDTO
+from zametka.application.note.dto import ListNotesDTO, NoteDTO, DBNoteDTO
+from zametka.domain.entities.note import Note, DBNote
+from zametka.domain.entities.user import User, DBUser
+from zametka.domain.value_objects.note.note_id import NoteId
+from zametka.domain.value_objects.user.user_email import UserEmail
+from zametka.domain.value_objects.user.user_id import UserId
 
 
-class AuthRepository(AbstractRepository):
+class AuthRepository(Protocol):
     """User repository interface"""
 
     @abstractmethod
-    async def create(self, user: User) -> User:
+    async def create(self, user: User) -> UserDTO:
         """Create"""
 
     @abstractmethod
-    async def get(self, user_id: UserId) -> DBUser:
+    async def get(self, user_id: UserId) -> Optional[DBUser]:
         """Get by id"""
 
     @abstractmethod
-    async def get_by_email(self, email: str) -> Optional[DBUser]:
+    async def get_by_email(self, email: UserEmail) -> Optional[DBUser]:
         """Get by email"""
 
     @abstractmethod
@@ -34,27 +30,29 @@ class AuthRepository(AbstractRepository):
         """Set active"""
 
 
-class NoteRepository(AbstractRepository):
+class NoteRepository(Protocol):
     """Note repository interface"""
 
     @abstractmethod
-    async def create(self, note: Note) -> Note:
+    async def create(self, note: Note) -> NoteDTO:
         """Create"""
 
     @abstractmethod
-    async def get(self, note_id: NoteId) -> Optional[Note]:
+    async def get(self, note_id: NoteId) -> Optional[DBNote]:
         """Get by id"""
 
     @abstractmethod
-    async def update(self, note_id: NoteId, updated_note: Note) -> Note:
+    async def update(
+        self, note_id: NoteId, updated_note: DBNote
+    ) -> Optional[DBNoteDTO]:
         """Update"""
 
     @abstractmethod
-    async def list(self, limit: int, offset: int, author_id: UserId) -> list[Note]:
+    async def list(self, limit: int, offset: int, author_id: UserId) -> ListNotesDTO:
         """List"""
 
     @abstractmethod
-    async def search(self, query: str, limit: int, offset: int) -> List[Note]:
+    async def search(self, query: str, limit: int, offset: int) -> ListNotesDTO:
         """FTS"""
 
     @abstractmethod

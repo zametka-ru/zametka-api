@@ -5,22 +5,16 @@ from fastapi_another_jwt_auth import AuthJWT
 
 from zametka.application.note.dto import (
     CreateNoteInputDTO,
-    CreateNoteOutputDTO,
     DeleteNoteInputDTO,
     DeleteNoteOutputDTO,
     ReadNoteInputDTO,
-    ReadNoteOutputDTO,
     ListNotesInputDTO,
-    ListNotesOutputDTO,
     UpdateNoteInputDTO,
-    UpdateNoteOutputDTO,
+    NoteDTO,
 )
-from zametka.domain.value_objects.note_id import NoteId
+from zametka.domain.value_objects.note.note_id import NoteId
 from zametka.presentation.interactor_factory import InteractorFactory
-from zametka.presentation.schemas.note import (
-    CreateNoteSchema,
-    UpdateNoteSchema,
-)
+from zametka.presentation.schemas.note import NoteSchema
 
 router = APIRouter(
     prefix="/v1/notes",
@@ -29,12 +23,12 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=CreateNoteOutputDTO)
+@router.post("/")
 async def create(
-    note: CreateNoteSchema,
+    note: NoteSchema,
     ioc: InteractorFactory = Depends(),
     jwt: AuthJWT = Depends(),
-):
+) -> NoteDTO:
     """Create note object"""
 
     jwt.jwt_required()
@@ -50,8 +44,8 @@ async def create(
         return response
 
 
-@router.get("/{note_id}", response_model=ReadNoteOutputDTO)
-async def read(
+@router.get("/{note_id}")
+async def read(  # type:ignore
     note_id: int, ioc: InteractorFactory = Depends(), jwt: AuthJWT = Depends()
 ):
     """Read a note by id"""
@@ -68,9 +62,9 @@ async def read(
         return response
 
 
-@router.put("/{note_id}", response_model=UpdateNoteOutputDTO)
-async def update(
-    new_note: UpdateNoteSchema,
+@router.put("/{note_id}")
+async def update(  # type:ignore
+    new_note: NoteSchema,
     note_id: int,
     ioc: InteractorFactory = Depends(),
     jwt: AuthJWT = Depends(),
@@ -91,9 +85,10 @@ async def update(
         return response
 
 
-@router.get("/", response_model=ListNotesOutputDTO)
-async def list_notes(
-    page: int = 1,
+@router.get("/")
+async def list_notes(  # type:ignore
+    limit: int,
+    offset: int,
     search: Optional[str] = None,
     ioc: InteractorFactory = Depends(),
     jwt: AuthJWT = Depends(),
@@ -105,7 +100,8 @@ async def list_notes(
     async with ioc.pick_note_interactor(jwt, lambda i: i.list) as interactor:
         response = await interactor(
             ListNotesInputDTO(
-                page=page,
+                limit=limit,
+                offset=offset,
                 search=search,
             )
         )
@@ -113,10 +109,10 @@ async def list_notes(
         return response
 
 
-@router.delete("/{note_id}", response_model=DeleteNoteOutputDTO)
+@router.delete("/{note_id}")
 async def delete(
     note_id: int, ioc: InteractorFactory = Depends(), jwt: AuthJWT = Depends()
-):
+) -> DeleteNoteOutputDTO:
     """Delete note by id"""
 
     jwt.jwt_required()
