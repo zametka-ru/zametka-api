@@ -1,154 +1,52 @@
-### *Эндпоинты*
+### **API Приложения zametka**
 
-#### Auth
+#### Особенности
+- Чистая архитектура (выделен домен, прикладной слой, инфраструктурный слой и презентационный слой)
+- Некоторые паттерны из DDD, например Value Objects или Domain Services
+- Хорошее качество кода (mypy --strict проходит без ошибок)
+- Все завернуто в докер
+- Своя аутентификация на базе JWT (как пример, но лучше использовать сторонние сервисы, типа Auth0 или Keycloak)
+- Продуманная структура базы, используется PostgreSQL
+- Система миграций
+- Оптимизация, эндпоинты в среднем отвечают за меньше чем **100мс**
+- Код соответствует PEP8
+- Код придерживается принципам SOLID
 
-#### POST /v1/auth/sign-up/
+#### Основные сущности
 
-```bash
-curl -X "POST" \
-  "http://127.0.0.1:8000/v1/auth/sign-up/" \
-  -d '{
-      "email": "string",
-      "password": "string",
-      "password2": "string",
-      "first_name": "string",
-      "last_name": "string",
-  }'
-```
+##### Note (заметка):
 
-```json
-{
-    "first_name": "string"
-}
-```
+Поля:
+- Название (строка <= 50 символов)
+- Текст (строка <= 60000 символов)
+- Дата создания (datetime)
+- Автор (UserId)
 
-#### POST /v1/auth/sign-in/
+Операции:
+- Создание
+- Чтение
+- Обновление
+- Удаление
+- Получение заметок пользователя (поддерживаются параметры limit & offset)
+- Полнотекстовый поиск по заметкам пользователя с помошью триграмм (pg_trgm) 
 
-```bash
-curl -X "POST" \
-  "http://127.0.0.1:8000/v1/auth/sign-in/" \
-  -d '{
-      "email": "string",
-      "password": "string"
-  }'
-```
+###### User (пользователь):
 
-```json
-{
-  "user_id": 1
-}
-```
+Поля:
+- Почта (строка <= 100 символов)
+- Имя (строка >= 2 & <= 40 символов)
+- Фамилия (строка >= 2 & <= 60 символов)
+- Дата регистрации (datetime)
+- Админ? (false)
+- Активный? (false)
 
-
-#### GET /v1/auth/verify/{token}/
-```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/auth/verify/{token}"
-```
-```json
-{
-  "email": "string"
-}
-```
-
-
-#### Scripts
-
-#### POST /v1/notes/
-
-```bash
-curl -X "POST" \
-  "http://127.0.0.1:8000/v1/notes/" \
-  -d '{
-      "title": "string",
-      "text": "string"
-  }'
-```
-
-```json
-{
-    "note": {
-        "title": "string",
-        "text": "string",
-        "created_at": "2023-11-20T08:39:01.841Z",
-        "author_id": 0
-    }
-}
-```
-
-#### GET /v1/notes/{note_id}/
-```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/notes/{note_id}/"
-```
-```json
-{
-    "note": {
-        "title": "string",
-        "text": "string",
-        "created_at": "2023-11-20T08:39:56.439Z",
-        "author_id": 0
-    }
-}
-```
-
-#### PUT /v1/notes/{note_id}/
-
-```bash
-curl -X "PUT" \
-  "http://127.0.0.1:8000/v1/notes/{note_id}/" \
-  -d '{
-      "title": "string",
-      "text": "string"
-  }'
-```
-
-```json
-{
-    "note": {
-        "title": "string",
-        "text": "string",
-        "created_at": "2023-11-20T08:39:01.841Z",
-        "author_id": 0
-    }
-}
-```
-
-#### DELETE /v1/notes/{note_id}/
-
-```bash
-curl -X "DELETE" \
-  "http://127.0.0.1:8000/v1/notes/{note_id}/"
-```
-
-```json
-{}
-```
-
-#### GET /v1/notes/
-
-Possible query parameters:
-
-```plain
-page: integer (query)
-Default value : 1
-
-search: string (query)
-```
-
-```bash
-curl -X "GET" "http://127.0.0.1:8000/v1/notes/"
-```
-```json
-{
-  "notes": [
-    {
-      "title": "string",
-      "text": "string",
-      "created_at": "2023-11-20T08:44:10.739Z",
-      "author_id": 0
-    }
-  ]
-}
-```
+Операции:
+- Регистрация
+- Подтверждение почты
+- Вход в аккаунт
+- Чтение
+- Выход из аккаунта
+- Удаление аккаунта
 
 ---------------------
 
