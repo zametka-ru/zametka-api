@@ -1,6 +1,6 @@
 from typing import Optional
 
-from zametka.application.common.repository import AuthRepository, NoteRepository
+from zametka.application.common.repository import UserRepository, NoteRepository
 from zametka.application.common.uow import UoW
 from zametka.application.common.id_provider import IdProvider
 
@@ -33,7 +33,7 @@ class NoteInteractor:
     def __init__(
         self,
         note_repository: NoteRepository,
-        auth_repository: AuthRepository,
+        auth_repository: UserRepository,
         uow: UoW,
         service: NoteService,
         id_provider: IdProvider,

@@ -1,3 +1,5 @@
+import jwt
+
 from datetime import datetime, timezone, timedelta
 from typing import TypeAlias
 
@@ -7,12 +9,13 @@ from zametka.domain.exceptions.email_token import (
     EmailTokenAlreadyUsedError,
 )
 from zametka.domain.exceptions.user import UserIsNotExistsError
+from zametka.domain.value_objects.email_token import EmailToken
 
 Payload: TypeAlias = dict[str, datetime | str | bool]
 
 
 class EmailTokenService:
-    def encode_payload(self, user: User) -> Payload:
+    def encode_token(self, user: User, secret_key: str, algorithm: str) -> EmailToken:
         exp: datetime = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
 
         payload: Payload = {
@@ -21,9 +24,18 @@ class EmailTokenService:
             "user_is_active": user.is_active,
         }
 
+        token = EmailToken(jwt.encode(payload, secret_key, algorithm))
+
+        return token
+
+    def decode_token(
+        self, token: EmailToken, secret_key: str, algorithm: str
+    ) -> Payload:
+        payload: Payload = jwt.decode(token.to_raw(), secret_key, algorithms=[algorithm])
+
         return payload
 
-    def check_payload(self, user: DBUser, payload: Payload) -> DBUser:
+    def activate_user(self, user: DBUser, payload: Payload) -> DBUser:
         if not user:
             raise UserIsNotExistsError()
 
@@ -34,5 +46,7 @@ class EmailTokenService:
 
         if user.is_active != token_user_is_active:
             raise EmailTokenAlreadyUsedError()
+
+        user.is_active = True
 
         return user

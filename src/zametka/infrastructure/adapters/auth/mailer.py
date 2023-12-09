@@ -2,9 +2,7 @@ from fastapi_mail import FastMail, MessageSchema, MessageType
 from jinja2 import Environment
 from starlette.background import BackgroundTasks
 
-from zametka.application.common.adapters import JWTOperations, MailTokenSender
-from zametka.domain.entities.user import User
-from zametka.domain.services.email_token_service import EmailTokenService, Payload
+from zametka.application.common.token_sender import MailTokenSender
 from zametka.domain.value_objects.email_token import EmailToken
 from zametka.domain.value_objects.user.user_email import UserEmail
 
@@ -58,17 +56,3 @@ class MailTokenSenderImpl(MailTokenSender):
             get_message_schema(subject=subject, html=html, to_email=to_email),
             template_name="confirmation-mail",
         )
-
-    def create(
-        self,
-        secret_key: str,
-        algorithm: str,
-        user: User,
-        jwt: JWTOperations,
-        email_token_service: EmailTokenService,
-    ) -> EmailToken:
-        payload: Payload = email_token_service.encode_payload(user)
-
-        token: str = jwt.encode(payload, secret_key, algorithm)
-
-        return EmailToken(token)

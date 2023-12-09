@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from zametka.application.auth.dto import DBUserDTO
+from zametka.application.user.dto import DBUserDTO
 from zametka.application.common.id_provider import IdProvider
 from zametka.application.common.interactor import Interactor
-from zametka.application.common.repository import AuthRepository
+from zametka.application.common.repository import UserRepository
 from zametka.domain.entities.user import DBUser
 from zametka.domain.exceptions.user import IsNotAuthorizedError
 
@@ -17,7 +17,7 @@ class GetUserInputDTO:
 class GetUser(Interactor[GetUserInputDTO, DBUserDTO]):
     def __init__(
         self,
-        auth_repository: AuthRepository,
+        auth_repository: UserRepository,
         id_provider: IdProvider,
     ):
         self.auth_repository = auth_repository
