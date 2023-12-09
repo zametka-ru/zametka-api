@@ -31,14 +31,14 @@ class EmailVerification(
 ):
     def __init__(
         self,
-        repository: UserRepository,
+        user_repository: UserRepository,
         uow: UoW,
         secret_key: str,
         algorithm: str,
         email_token_service: EmailTokenService,
     ):
         self.uow = uow
-        self.repository = repository
+        self.user_repository = user_repository
         self._secret_key = secret_key
         self._algorithm = algorithm
         self.email_token_service = email_token_service
@@ -58,7 +58,7 @@ class EmailVerification(
         if not user_email or not isinstance(user_email, str):
             raise CorruptedEmailTokenError()
 
-        user: Optional[DBUser] = await self.repository.get_by_email(
+        user: Optional[DBUser] = await self.user_repository.get_by_email(
             UserEmail(user_email)
         )
 
@@ -67,7 +67,7 @@ class EmailVerification(
 
         decoded_user: DBUser = self.email_token_service.activate_user(user, payload)
 
-        await self.repository.update(decoded_user.user_id, decoded_user)
+        await self.user_repository.update(decoded_user.user_id, decoded_user)
         await self.uow.commit()
 
         return EmailVerificationOutputDTO(email=decoded_user.email.to_raw())
