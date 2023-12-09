@@ -31,16 +31,16 @@ class SignInOutputDTO:
 class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
     def __init__(
         self,
-        repository: UserRepository,
+        user_repository: UserRepository,
         pwd_context: PasswordHasher,
         user_service: UserService,
     ):
         self.pwd_context = pwd_context
-        self.repository = repository
+        self.user_repository = user_repository
         self.user_service = user_service
 
     async def __call__(self, data: SignInInputDTO) -> SignInOutputDTO:
-        user: Optional[DBUser] = await self.repository.get_by_email(
+        user: Optional[DBUser] = await self.user_repository.get_by_email(
             UserEmail(data.email)
         )
 

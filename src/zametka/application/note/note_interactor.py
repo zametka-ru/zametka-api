@@ -33,7 +33,7 @@ class NoteInteractor:
     def __init__(
         self,
         note_repository: NoteRepository,
-        auth_repository: UserRepository,
+        user_repository: UserRepository,
         uow: UoW,
         service: NoteService,
         id_provider: IdProvider,
@@ -41,7 +41,7 @@ class NoteInteractor:
         self.uow = uow
         self.service = service
         self.note_repository = note_repository
-        self.auth_repository = auth_repository
+        self.user_repository = user_repository
         self.id_provider = id_provider
 
     async def _get_current_user(self) -> DBUser:
@@ -49,7 +49,7 @@ class NoteInteractor:
 
         user_id = self.id_provider.get_current_user_id()
 
-        user: Optional[DBUser] = await self.auth_repository.get(user_id)
+        user: Optional[DBUser] = await self.user_repository.get(user_id)
 
         if not user:
             raise IsNotAuthorizedError()

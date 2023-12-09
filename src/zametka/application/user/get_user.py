@@ -17,10 +17,10 @@ class GetUserInputDTO:
 class GetUser(Interactor[GetUserInputDTO, DBUserDTO]):
     def __init__(
         self,
-        auth_repository: UserRepository,
+        user_repository: UserRepository,
         id_provider: IdProvider,
     ):
-        self.auth_repository = auth_repository
+        self.user_repository = user_repository
         self.id_provider = id_provider
 
     async def _get_current_user(self) -> DBUser:
@@ -28,7 +28,7 @@ class GetUser(Interactor[GetUserInputDTO, DBUserDTO]):
 
         user_id = self.id_provider.get_current_user_id()
 
-        user: Optional[DBUser] = await self.auth_repository.get(user_id)
+        user: Optional[DBUser] = await self.user_repository.get(user_id)
 
         if not user:
             raise IsNotAuthorizedError()

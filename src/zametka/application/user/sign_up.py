@@ -34,7 +34,7 @@ class SignUpInputDTO:
 class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
     def __init__(
         self,
-        repository: UserRepository,
+        user_repository: UserRepository,
         pwd_context: PasswordHasher,
         token_sender: MailTokenSender,
         uow: UoW,
@@ -47,7 +47,7 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
         self.service = service
         self.pwd_context = pwd_context
         self.token_sender = token_sender
-        self.repository = repository
+        self.user_repository = user_repository
         self._secret_key = secret_key
         self._algorithm = algorithm
         self.email_token_service = email_token_service
@@ -66,7 +66,7 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
             last_name=last_name,
         )
 
-        user_dto = await self.repository.create(user)
+        user_dto = await self.user_repository.create(user)
 
         await self.uow.commit()
 

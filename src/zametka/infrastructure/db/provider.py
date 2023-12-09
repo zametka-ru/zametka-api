@@ -11,7 +11,7 @@ def get_uow(session: AsyncSession) -> SAUnitOfWork:
     return SAUnitOfWork(session=session)
 
 
-def get_auth_repository(session: AsyncSession) -> UserRepositoryImpl:
+def get_user_repository(session: AsyncSession) -> UserRepositoryImpl:
     return UserRepositoryImpl(session=session)
 
 

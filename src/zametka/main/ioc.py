@@ -22,7 +22,7 @@ from zametka.infrastructure.adapters.auth.mailer import MailTokenSenderImpl
 from zametka.infrastructure.adapters.auth.password_hasher import PasswordHasherImpl
 from zametka.infrastructure.config_loader import AuthSettings
 from zametka.infrastructure.db.provider import (
-    get_auth_repository,
+    get_user_repository,
     get_note_repository,
     get_uow,
 )
@@ -65,14 +65,14 @@ class IoC(InteractorFactory):
         self, session: AsyncSession, jwt: AuthJWT
     ) -> NoteInteractor:
         note_repository = get_note_repository(session)
-        auth_repository = get_auth_repository(session)
+        user_repository = get_user_repository(session)
         uow = get_uow(session)
         id_provider = TokenIdProvider(jwt)
         service = self._note_service
 
         return NoteInteractor(
             note_repository=note_repository,
-            auth_repository=auth_repository,
+            user_repository=user_repository,
             uow=uow,
             service=service,
             id_provider=id_provider,
@@ -90,7 +90,7 @@ class IoC(InteractorFactory):
     async def sign_up(self, background_tasks: BackgroundTasks) -> AsyncIterator[SignUp]:
         async with self._session_factory() as session:
             interactor = SignUp(
-                repository=get_auth_repository(session),
+                user_repository=get_user_repository(session),
                 pwd_context=self._password_hasher,
                 token_sender=MailTokenSenderImpl(
                     jinja=self._jinja_env,
@@ -111,7 +111,7 @@ class IoC(InteractorFactory):
     async def sign_in(self) -> AsyncIterator[SignIn]:
         async with self._session_factory() as session:
             interactor = SignIn(
-                repository=get_auth_repository(session),
+                user_repository=get_user_repository(session),
                 pwd_context=self._password_hasher,
                 user_service=self._user_service,
             )
@@ -122,7 +122,7 @@ class IoC(InteractorFactory):
     async def get_user(self, jwt: AuthJWT) -> AsyncIterator[GetUser]:
         async with self._session_factory() as session:
             interactor = GetUser(
-                auth_repository=get_auth_repository(session),
+                user_repository=get_user_repository(session),
                 id_provider=TokenIdProvider(jwt),
             )
 
@@ -132,7 +132,7 @@ class IoC(InteractorFactory):
     async def email_verification(self) -> AsyncIterator[EmailVerification]:
         async with self._session_factory() as session:
             interactor = EmailVerification(
-                repository=get_auth_repository(session),
+                user_repository=get_user_repository(session),
                 uow=get_uow(session),
                 secret_key=self._secret_key,
                 algorithm=self._algorithm,
