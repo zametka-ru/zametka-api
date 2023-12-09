@@ -1,21 +1,21 @@
 from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi_another_jwt_auth import AuthJWT
 
-from zametka.application.auth.dto import DBUserDTO
-from zametka.application.auth.email_verification import (
+from zametka.application.user.dto import DBUserDTO
+from zametka.application.user.email_verification import (
     EmailVerificationInputDTO,
     EmailVerificationOutputDTO,
 )
-from zametka.application.auth.get_user import GetUserInputDTO
+from zametka.application.user.get_user import GetUserInputDTO
 
-from zametka.application.auth.sign_in import SignInInputDTO, SignInOutputDTO
-from zametka.application.auth.sign_up import SignUpInputDTO, SignUpOutputDTO
+from zametka.application.user.sign_in import SignInInputDTO, SignInOutputDTO
+from zametka.application.user.sign_up import SignUpInputDTO, SignUpOutputDTO
 from zametka.presentation.interactor_factory import InteractorFactory
-from zametka.presentation.schemas.auth import UserLoginSchema, UserRegisterSchema
+from zametka.presentation.schemas.user import UserLoginSchema, UserRegisterSchema
 
 router = APIRouter(
-    prefix="/v1/auth",
-    tags=["auth"],
+    prefix="/v1/user",
+    tags=["user"],
     responses={404: {"description": "Not found"}},
 )
 

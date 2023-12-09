@@ -67,7 +67,7 @@ async def on_startup() -> None:
     mail = FastMail(mail_settings)
 
     jinja_env: Environment = Environment(
-        loader=PackageLoader("zametka.infrastructure.adapters.auth"),
+        loader=PackageLoader("zametka.infrastructure.adapters.user"),
         autoescape=select_autoescape(),
     )
 

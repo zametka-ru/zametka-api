@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Optional, Protocol
 
-from zametka.application.auth.dto import UserDTO
+from zametka.application.user.dto import UserDTO
 from zametka.application.note.dto import ListNotesDTO, NoteDTO, DBNoteDTO
 from zametka.domain.entities.note import Note, DBNote
 from zametka.domain.entities.user import User, DBUser
@@ -10,7 +10,7 @@ from zametka.domain.value_objects.user.user_email import UserEmail
 from zametka.domain.value_objects.user.user_id import UserId
 
 
-class AuthRepository(Protocol):
+class UserRepository(Protocol):
     """User repository interface"""
 
     @abstractmethod
@@ -26,8 +26,8 @@ class AuthRepository(Protocol):
         """Get by email"""
 
     @abstractmethod
-    async def set_active(self, user_id: UserId) -> None:
-        """Set active"""
+    async def update(self, user_id: UserId, updated_user: DBUser) -> None:
+        """Update"""
 
 
 class NoteRepository(Protocol):

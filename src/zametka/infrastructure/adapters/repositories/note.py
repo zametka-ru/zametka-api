@@ -10,7 +10,7 @@ from zametka.domain.value_objects.note.note_id import NoteId
 from zametka.domain.value_objects.user.user_id import UserId
 
 from zametka.infrastructure.db import Note
-from zametka.infrastructure.db.converters.note import (
+from zametka.infrastructure.adapters.repositories.converters.note import (
     notes_to_dto,
     note_db_model_to_db_note_dto,
     note_db_model_to_note_dto,

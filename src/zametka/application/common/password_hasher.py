@@ -1,13 +1,17 @@
-from passlib.hash import pbkdf2_sha256
+from abc import abstractmethod
+from typing import Protocol
 
-from zametka.application.common.password_hasher import PasswordHasher
 from zametka.domain.value_objects.user.user_hashed_password import UserHashedPassword
 from zametka.domain.value_objects.user.user_raw_password import UserRawPassword
 
 
-class PasswordHasherImpl(PasswordHasher):
-    def hash(self, plain: UserRawPassword) -> UserHashedPassword:
-        return UserHashedPassword(pbkdf2_sha256.hash(plain.to_raw()))
+class PasswordHasher(Protocol):
+    """CryptContext interface"""
 
+    @abstractmethod
+    def hash(self, plain: UserRawPassword) -> UserHashedPassword:
+        """Hash the plain password"""
+
+    @abstractmethod
     def verify(self, plain: UserRawPassword, hashed: UserHashedPassword) -> bool:
-        return pbkdf2_sha256.verify(plain.to_raw(), hashed.to_raw())  # type:ignore
+        """Compare that plain hash is equal hashed"""

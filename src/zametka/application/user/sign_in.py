@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from typing import Optional
 
 from zametka.domain.value_objects.user.user_email import UserEmail
-from zametka.application.common.adapters import PasswordHasher
+from zametka.application.common.password_hasher import PasswordHasher
 from zametka.application.common.interactor import Interactor
 from zametka.application.common.repository import (
-    AuthRepository,
+    UserRepository,
 )
 
 from zametka.domain.entities.user import DBUser
@@ -14,6 +14,7 @@ from zametka.domain.exceptions.user import (
     UserIsNotExistsError,
 )
 from zametka.domain.services.user_service import UserService
+from zametka.domain.value_objects.user.user_raw_password import UserRawPassword
 
 
 @dataclass(frozen=True)
@@ -30,7 +31,7 @@ class SignInOutputDTO:
 class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
     def __init__(
         self,
-        repository: AuthRepository,
+        repository: UserRepository,
         pwd_context: PasswordHasher,
         user_service: UserService,
     ):
@@ -46,7 +47,9 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
         if not user:
             raise UserIsNotExistsError()
 
-        if not self.pwd_context.verify(data.password, user.hashed_password):
+        if not self.pwd_context.verify(
+            UserRawPassword(data.password), user.hashed_password
+        ):
             raise InvalidCredentialsError()
 
         self.user_service.ensure_can_login(user)

@@ -23,7 +23,7 @@ from zametka.domain.exceptions.user import (
     UserDataError,
 )
 
-from .endpoints import auth, note
+from .endpoints import user, note
 from .exception_handlers.auth import (
     authjwt_exception_handler,
     corrupted_token_exception_handler,
@@ -49,7 +49,7 @@ from .exception_handlers.note import (
 def include_routers(app: FastAPI) -> None:
     """Include endpoints APIRouters to the main app"""
 
-    app.include_router(auth.router)
+    app.include_router(user.router)
     app.include_router(note.router)
 
 

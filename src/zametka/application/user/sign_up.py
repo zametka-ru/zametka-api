@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 
-from zametka.application.auth.dto import UserDTO
-from zametka.application.common.adapters import (
-    JWTOperations,
-    MailTokenSender,
+from zametka.application.user.dto import UserDTO
+from zametka.application.common.password_hasher import (
     PasswordHasher,
 )
+from zametka.application.common.token_sender import MailTokenSender
 from zametka.application.common.interactor import Interactor
-from zametka.application.common.repository import AuthRepository
+from zametka.application.common.repository import UserRepository
 from zametka.application.common.uow import UoW
 from zametka.domain.services.email_token_service import EmailTokenService
 from zametka.domain.services.user_service import UserService
@@ -16,6 +15,7 @@ from zametka.domain.value_objects.user.user_email import UserEmail
 from zametka.domain.value_objects.user.user_first_name import UserFirstName
 from zametka.domain.value_objects.user.user_hashed_password import UserHashedPassword
 from zametka.domain.value_objects.user.user_last_name import UserLastName
+from zametka.domain.value_objects.user.user_raw_password import UserRawPassword
 
 
 @dataclass(frozen=True)
@@ -34,18 +34,16 @@ class SignUpInputDTO:
 class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
     def __init__(
         self,
-        repository: AuthRepository,
+        repository: UserRepository,
         pwd_context: PasswordHasher,
         token_sender: MailTokenSender,
         uow: UoW,
-        jwt_ops: JWTOperations,
         service: UserService,
         email_token_service: EmailTokenService,
         secret_key: str,
         algorithm: str,
     ):
         self.uow = uow
-        self.jwt_ops = jwt_ops
         self.service = service
         self.pwd_context = pwd_context
         self.token_sender = token_sender
@@ -55,10 +53,9 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
         self.email_token_service = email_token_service
 
     async def __call__(self, data: SignUpInputDTO) -> SignUpOutputDTO:
-        self.service.check_password(data.user_password)
-
         email = UserEmail(data.user_email)
-        hashed_password: UserHashedPassword = self.pwd_context.hash(data.user_password)
+        raw_password = UserRawPassword(data.user_password)
+        hashed_password: UserHashedPassword = self.pwd_context.hash(raw_password)
         first_name = UserFirstName(data.user_first_name)
         last_name = UserLastName(data.user_last_name)
 
@@ -76,8 +73,8 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
         secret_key: str = self._secret_key
         algorithm: str = self._algorithm
 
-        token: EmailToken = self.token_sender.create(
-            secret_key, algorithm, user, self.jwt_ops, self.email_token_service
+        token: EmailToken = self.email_token_service.encode_token(
+            user, secret_key, algorithm
         )
 
         self.token_sender.send(
