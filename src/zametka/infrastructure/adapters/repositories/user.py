@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from zametka.application.user.dto import UserDTO
+from zametka.application.user.dto import DBUserDTO
 from zametka.application.common.repository import (
     UserRepository,
 )
@@ -14,7 +14,7 @@ from zametka.domain.value_objects.user.user_id import UserId
 
 from zametka.infrastructure.db import User
 from zametka.infrastructure.adapters.repositories.converters.user import (
-    user_db_model_to_user_dto,
+    user_db_model_to_db_user_dto,
     user_db_model_to_db_user_entity,
     user_entity_to_db_model,
 )
@@ -31,12 +31,14 @@ class UserRepositoryImpl(UserRepository):
     async def create(
         self,
         user: UserEntity,
-    ) -> UserDTO:
+    ) -> DBUserDTO:
         db_user = user_entity_to_db_model(user)
 
         self.session.add(db_user)
 
-        return user_db_model_to_user_dto(db_user)
+        await self.session.flush(objects=[db_user])
+
+        return user_db_model_to_db_user_dto(db_user)
 
     async def get(self, user_id: UserId) -> Optional[DBUser]:
         q = select(User).where(User.id == user_id.to_raw())

@@ -10,7 +10,6 @@ from zametka.application.note.dto import (
     ReadNoteInputDTO,
     ListNotesInputDTO,
     UpdateNoteInputDTO,
-    NoteDTO,
 )
 from zametka.domain.value_objects.note.note_id import NoteId
 from zametka.presentation.interactor_factory import InteractorFactory
@@ -24,11 +23,11 @@ router = APIRouter(
 
 
 @router.post("/")
-async def create(
+async def create(  # type:ignore
     note: NoteSchema,
     ioc: InteractorFactory = Depends(),
     jwt: AuthJWT = Depends(),
-) -> NoteDTO:
+):
     """Create note object"""
 
     jwt.jwt_required()

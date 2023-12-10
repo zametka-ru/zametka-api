@@ -10,7 +10,7 @@ from zametka.infrastructure.db import User
 
 from zametka.domain.value_objects.user.user_id import UserId
 
-from zametka.application.user.dto import UserDTO
+from zametka.application.user.dto import DBUserDTO
 
 
 def user_db_model_to_db_user_entity(user: User) -> DBUser:
@@ -25,8 +25,9 @@ def user_db_model_to_db_user_entity(user: User) -> DBUser:
     )
 
 
-def user_db_model_to_user_dto(user: User) -> UserDTO:
-    return UserDTO(
+def user_db_model_to_db_user_dto(user: User) -> DBUserDTO:
+    return DBUserDTO(
+        user_id=user.id,
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,

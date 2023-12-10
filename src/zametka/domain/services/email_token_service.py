@@ -31,7 +31,9 @@ class EmailTokenService:
     def decode_token(
         self, token: EmailToken, secret_key: str, algorithm: str
     ) -> Payload:
-        payload: Payload = jwt.decode(token.to_raw(), secret_key, algorithms=[algorithm])
+        payload: Payload = jwt.decode(
+            token.to_raw(), secret_key, algorithms=[algorithm]
+        )
 
         return payload
 
