@@ -19,7 +19,6 @@ from zametka.application.note.note_interactor import NoteInteractor
 from zametka.domain.services.note_service import NoteService
 from zametka.domain.services.user_service import UserService
 from zametka.infrastructure.adapters.auth.mailer import MailTokenSenderImpl
-from zametka.infrastructure.adapters.auth.password_hasher import PasswordHasherImpl
 from zametka.infrastructure.config_loader import AuthSettings
 from zametka.infrastructure.db.provider import (
     get_user_repository,
@@ -49,7 +48,6 @@ class IoC(InteractorFactory):
         self._note_service = NoteService()
         self._user_service = UserService()
         self._email_token_service = EmailTokenService()
-        self._password_hasher = PasswordHasherImpl()
 
         self._auth_settings: AuthSettings = auth_settings
 
@@ -91,7 +89,6 @@ class IoC(InteractorFactory):
         async with self._session_factory() as session:
             interactor = SignUp(
                 user_repository=get_user_repository(session),
-                pwd_context=self._password_hasher,
                 token_sender=MailTokenSenderImpl(
                     jinja=self._jinja_env,
                     mail=self._mailer,
@@ -112,7 +109,6 @@ class IoC(InteractorFactory):
         async with self._session_factory() as session:
             interactor = SignIn(
                 user_repository=get_user_repository(session),
-                pwd_context=self._password_hasher,
                 user_service=self._user_service,
             )
 

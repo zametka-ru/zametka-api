@@ -4,7 +4,7 @@ from sqlalchemy import delete, select, update, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from zametka.application.common.repository import NoteRepository
-from zametka.application.note.dto import ListNotesDTO, NoteDTO, DBNoteDTO
+from zametka.application.note.dto import ListNotesDTO, DBNoteDTO
 from zametka.domain.entities.note import Note as NoteEntity, DBNote
 from zametka.domain.value_objects.note.note_id import NoteId
 from zametka.domain.value_objects.user.user_id import UserId
@@ -12,8 +12,8 @@ from zametka.domain.value_objects.user.user_id import UserId
 from zametka.infrastructure.db import Note
 from zametka.infrastructure.adapters.repositories.converters.note import (
     notes_to_dto,
+    note_db_data_to_db_note_dto,
     note_db_model_to_db_note_dto,
-    note_db_model_to_note_dto,
     note_entity_to_db_model,
     note_db_model_to_db_note_entity,
 )
@@ -30,14 +30,15 @@ class NoteRepositoryImpl(NoteRepository):
     async def create(
         self,
         note: NoteEntity,
-    ) -> NoteDTO:
+    ) -> DBNoteDTO:
         """Create"""
 
         db_note = note_entity_to_db_model(note)
 
         self.session.add(db_note)
+        await self.session.flush(objects=[db_note])
 
-        return note_db_model_to_note_dto(db_note)
+        return note_db_model_to_db_note_dto(db_note)
 
     async def get(self, note_id: NoteId) -> Optional[DBNote]:
         """Get by id"""
@@ -79,7 +80,7 @@ class NoteRepositoryImpl(NoteRepository):
         if not note:
             return None
 
-        return note_db_model_to_db_note_dto(note)
+        return note_db_data_to_db_note_dto(note)
 
     async def list(self, limit: int, offset: int, author_id: UserId) -> ListNotesDTO:
         """List"""

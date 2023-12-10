@@ -1,26 +1,17 @@
 from dataclasses import dataclass
 
-from zametka.application.user.dto import UserDTO
-from zametka.application.common.password_hasher import (
-    PasswordHasher,
-)
 from zametka.application.common.token_sender import MailTokenSender
 from zametka.application.common.interactor import Interactor
 from zametka.application.common.repository import UserRepository
 from zametka.application.common.uow import UoW
+from zametka.application.user.dto import DBUserDTO
 from zametka.domain.services.email_token_service import EmailTokenService
 from zametka.domain.services.user_service import UserService
 from zametka.domain.value_objects.email_token import EmailToken
 from zametka.domain.value_objects.user.user_email import UserEmail
 from zametka.domain.value_objects.user.user_first_name import UserFirstName
-from zametka.domain.value_objects.user.user_hashed_password import UserHashedPassword
 from zametka.domain.value_objects.user.user_last_name import UserLastName
 from zametka.domain.value_objects.user.user_raw_password import UserRawPassword
-
-
-@dataclass(frozen=True)
-class SignUpOutputDTO:
-    user: UserDTO
 
 
 @dataclass(frozen=True)
@@ -31,11 +22,10 @@ class SignUpInputDTO:
     user_last_name: str
 
 
-class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
+class SignUp(Interactor[SignUpInputDTO, DBUserDTO]):
     def __init__(
         self,
         user_repository: UserRepository,
-        pwd_context: PasswordHasher,
         token_sender: MailTokenSender,
         uow: UoW,
         service: UserService,
@@ -45,23 +35,21 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
     ):
         self.uow = uow
         self.service = service
-        self.pwd_context = pwd_context
         self.token_sender = token_sender
         self.user_repository = user_repository
         self._secret_key = secret_key
         self._algorithm = algorithm
         self.email_token_service = email_token_service
 
-    async def __call__(self, data: SignUpInputDTO) -> SignUpOutputDTO:
+    async def __call__(self, data: SignUpInputDTO) -> DBUserDTO:
         email = UserEmail(data.user_email)
         raw_password = UserRawPassword(data.user_password)
-        hashed_password: UserHashedPassword = self.pwd_context.hash(raw_password)
         first_name = UserFirstName(data.user_first_name)
         last_name = UserLastName(data.user_last_name)
 
         user = self.service.create(
             email=email,
-            hashed_password=hashed_password,
+            raw_password=raw_password,
             first_name=first_name,
             last_name=last_name,
         )
@@ -81,4 +69,4 @@ class SignUp(Interactor[SignUpInputDTO, SignUpOutputDTO]):
             token, subject="Завершите регистрацию в yourscript.", to_email=user.email
         )
 
-        return SignUpOutputDTO(user=user_dto)
+        return user_dto

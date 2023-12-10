@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Optional, Protocol
 
-from zametka.application.user.dto import UserDTO
-from zametka.application.note.dto import ListNotesDTO, NoteDTO, DBNoteDTO
+from zametka.application.user.dto import DBUserDTO
+from zametka.application.note.dto import ListNotesDTO, DBNoteDTO
 from zametka.domain.entities.note import Note, DBNote
 from zametka.domain.entities.user import User, DBUser
 from zametka.domain.value_objects.note.note_id import NoteId
@@ -14,7 +14,7 @@ class UserRepository(Protocol):
     """User repository interface"""
 
     @abstractmethod
-    async def create(self, user: User) -> UserDTO:
+    async def create(self, user: User) -> DBUserDTO:
         """Create"""
 
     @abstractmethod
@@ -34,7 +34,7 @@ class NoteRepository(Protocol):
     """Note repository interface"""
 
     @abstractmethod
-    async def create(self, note: Note) -> NoteDTO:
+    async def create(self, note: Note) -> DBNoteDTO:
         """Create"""
 
     @abstractmethod

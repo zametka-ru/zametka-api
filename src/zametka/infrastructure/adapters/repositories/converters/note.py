@@ -10,10 +10,10 @@ from zametka.domain.value_objects.note.note_title import NoteTitle
 from zametka.domain.value_objects.user.user_id import UserId
 from zametka.infrastructure.db import Note
 
-from zametka.application.note.dto import NoteDTO, DBNoteDTO, ListNoteDTO
+from zametka.application.note.dto import DBNoteDTO, ListNoteDTO
 
 
-def note_db_model_to_db_note_dto(note: tuple[int, str, Optional[str]]) -> DBNoteDTO:
+def note_db_data_to_db_note_dto(note: tuple[int, str, Optional[str]]) -> DBNoteDTO:
     return DBNoteDTO(
         note_id=note[0],
         title=note[1],
@@ -21,10 +21,11 @@ def note_db_model_to_db_note_dto(note: tuple[int, str, Optional[str]]) -> DBNote
     )
 
 
-def note_db_model_to_note_dto(note: Note) -> NoteDTO:
-    return NoteDTO(
+def note_db_model_to_db_note_dto(note: Note) -> DBNoteDTO:
+    return DBNoteDTO(
         title=note.title,
         text=note.text,
+        note_id=note.id,
     )
 
 

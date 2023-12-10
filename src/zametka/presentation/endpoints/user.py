@@ -9,7 +9,7 @@ from zametka.application.user.email_verification import (
 from zametka.application.user.get_user import GetUserInputDTO
 
 from zametka.application.user.sign_in import SignInInputDTO, SignInOutputDTO
-from zametka.application.user.sign_up import SignUpInputDTO, SignUpOutputDTO
+from zametka.application.user.sign_up import SignUpInputDTO
 from zametka.presentation.interactor_factory import InteractorFactory
 from zametka.presentation.schemas.user import UserLoginSchema, UserRegisterSchema
 
@@ -21,11 +21,11 @@ router = APIRouter(
 
 
 @router.post("/sign-up")
-async def sign_up(
+async def sign_up(  # type:ignore
     user_data: UserRegisterSchema,
     background_tasks: BackgroundTasks,
     ioc: InteractorFactory = Depends(),
-) -> SignUpOutputDTO:
+):
     """Register endpoint"""
 
     async with ioc.sign_up(background_tasks=background_tasks) as interactor:

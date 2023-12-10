@@ -22,7 +22,6 @@ from .dto import (
     ListNotesDTO,
     UpdateNoteInputDTO,
     DBNoteDTO,
-    NoteDTO,
 )
 from zametka.domain.exceptions.user import IsNotAuthorizedError
 from zametka.domain.value_objects.note.note_text import NoteText
@@ -83,7 +82,7 @@ class NoteInteractor:
 
         return note
 
-    async def create(self, data: CreateNoteInputDTO) -> NoteDTO:
+    async def create(self, data: CreateNoteInputDTO) -> DBNoteDTO:
         user = await self._get_current_user()
 
         title = NoteTitle(data.title)
