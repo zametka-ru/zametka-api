@@ -31,9 +31,12 @@ class UserService:
     def hash_password(self, password: UserRawPassword) -> UserHashedPassword:
         return UserHashedPassword(pbkdf2_sha256.hash(password.to_raw()))
 
-    def ensure_can_login(self, user: DBUser, password: UserRawPassword) -> None:
+    def ensure_can_access(self, user: DBUser) -> None:
         if not user.is_active:
-            raise UserIsNotActiveError
+            raise UserIsNotActiveError()
+
+    def ensure_can_login(self, user: DBUser, password: UserRawPassword) -> None:
+        self.ensure_can_access(user)
 
         password_match = pbkdf2_sha256.verify(
             password.to_raw(), user.hashed_password.to_raw()

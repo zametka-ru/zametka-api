@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from zametka.application.user.dto import DBUserDTO
 from zametka.domain.value_objects.user.user_email import UserEmail
 from zametka.application.common.interactor import Interactor
 from zametka.application.common.repository import (
@@ -21,12 +22,7 @@ class SignInInputDTO:
     password: str
 
 
-@dataclass(frozen=True)
-class SignInOutputDTO:
-    user_id: int
-
-
-class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
+class SignIn(Interactor[SignInInputDTO, DBUserDTO]):
     def __init__(
         self,
         user_repository: UserRepository,
@@ -35,7 +31,7 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
         self.user_repository = user_repository
         self.user_service = user_service
 
-    async def __call__(self, data: SignInInputDTO) -> SignInOutputDTO:
+    async def __call__(self, data: SignInInputDTO) -> DBUserDTO:
         user: Optional[DBUser] = await self.user_repository.get_by_email(
             UserEmail(data.email)
         )
@@ -45,8 +41,10 @@ class SignIn(Interactor[SignInInputDTO, SignInOutputDTO]):
 
         self.user_service.ensure_can_login(user, UserRawPassword(data.password))
 
-        user_id = user.user_id
-
-        return SignInOutputDTO(
-            user_id=user_id.to_raw(),
+        return DBUserDTO(
+            user_id=user.user_id.to_raw(),
+            email=user.email.to_raw(),
+            first_name=user.first_name.to_raw(),
+            last_name=user.last_name.to_raw(),
+            joined_at=user.joined_at.read(),
         )

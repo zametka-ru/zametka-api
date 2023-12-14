@@ -96,6 +96,9 @@ async def list_notes(  # type:ignore
 
     jwt.jwt_required()
 
+    if search and len(search) > 50:
+        raise ValueError("Слишком длинный поисковый запрос!")
+
     async with ioc.pick_note_interactor(jwt, lambda i: i.list) as interactor:
         response = await interactor(
             ListNotesInputDTO(

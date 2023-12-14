@@ -66,13 +66,15 @@ class IoC(InteractorFactory):
         user_repository = get_user_repository(session)
         uow = get_uow(session)
         id_provider = TokenIdProvider(jwt)
-        service = self._note_service
+        note_service = self._note_service
+        user_service = self._user_service
 
         return NoteInteractor(
             note_repository=note_repository,
             user_repository=user_repository,
             uow=uow,
-            service=service,
+            user_service=user_service,
+            note_service=note_service,
             id_provider=id_provider,
         )
 
@@ -120,6 +122,7 @@ class IoC(InteractorFactory):
             interactor = GetUser(
                 user_repository=get_user_repository(session),
                 id_provider=TokenIdProvider(jwt),
+                user_service=self._user_service,
             )
 
             yield interactor

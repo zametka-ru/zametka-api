@@ -26,6 +26,7 @@ from .dto import (
 from zametka.domain.exceptions.user import IsNotAuthorizedError
 from zametka.domain.value_objects.note.note_text import NoteText
 from zametka.domain.value_objects.note.note_title import NoteTitle
+from zametka.domain.services.user_service import UserService
 
 
 class NoteInteractor:
@@ -34,17 +35,19 @@ class NoteInteractor:
         note_repository: NoteRepository,
         user_repository: UserRepository,
         uow: UoW,
-        service: NoteService,
+        note_service: NoteService,
+        user_service: UserService,
         id_provider: IdProvider,
     ):
         self.uow = uow
-        self.service = service
+        self.note_service = note_service
+        self.user_service = user_service
         self.note_repository = note_repository
         self.user_repository = user_repository
         self.id_provider = id_provider
 
     async def _get_current_user(self) -> DBUser:
-        """Get current user from JWT"""
+        """Get current user"""
 
         user_id = self.id_provider.get_current_user_id()
 
@@ -52,6 +55,8 @@ class NoteInteractor:
 
         if not user:
             raise IsNotAuthorizedError()
+
+        self.user_service.ensure_can_access(user)
 
         return user
 
@@ -77,7 +82,7 @@ class NoteInteractor:
 
         user: DBUser = await self._get_current_user()
 
-        if not self.service.has_access(note, user.user_id):
+        if not self.note_service.has_access(note, user.user_id):
             raise NoteAccessDeniedError()
 
         return note
@@ -88,7 +93,7 @@ class NoteInteractor:
         title = NoteTitle(data.title)
         text = NoteText(data.text) if data.text else None
 
-        note: Note = self.service.create(title, user.user_id, text)
+        note: Note = self.note_service.create(title, user.user_id, text)
 
         note_dto = await self.note_repository.create(note)
         await self.uow.commit()
@@ -112,8 +117,8 @@ class NoteInteractor:
         title = NoteTitle(data.title)
         text = NoteText(data.text) if data.text else None
 
-        new_note: Note = self.service.create(title, note.author_id, text)
-        updated_note: DBNote = self.service.edit(note, new_note)
+        new_note: Note = self.note_service.create(title, note.author_id, text)
+        updated_note: DBNote = self.note_service.edit(note, new_note)
 
         updated_db_note = await self.note_repository.update(data.note_id, updated_note)
 

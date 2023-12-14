@@ -7,6 +7,7 @@ from zametka.application.common.interactor import Interactor
 from zametka.application.common.repository import UserRepository
 from zametka.domain.entities.user import DBUser
 from zametka.domain.exceptions.user import IsNotAuthorizedError
+from zametka.domain.services.user_service import UserService
 
 
 @dataclass(frozen=True)
@@ -18,13 +19,15 @@ class GetUser(Interactor[GetUserInputDTO, DBUserDTO]):
     def __init__(
         self,
         user_repository: UserRepository,
+        user_service: UserService,
         id_provider: IdProvider,
     ):
         self.user_repository = user_repository
+        self.user_service = user_service
         self.id_provider = id_provider
 
     async def _get_current_user(self) -> DBUser:
-        """Get current user from JWT"""
+        """Get current userT"""
 
         user_id = self.id_provider.get_current_user_id()
 
@@ -32,6 +35,8 @@ class GetUser(Interactor[GetUserInputDTO, DBUserDTO]):
 
         if not user:
             raise IsNotAuthorizedError()
+
+        self.user_service.ensure_can_access(user)
 
         return user
 
@@ -43,5 +48,5 @@ class GetUser(Interactor[GetUserInputDTO, DBUserDTO]):
             email=user.email.to_raw(),
             first_name=user.first_name.to_raw(),
             last_name=user.last_name.to_raw(),
-            joined_at=user.joined_at.to_raw(),
+            joined_at=user.joined_at.read(),
         )

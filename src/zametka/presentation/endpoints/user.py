@@ -8,7 +8,7 @@ from zametka.application.user.email_verification import (
 )
 from zametka.application.user.get_user import GetUserInputDTO
 
-from zametka.application.user.sign_in import SignInInputDTO, SignInOutputDTO
+from zametka.application.user.sign_in import SignInInputDTO
 from zametka.application.user.sign_up import SignUpInputDTO
 from zametka.presentation.interactor_factory import InteractorFactory
 from zametka.presentation.schemas.user import UserLoginSchema, UserRegisterSchema
@@ -42,11 +42,11 @@ async def sign_up(  # type:ignore
 
 
 @router.post("/sign-in")
-async def sign_in(
+async def sign_in(  # type:ignore
     auth_data: UserLoginSchema,
     jwt_auth: AuthJWT = Depends(),
     ioc: InteractorFactory = Depends(),
-) -> SignInOutputDTO:
+):
     """Login endpoint"""
 
     async with ioc.sign_in() as interactor:
