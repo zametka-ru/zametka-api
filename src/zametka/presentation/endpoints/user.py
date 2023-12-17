@@ -21,11 +21,11 @@ router = APIRouter(
 
 
 @router.post("/sign-up")
-async def sign_up(  # type:ignore
+async def sign_up(
     user_data: UserRegisterSchema,
     background_tasks: BackgroundTasks,
     ioc: InteractorFactory = Depends(),
-):
+) -> DBUserDTO:
     """Register endpoint"""
 
     async with ioc.sign_up(background_tasks=background_tasks) as interactor:
@@ -42,11 +42,11 @@ async def sign_up(  # type:ignore
 
 
 @router.post("/sign-in")
-async def sign_in(  # type:ignore
+async def sign_in(
     auth_data: UserLoginSchema,
     jwt_auth: AuthJWT = Depends(),
     ioc: InteractorFactory = Depends(),
-):
+) -> DBUserDTO:
     """Login endpoint"""
 
     async with ioc.sign_in() as interactor:
