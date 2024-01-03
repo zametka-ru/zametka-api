@@ -1,4 +1,7 @@
 venv/
+.venv/
 .mypy_cache/
 .ruff_cache/
 src/zametka.egg-info/
+.env.notes
+.env.access_service

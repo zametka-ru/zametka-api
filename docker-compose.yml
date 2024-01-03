@@ -1,44 +1,72 @@
-version: '3.8'
-
 services:
-    backend:
-        container_name: backend
+    access_service:
+        container_name: access_service
         restart: on-failure
         build: .
-        command: python src/zametka/main/web.py
+        command: python src/zametka/access_service/main/web.py
+        ports:
+            - "5000:80"
+        env_file:
+            - .env.access_service
+            - .env
+        volumes:
+            - ./src/zametka/access_service/infrastructure/db/migrations/versions:/home/app/backend/src/zametka/access_service/infrastructure/db/migrations/versions
+        depends_on:
+            - access_service_migration
+
+    notes:
+        container_name: notes
+        restart: on-failure
+        build: .
+        command: python src/zametka/notes/main/web.py
         ports:
             - "8000:80"
         env_file:
+            - .env.notes
             - .env
         volumes:
-            - ./src/zametka/infrastructure/db/migrations/versions:/home/app/backend/src/zametka/infrastructure/db/migrations/versions
+            - ./src/zametka/notes/infrastructure/db/migrations/versions:/home/app/backend/src/zametka/notes/infrastructure/db/migrations/versions
         depends_on:
-            - migration
+            - notes_migration
 
     db:
         container_name: db
-        image: postgres:14.5-alpine
+        image: zametkaru/postgres-multi-db
         volumes:
-            - backend_pg_data:/var/lib/postgresql/data/
+            - pg_data:/var/lib/postgresql/data/
         env_file:
             - .env
         healthcheck:
-            test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+            test: [ "CMD-SHELL", "pg_isready -d access_database -U $${POSTGRES_USER}",
+                    "CMD-SHELL", "pg_isready -d notes_database -U $${POSTGRES_USER}" ]
             interval: 2s
             timeout: 60s
             retries: 10
             start_period: 5s
 
-    migration:
-        container_name: migration
+    access_service_migration:
+        container_name: access_service_migration
         build: .
         restart: on-failure
         env_file:
+            - .env.access_service
             - .env
         depends_on:
             db:
                 condition: service_healthy
-        command: [ "python", "-m", "alembic", "upgrade", "head" ]
+        command: [ "python", "-m", "alembic", "-c", "./alembic.access_service.ini", "upgrade", "head" ]
+
+    notes_migration:
+        container_name: notes_migration
+        build: .
+        restart: on-failure
+        env_file:
+            - .env.notes
+            - .env
+        depends_on:
+            db:
+                condition: service_healthy
+        command: [ "python", "-m", "alembic", "-c", "./alembic.notes.ini", "upgrade", "head" ]
 
 volumes:
-    backend_pg_data:
+    pg_data:
