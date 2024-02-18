@@ -16,7 +16,6 @@ dependencies = [
     'fastapi==0.95.2',
     'fastapi-another-jwt-auth==0.1.8',
     'mypy==1.3.0',
-    'python-dotenv==1.0.0',
     'SQLAlchemy==2.0.22',
     'uvicorn==0.22.0',
     'email-validator==1.3.1',
@@ -28,7 +27,19 @@ dependencies = [
     'starlette~=0.27.0',
     'aiohttp==3.9.1',
     'Brotli==1.1.0',
+    'adaptix==3.0.0b1',
+    'aio-pika==9.3.1',
+    'pytest==7.3.1',
+    'pytest-asyncio==0.20.3',
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[project.scripts]
+zametka = "zametka.main.cli:main"
+
 
 [tool.setuptools]
 package-dir = {"" = "src"}

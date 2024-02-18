@@ -23,3 +23,7 @@ class UserIdentityRepository(Protocol):
     @abstractmethod
     async def update(self, user_id: UserIdentityId, updated_user: UserIdentity) -> None:
         """Update"""
+
+    @abstractmethod
+    async def delete(self, user_id: UserIdentityId) -> None:
+        """Delete"""

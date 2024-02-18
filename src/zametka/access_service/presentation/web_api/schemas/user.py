@@ -1,5 +1,3 @@
-from typing import Any
-
 from email_validator import EmailNotValidError, validate_email
 
 from pydantic import BaseModel, root_validator, validator
@@ -22,7 +20,6 @@ class CreateIdentitySchema(BaseModel):
     email: str
     password: str
     password2: str
-    additional_info: dict[str, Any]
 
     @validator("email")
     def validate_email(cls, email: str) -> str:

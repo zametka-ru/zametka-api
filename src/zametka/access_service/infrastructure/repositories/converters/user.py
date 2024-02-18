@@ -8,7 +8,9 @@ from zametka.access_service.domain.value_objects.user_hashed_password import (
 )
 from zametka.access_service.domain.value_objects.user_identity_id import UserIdentityId
 
-from zametka.access_service.infrastructure.db.models.user_identity import UserIdentity
+from zametka.access_service.infrastructure.persistence.models.user_identity import (
+    UserIdentity,
+)
 from zametka.access_service.application.dto import UserIdentityDTO
 
 

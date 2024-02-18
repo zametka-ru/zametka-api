@@ -7,9 +7,9 @@ from fastapi_another_jwt_auth.exceptions import AuthJWTException
 from jwt.exceptions import ExpiredSignatureError
 from sqlalchemy.exc import IntegrityError
 
-from zametka.access_service.domain.exceptions.email_token import (
-    CorruptedEmailTokenError,
-    EmailTokenAlreadyUsedError,
+from zametka.access_service.domain.exceptions.confirmation_token import (
+    CorruptedConfirmationTokenError,
+    ConfirmationTokenAlreadyUsedError,
 )
 from zametka.access_service.domain.exceptions.user_identity import (
     InvalidCredentialsError,
@@ -63,14 +63,14 @@ def include_exception_handlers(app: FastAPI) -> None:
     )
     app.add_exception_handler(ExpiredSignatureError, expired_token_exception_handler)
     app.add_exception_handler(
-        EmailTokenAlreadyUsedError, token_already_used_exception_handler
+        ConfirmationTokenAlreadyUsedError, token_already_used_exception_handler
     )
     app.add_exception_handler(
         AuthJWTException,
         authjwt_exception_handler,
     )
     app.add_exception_handler(
-        CorruptedEmailTokenError,
+        CorruptedConfirmationTokenError,
         corrupted_token_exception_handler,
     )
     app.add_exception_handler(
@@ -81,3 +81,9 @@ def include_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(
         EventIsNotDeliveredError, event_is_not_delivered_exception_handler
     )
+
+
+__all__ = [
+    "include_exception_handlers",
+    "include_routers",
+]

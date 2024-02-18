@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dataclasses import dataclass
@@ -7,7 +8,7 @@ from fastapi_mail import ConnectionConfig
 
 
 @dataclass
-class BaseDB:
+class BaseDBConfig:
     """Base database config"""
 
     host: str
@@ -20,43 +21,44 @@ class BaseDB:
 
 
 @dataclass
-class DB(BaseDB):
+class DBConfig(BaseDBConfig):
     """App database config"""
 
 
 @dataclass
-class AlembicDB(BaseDB):
+class AlembicDBConfig(BaseDBConfig):
     """Alembic database config"""
 
 
 @dataclass
-class AuthSettings:
-    """Auth Settings"""
-
+class AuthConfig:
     secret_key: str
     algorithm: str
 
 
 @dataclass
-class CORSSettings:
-    """CORS Allowed Domains Settings"""
-
+class CORSConfig:
     frontend_url: str
 
 
 @dataclass
-class Settings:
-    """App settings"""
-
-    db: DB
-    auth: AuthSettings
-    cors: CORSSettings
+class AMQPConfig:
+    host: str = "localhost"
+    port: int = 5672
+    login: str = "guest"
+    password: str = "guest"
 
 
 @dataclass
-class AuthJWTSettings:
-    """AuthJWT Settings"""
+class GeneralConfig:
+    db: DBConfig
+    auth: AuthConfig
+    cors: CORSConfig
+    amqp: AMQPConfig
 
+
+@dataclass
+class AuthJWTConfig:
     authjwt_secret_key: str
 
     authjwt_token_location: set[str]
@@ -72,9 +74,7 @@ class AuthJWTSettings:
 
 
 @dataclass
-class MailSettings:
-    """Mail Settings"""
-
+class MailConfig:
     mail_username: str
     mail_password: str
     mail_from: str
@@ -83,43 +83,49 @@ class MailSettings:
     mail_from_name: str
 
 
-def load_settings() -> Settings:
-    """Get app settings"""
-
-    db = DB(
-        db_name=os.environ["POSTGRES_DB"],
+def load_general_config() -> GeneralConfig:
+    db = DBConfig(
+        db_name=os.environ["ACCESS_POSTGRES_DB"],
         host=os.environ["DB_HOST"],
         password=os.environ["POSTGRES_PASSWORD"],
         user=os.environ["POSTGRES_USER"],
     )
 
-    auth = AuthSettings(
+    auth = AuthConfig(
         algorithm=os.environ["ALGORITHM"],
         secret_key=os.environ["SECRET_KEY"],
     )
 
-    cors = CORSSettings(frontend_url=os.environ["FRONTEND"])
+    cors = CORSConfig(frontend_url=os.environ["FRONTEND"])
 
-    return Settings(
+    amqp = AMQPConfig(
+        host=os.environ.get("AMQP_HOST", "localhost"),
+        port=int(os.environ.get("AMQP_PORT", 5672)),
+        login=os.environ.get("AMQP_LOGIN", "guest"),
+        password=os.environ.get("AMQP_PASSWORD", "guest"),
+    )
+
+    logging.info("Access config was loaded.")
+
+    return GeneralConfig(
         db=db,
         auth=auth,
         cors=cors,
+        amqp=amqp,
     )
 
 
-def load_alembic_settings() -> AlembicDB:
-    """Get alembic settings"""
-
-    return AlembicDB(
-        db_name=os.environ["POSTGRES_DB"],
+def load_alembic_config() -> AlembicDBConfig:
+    return AlembicDBConfig(
+        db_name=os.environ["ACCESS_POSTGRES_DB"],
         host=os.environ["DB_HOST"],
         password=os.environ["POSTGRES_PASSWORD"],
         user=os.environ["POSTGRES_USER"],
     )
 
 
-def load_authjwt_settings() -> AuthJWTSettings:
-    return AuthJWTSettings(
+def load_authjwt_config() -> AuthJWTConfig:
+    return AuthJWTConfig(
         authjwt_secret_key=os.environ["AUTHJWT_SECRET_KEY"],
         authjwt_token_location={"cookies"},
         authjwt_access_token_expires=timedelta(
@@ -129,8 +135,8 @@ def load_authjwt_settings() -> AuthJWTSettings:
     )
 
 
-def load_mail_settings() -> ConnectionConfig:
-    mail_settings = MailSettings(
+def load_mail_config() -> ConnectionConfig:
+    mail_settings = MailConfig(
         mail_from=os.environ["MAIL_FROM"],
         mail_from_name=os.environ["MAIL_FROM_NAME"],
         mail_password=os.environ["MAIL_PASSWORD"],

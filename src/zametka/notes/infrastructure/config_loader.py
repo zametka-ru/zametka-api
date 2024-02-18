@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dataclasses import dataclass
@@ -45,13 +46,15 @@ def load_settings() -> Settings:
     """Get app settings"""
 
     db = DB(
-        db_name=os.environ["POSTGRES_DB"],
+        db_name=os.environ["NOTES_POSTGRES_DB"],
         host=os.environ["DB_HOST"],
         password=os.environ["POSTGRES_PASSWORD"],
         user=os.environ["POSTGRES_USER"],
     )
 
     cors = CORSSettings(frontend_url=os.environ["FRONTEND"])
+
+    logging.info("Notes config was loaded")
 
     return Settings(
         db=db,
@@ -63,7 +66,7 @@ def load_alembic_settings() -> AlembicDB:
     """Get alembic settings"""
 
     return AlembicDB(
-        db_name=os.environ["POSTGRES_DB"],
+        db_name=os.environ["NOTES_POSTGRES_DB"],
         host=os.environ["DB_HOST"],
         password=os.environ["POSTGRES_PASSWORD"],
         user=os.environ["POSTGRES_USER"],

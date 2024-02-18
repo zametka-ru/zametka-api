@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, Request, Response
+from fastapi import APIRouter, Depends
 from fastapi_another_jwt_auth import AuthJWT
 
 from zametka.access_service.application.common.id_provider import IdProvider
@@ -14,7 +14,8 @@ from zametka.access_service.presentation.web_api.schemas.user import (
 )
 
 router = APIRouter(
-    tags=["users"],
+    prefix="/access",
+    tags=["access"],
     responses={404: {"description": "Not found"}},
 )
 
@@ -22,15 +23,13 @@ router = APIRouter(
 @router.post("/")
 async def create_identity(
     data: CreateIdentitySchema,
-    background_tasks: BackgroundTasks,
     ioc: InteractorFactory = Depends(),
 ) -> UserIdentityDTO:
-    async with ioc.create_identity(background_tasks=background_tasks) as interactor:
+    async with ioc.create_identity() as interactor:
         response = await interactor(
             IdentityInputDTO(
                 email=data.email,
                 password=data.password,
-                additional_info=data.additional_info,
             )
         )
 
@@ -67,23 +66,6 @@ async def get_identity(
         response = await interactor()
 
     return response
-
-
-@router.get(
-    "/ensure-can-edit"
-)  # TODO: move AuthJWT to trash and write JWTTokenProcessor for this
-async def ensure_can_edit(
-    request: Request,
-    _id_provider: IdProvider = Depends(),
-) -> Response:
-    """Ensure that requester can do modify(POST, PUT, PATCH, DELETE) requests"""
-
-    request.scope["method"] = next(iter(AuthJWT._csrf_methods))  # noqa
-    jwt_auth = AuthJWT(request)
-
-    jwt_auth._verify_and_get_jwt_in_cookies("access", request)  # noqa
-
-    return Response(status_code=200)
 
 
 @router.get("/verify/{token}")

@@ -1,11 +1,12 @@
-from abc import abstractmethod
+import logging
+
+from abc import ABC
 from typing import Generic
 
 from zametka.access_service.application.common.event.event import EventT
 
 
-class EventHandler(Generic[EventT]):
-    @abstractmethod
+class EventHandler(Generic[EventT], ABC):
     async def __call__(self, event: EventT) -> None:
         """Event handler"""
-        raise NotImplementedError
+        logging.info("Handling event: %s", event)

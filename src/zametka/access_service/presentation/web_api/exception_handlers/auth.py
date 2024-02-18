@@ -6,9 +6,9 @@ from fastapi.responses import JSONResponse
 from fastapi_another_jwt_auth.exceptions import AuthJWTException
 from jwt.exceptions import ExpiredSignatureError
 
-from zametka.access_service.domain.exceptions.email_token import (
-    CorruptedEmailTokenError,
-    EmailTokenAlreadyUsedError,
+from zametka.access_service.domain.exceptions.confirmation_token import (
+    CorruptedConfirmationTokenError,
+    ConfirmationTokenAlreadyUsedError,
 )
 from zametka.access_service.domain.exceptions.user_identity import (
     InvalidCredentialsError,
@@ -89,7 +89,7 @@ async def expired_token_exception_handler(
 
 
 async def corrupted_token_exception_handler(
-    _request: Request, _exc: CorruptedEmailTokenError
+    _request: Request, _exc: CorruptedConfirmationTokenError
 ) -> JSONResponse:
     return JSONResponse(
         status_code=422,
@@ -107,7 +107,7 @@ async def invalid_encoded_token_exception_handler(
 
 
 async def token_already_used_exception_handler(
-    _request: Request, _exc: EmailTokenAlreadyUsedError
+    _request: Request, _exc: ConfirmationTokenAlreadyUsedError
 ) -> JSONResponse:
     return JSONResponse(
         status_code=422,

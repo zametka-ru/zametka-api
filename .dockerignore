@@ -5,3 +5,4 @@ venv/
 src/zametka.egg-info/
 .env.notes
 .env.access_service
+.env

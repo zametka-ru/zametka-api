@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from zametka.access_service.application.dto import UserIdentityDTO
@@ -14,7 +14,9 @@ from zametka.access_service.domain.entities.user_identity import (
 from zametka.access_service.domain.value_objects.user_email import UserEmail
 from zametka.access_service.domain.value_objects.user_identity_id import UserIdentityId
 
-from zametka.access_service.infrastructure.db.models.user_identity import UserIdentity
+from zametka.access_service.infrastructure.persistence.models.user_identity import (
+    UserIdentity,
+)
 from zametka.access_service.infrastructure.repositories.converters.user import (
     user_model_to_dto,
     user_model_to_entity,
@@ -68,6 +70,14 @@ class UserIdentityRepositoryImpl(UserIdentityRepository):
             update(UserIdentity)
             .where(UserIdentity.identity_id == user_id.to_raw())
             .values(is_active=updated_user.is_active)
+        )
+
+        await self.session.execute(q)
+
+    async def delete(self, user_id: UserIdentityId) -> None:
+        q = (
+            delete(UserIdentity)
+            .where(UserIdentity.identity_id == user_id.to_raw())
         )
 
         await self.session.execute(q)

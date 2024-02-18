@@ -4,7 +4,8 @@ from typing import TypeVar, Union
 
 
 class Event(ABC):
-    pass
+    def __str__(self) -> str:
+        return self.__class__.__name__
 
 
 EventT = TypeVar("EventT", bound=Event)  # e.g Event1
